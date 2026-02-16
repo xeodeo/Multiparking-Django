@@ -1,0 +1,627 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Panel Principal{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Bienvenido de nuevo, {{ request.session.usuario_nombre }}</h1>
+<p class="text-mp-muted mb-8">Esto es lo que está pasando con tu parqueadero hoy.</p>
+
+<!-- KPIs -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <p class="text-mp-muted text-sm">Espacios Totales</p>
+        <p class="text-3xl font-bold mt-1">{{ total_espacios }}</p>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <p class="text-mp-muted text-sm">Espacios Disponibles</p>
+        <p class="text-3xl font-bold mt-1 text-green-400">{{ disponibles }}</p>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <p class="text-mp-muted text-sm">Espacios Ocupados</p>
+        <p class="text-3xl font-bold mt-1 text-red-400">{{ ocupados }}</p>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <p class="text-mp-muted text-sm">Reservas Activas</p>
+        <p class="text-3xl font-bold mt-1 text-yellow-400">{{ reservas_activas }}</p>
+    </div>
+</div>
+
+<!-- LAYOUT GRID -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+    <!-- PISOS -->
+    <div class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 class="text-xl font-bold">Vista General de Pisos</h2>
+            <div class="flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-mp-muted">Disponible</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-mp-muted">Ocupado</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-600"></span><span class="text-mp-muted">Inactivo</span></div>
+            </div>
+        </div>
+
+        {% if pisos %}
+        <!-- TABS -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b border-mp-border pb-1">
+            {% for piso in pisos %}
+            <button onclick="showPiso('piso-{{ piso.pk }}')" id="btn-piso-{{ piso.pk }}"
+                class="px-4 py-2 rounded-t-lg font-medium transition-colors border-b-2 border-transparent hover:bg-white/5 text-mp-muted tab-btn">
+                {{ piso.pisNombre }}
+                <span class="ml-2 text-xs bg-black/30 px-1.5 py-0.5 rounded">{{ piso.ocupados_espacios }}</span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- CONTENIDO PISOS -->
+        {% for piso in pisos %}
+        <div id="piso-{{ piso.pk }}" class="piso-content hidden">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-sm text-mp-muted">
+                    {{ piso.ocupados_espacios }} espacios ocupados de {{ piso.total_espacios }} <span class="text-xs">({{ piso.ocupacion_pct }}% ocupación)</span>
+                </p>
+            </div>
+            {% if piso.espacios.all %}
+            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                {% for espacio in piso.espacios.all %}
+                <div class="relative group">
+                    <div onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}')"
+                        class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
+                        title="Espacio {{ espacio.espNumero }}">
+                        {{ espacio.espNumero }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-10 text-mp-muted bg-black/10 rounded-lg"><p>Este piso aún no tiene espacios.</p></div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-12"><p class="text-mp-muted text-lg">No hay pisos configurados.</p></div>
+        {% endif %}
+    </div>
+
+    <!-- ACCIONES RÁPIDAS -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 h-fit">
+        <h2 class="text-lg font-bold mb-6">Acciones Rápidas</h2>
+        <div class="grid gap-4">
+            <a href="{% url 'admin_pisos_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-emerald-900/20 to-emerald-900/5 border border-emerald-500/20 rounded-xl hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/30 transition">
+                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-emerald-300 transition">Nuevo Piso</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Agregar nivel al parqueadero</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_espacios_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-500/20 rounded-xl hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-blue-300 transition">Nuevo Espacio</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Crear espacio de parqueo</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_tarifas_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-purple-900/20 to-purple-900/5 border border-purple-500/20 rounded-xl hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-purple-300 transition">Nueva Tarifa</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Configurar precios por hora</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_cupones_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-amber-900/20 to-amber-900/5 border border-amber-500/20 rounded-xl hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/30 transition">
+                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-amber-300 transition">Nuevo Cupón</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Crear cupón de descuento</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_tipos_espacio_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-cyan-900/20 to-cyan-900/5 border border-cyan-500/20 rounded-xl hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-cyan-300 transition">Nuevo Tipo</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Tipo de espacio (Carro, Moto...)</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- TABLA RESERVAS & GRÁFICOS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- RESERVAS -->
+    <div class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold">Vista General de Reservas</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-xs text-mp-muted border-b border-mp-border">
+                        <th class="py-3 font-medium">Espacio</th>
+                        <th class="py-3 font-medium">Cliente</th>
+                        <th class="py-3 font-medium">Vehículo</th>
+                        <th class="py-3 font-medium">Hora Inicio</th>
+                        <th class="py-3 font-medium">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for res in reservas_recientes %}
+                    <tr class="border-b border-mp-border/50 hover:bg-white/5 transition">
+                        <td class="py-3">
+                            <span class="bg-black/30 px-2 py-1 rounded text-xs font-bold">{{ res.fkIdEspacio.espNumero }}</span>
+                            <span class="text-xs text-mp-muted ml-1">{{ res.fkIdEspacio.fkIdPiso.pisNombre }}</span>
+                        </td>
+                        <td class="py-3">{{ res.fkIdVehiculo.fkIdUsuario.usuNombreCompleto }}</td>
+                        <td class="py-3">{{ res.fkIdVehiculo.vehPlaca }}</td>
+                        <td class="py-3">{{ res.resHoraInicio|date:"H:i" }}</td>
+                        <td class="py-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium">{{ res.resEstado }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="py-8 text-center text-mp-muted">No hay reservas recientes.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Tendencias de Ocupación (Hoy)</h2>
+        <div class="h-64"><canvas id="occupancyChart"></canvas></div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Ingresos por Turno</h2>
+        <div class="h-64"><canvas id="incomeChart"></canvas></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: REGISTRAR INGRESO (flujo con búsqueda de placa)       -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="entryModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 backdrop-blur-sm" onclick="if(event.target===this) closeEntryModal()">
+    <div class="bg-mp-card border border-mp-border rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50 mx-4 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-mp-purple/20 to-transparent border-b border-mp-border px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Registrar Ingreso</h3>
+                    <p class="text-sm text-mp-muted mt-0.5">
+                        Espacio <span id="modalEspacioNum" class="text-mp-purple-light font-bold"></span>
+                        <span class="text-mp-muted/60 mx-1">&middot;</span>
+                        <span id="modalPisoNombre" class="text-mp-muted"></span>
+                    </p>
+                </div>
+                <button type="button" onclick="closeEntryModal()" class="text-mp-muted hover:text-white transition p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <form action="{% url 'admin_registrar_ingreso' %}" method="POST" id="entryForm">
+            {% csrf_token %}
+            <input type="hidden" name="espacio_id" id="modalEspacioId">
+
+            <div class="px-6 py-5">
+                <!-- PASO 1: Búsqueda de placa -->
+                <div id="step1_placa">
+                    <label class="block text-sm font-medium text-mp-muted mb-2">Placa del Vehículo <span class="text-red-500">*</span></label>
+                    <div class="flex gap-3">
+                        <input type="text" name="placa" id="modalPlaca" required
+                            class="flex-1 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-600 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="ABC-123" autocomplete="off">
+                        <button type="button" id="btnBuscarPlaca" onclick="buscarPlaca()"
+                            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-3 rounded-lg font-medium transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                            </svg>
+                            Buscar
+                        </button>
+                    </div>
+                    <p id="placaHint" class="text-xs text-mp-muted mt-2">Ingresa la placa y presiona Buscar para continuar.</p>
+                </div>
+
+                <!-- Feedback: vehículo encontrado -->
+                <div id="vehiculoEncontrado" class="hidden mt-4">
+                    <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-green-300 font-bold text-sm">Vehículo registrado</p>
+                                <p class="text-green-400/70 text-xs">Datos cargados automáticamente</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="text-mp-muted text-xs block">Propietario</span>
+                                <span id="foundNombre" class="text-white font-medium"></span>
+                            </div>
+                            <div>
+                                <span class="text-mp-muted text-xs block">Teléfono</span>
+                                <span id="foundTelefono" class="text-white font-medium font-mono"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="nombre" id="hiddenNombre">
+                    <input type="hidden" name="telefono" id="hiddenTelefono">
+                </div>
+
+                <!-- Campos dinámicos: vehículo NO encontrado -->
+                <div id="vehiculoNuevo" class="hidden mt-4">
+                    <div class="bg-amber-900/20 border border-amber-500/30 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-amber-300 font-bold text-sm">Vehículo no registrado</p>
+                                <p class="text-amber-400/70 text-xs">Se creará como visitante</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-mp-muted mb-1">Nombre del Conductor</label>
+                            <input type="text" name="nombre" id="modalNombre"
+                                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                                placeholder="Nombre completo">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-mp-muted mb-1">Teléfono de Contacto</label>
+                            <input type="text" name="telefono" id="modalTelefono"
+                                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                                placeholder="3001234567">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spinner de búsqueda -->
+                <div id="searchSpinner" class="hidden mt-4 flex items-center justify-center gap-3 py-4">
+                    <svg class="animate-spin h-5 w-5 text-mp-purple-light" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-mp-muted text-sm">Buscando vehículo...</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div id="entryFooter" class="hidden border-t border-mp-border px-6 py-4 bg-black/20">
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeEntryModal()" class="px-4 py-2.5 rounded-lg text-mp-muted hover:text-white transition">Cancelar</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+                        </svg>
+                        Registrar Ingreso
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MODAL: REGISTRAR SALIDA                  -->
+<!-- ══════════════════════════════════════════ -->
+<div id="exitModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 backdrop-blur-sm" onclick="if(event.target===this) closeExitModal()">
+    <div class="bg-mp-card border border-mp-border rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50 mx-4 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-500/10 to-transparent border-b border-mp-border px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Registrar Salida</h3>
+                    <p class="text-sm text-mp-muted mt-0.5">Espacio <span id="exitModalEspacioNum" class="text-red-400 font-bold"></span></p>
+                </div>
+                <button type="button" onclick="closeExitModal()" class="text-mp-muted hover:text-white transition p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Detalles -->
+        <div class="px-6 py-5">
+            <div id="exitLoading" class="flex items-center justify-center gap-3 py-8">
+                <svg class="animate-spin h-5 w-5 text-mp-purple-light" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-mp-muted text-sm">Cargando detalles...</span>
+            </div>
+            <div id="exitDetails" class="hidden">
+                <div class="bg-mp-dark rounded-xl p-5">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Placa</span>
+                            <span id="exitPlaca" class="text-white font-mono font-bold text-xl"></span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Cliente</span>
+                            <div class="flex items-center gap-2">
+                                <span id="exitCliente" class="text-white font-medium text-sm"></span>
+                                <span id="exitTipoCliente" class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Entrada</span>
+                            <span id="exitEntrada" class="text-white text-sm"></span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Duración</span>
+                            <span id="exitDuracion" class="text-white text-sm font-bold"></span>
+                        </div>
+                        <div class="col-span-2">
+                            <span class="text-xs text-mp-muted block mb-1">Teléfono</span>
+                            <span id="exitTelefono" class="text-white text-sm font-mono"></span>
+                        </div>
+                    </div>
+                    <div class="border-t border-mp-border pt-4 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs text-mp-muted block">Tarifa</span>
+                            <span id="exitTarifa" class="text-blue-300 text-sm"></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-mp-muted block">Total a Pagar</span>
+                            <span id="exitTotal" class="text-green-400 font-bold text-3xl"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div id="exitFooter" class="hidden border-t border-mp-border px-6 py-4 bg-black/20">
+            <form action="{% url 'admin_registrar_salida' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="espacio_id" id="exitModalEspacioId">
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeExitModal()" class="px-4 py-2.5 rounded-lg text-mp-muted hover:text-white transition">Cancelar</button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                        </svg>
+                        Cobrar y Registrar Salida
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // ── Piso Tabs ──
+    function showPiso(id) {
+        document.querySelectorAll('.piso-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('border-mp-purple', 'text-white', 'bg-white/5');
+            el.classList.add('border-transparent', 'text-mp-muted');
+        });
+        const target = document.getElementById(id);
+        if(target) target.classList.remove('hidden');
+        const btn = document.getElementById('btn-'+id);
+        if(btn) {
+            btn.classList.remove('border-transparent', 'text-mp-muted');
+            btn.classList.add('border-mp-purple', 'text-white', 'bg-white/5');
+        }
+    }
+
+    // ── Space Click Handler ──
+    function handleSpaceClick(id, num, estado, pisoNombre) {
+        if(estado === 'DISPONIBLE') openEntryModal(id, num, pisoNombre);
+        else if(estado === 'OCUPADO') openExitModal(id, num);
+    }
+
+    // ── Entry Modal ──
+    function openEntryModal(id, num, pisoNombre) {
+        document.getElementById('modalEspacioId').value = id;
+        document.getElementById('modalEspacioNum').textContent = num;
+        document.getElementById('modalPisoNombre').textContent = pisoNombre || '';
+        // Reset state
+        document.getElementById('modalPlaca').value = '';
+        document.getElementById('vehiculoEncontrado').classList.add('hidden');
+        document.getElementById('vehiculoNuevo').classList.add('hidden');
+        document.getElementById('searchSpinner').classList.add('hidden');
+        document.getElementById('entryFooter').classList.add('hidden');
+        document.getElementById('placaHint').classList.remove('hidden');
+        const nomField = document.getElementById('modalNombre');
+        const telField = document.getElementById('modalTelefono');
+        if(nomField) nomField.value = '';
+        if(telField) telField.value = '';
+        document.getElementById('hiddenNombre').value = '';
+        document.getElementById('hiddenTelefono').value = '';
+        // Show
+        document.getElementById('entryModal').classList.remove('hidden');
+        document.getElementById('entryModal').classList.add('flex');
+        setTimeout(() => document.getElementById('modalPlaca').focus(), 100);
+    }
+
+    function closeEntryModal() {
+        document.getElementById('entryModal').classList.add('hidden');
+        document.getElementById('entryModal').classList.remove('flex');
+    }
+
+    function buscarPlaca() {
+        const placa = document.getElementById('modalPlaca').value.trim().toUpperCase();
+        if(placa.length < 2) return;
+
+        document.getElementById('vehiculoEncontrado').classList.add('hidden');
+        document.getElementById('vehiculoNuevo').classList.add('hidden');
+        document.getElementById('entryFooter').classList.add('hidden');
+        document.getElementById('placaHint').classList.add('hidden');
+        document.getElementById('searchSpinner').classList.remove('hidden');
+
+        fetch(`{% url 'admin_buscar_vehiculo' %}?placa=${encodeURIComponent(placa)}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('searchSpinner').classList.add('hidden');
+                if(data.found) {
+                    document.getElementById('foundNombre').textContent = data.nombre || 'Sin nombre';
+                    document.getElementById('foundTelefono').textContent = data.telefono || 'Sin teléfono';
+                    document.getElementById('hiddenNombre').value = data.nombre || '';
+                    document.getElementById('hiddenTelefono').value = data.telefono || '';
+                    document.getElementById('vehiculoEncontrado').classList.remove('hidden');
+                } else {
+                    document.getElementById('vehiculoNuevo').classList.remove('hidden');
+                }
+                document.getElementById('entryFooter').classList.remove('hidden');
+            })
+            .catch(() => {
+                document.getElementById('searchSpinner').classList.add('hidden');
+                document.getElementById('vehiculoNuevo').classList.remove('hidden');
+                document.getElementById('entryFooter').classList.remove('hidden');
+            });
+    }
+
+    // ── Exit Modal ──
+    function openExitModal(id, num) {
+        document.getElementById('exitModalEspacioId').value = id;
+        document.getElementById('exitModalEspacioNum').textContent = num;
+        document.getElementById('exitDetails').classList.add('hidden');
+        document.getElementById('exitFooter').classList.add('hidden');
+        document.getElementById('exitLoading').classList.remove('hidden');
+
+        document.getElementById('exitModal').classList.remove('hidden');
+        document.getElementById('exitModal').classList.add('flex');
+
+        fetch(`{% url 'admin_detalle_ocupacion' %}?espacio_id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('exitLoading').classList.add('hidden');
+                if(data.found) {
+                    document.getElementById('exitPlaca').textContent = data.placa;
+                    document.getElementById('exitCliente').textContent = data.cliente;
+
+                    const badge = document.getElementById('exitTipoCliente');
+                    if (data.tipo_cliente === 'USUARIO') {
+                        badge.textContent = 'USUARIO';
+                        badge.className = 'text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-mp-purple text-white';
+                    } else {
+                        badge.textContent = 'VISITANTE';
+                        badge.className = 'text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-amber-500 text-black';
+                    }
+
+                    document.getElementById('exitEntrada').textContent = data.entrada;
+                    document.getElementById('exitDuracion').textContent = data.duracion;
+                    document.getElementById('exitTelefono').textContent = data.telefono || 'Sin teléfono';
+                    document.getElementById('exitTarifa').textContent = data.tarifa_info;
+                    document.getElementById('exitTotal').textContent = data.total_pagar;
+                    document.getElementById('exitDetails').classList.remove('hidden');
+                    document.getElementById('exitFooter').classList.remove('hidden');
+                }
+            });
+    }
+
+    function closeExitModal() {
+        document.getElementById('exitModal').classList.add('hidden');
+        document.getElementById('exitModal').classList.remove('flex');
+    }
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+        // Buscar con Enter en el modal de ingreso
+        const placaInput = document.getElementById('modalPlaca');
+        if(placaInput) {
+            placaInput.addEventListener('keydown', function(e) {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarPlaca();
+                }
+            });
+        }
+
+        // Activar primer tab
+        const firstBtn = document.querySelector('.tab-btn');
+        if(firstBtn) firstBtn.click();
+
+        // Charts
+        const ctxOcc = document.getElementById('occupancyChart');
+        if(ctxOcc) {
+            new Chart(ctxOcc, {
+                type: 'line',
+                data: {
+                    labels: {{ ocupacion_labels|safe }},
+                    datasets: [{
+                        label: 'Ocupación',
+                        data: {{ ocupacion_data|safe }},
+                        borderColor: '#A78BFA',
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 10 } } },
+                        y: { grid: { color: '#1e1e3a' }, ticks: { color: '#6b7280' } }
+                    }
+                }
+            });
+        }
+
+        const ctxInc = document.getElementById('incomeChart');
+        if(ctxInc) {
+            new Chart(ctxInc, {
+                type: 'bar',
+                data: {
+                    labels: ['Mañana', 'Tarde', 'Noche'],
+                    datasets: [{
+                        label: 'Ingresos',
+                        data: {{ ingresos_data|safe }},
+                        backgroundColor: ['#A78BFA', '#34D399', '#FBBF24'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b7280' } },
+                        y: { grid: { color: '#1e1e3a' }, ticks: { color: '#6b7280' } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

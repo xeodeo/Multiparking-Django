@@ -1,0 +1,98 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'admin_cupones' %}" class="text-mp-muted hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Nombre y Tipo -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="cupNombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre /
+                            Código</label>
+                        <input type="text" id="cupNombre" name="cupNombre" value="{{ cupon.cupNombre }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: DESC50" required>
+                    </div>
+
+                    <div>
+                        <label for="cupTipo" class="block text-sm font-medium text-mp-muted mb-2">Tipo de
+                            Descuento</label>
+                        <select id="cupTipo" name="cupTipo" required
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                            <option value="PORCENTAJE" {% if cupon.cupTipo=='PORCENTAJE' %}selected{% endif %}>
+                                Porcentaje (%)</option>
+                            <option value="VALOR_FIJO" {% if cupon.cupTipo=='VALOR_FIJO' %}selected{% endif %}>Valor
+                                Fijo ($)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Valor -->
+                <div>
+                    <label for="cupValor" class="block text-sm font-medium text-mp-muted mb-2">Valor del
+                        Descuento</label>
+                    <input type="number" id="cupValor" name="cupValor" value="{{ cupon.cupValor }}" step="0.01"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                        placeholder="Ej: 10 para 10% o 5000 para $5000" required>
+                </div>
+
+                <!-- Descripción -->
+                <div>
+                    <label for="cupDescripcion" class="block text-sm font-medium text-mp-muted mb-2">Descripción
+                        (Opcional)</label>
+                    <textarea id="cupDescripcion" name="cupDescripcion" rows="3"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">{{ cupon.cupDescripcion }}</textarea>
+                </div>
+
+                <!-- Fechas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="cupFechaInicio" class="block text-sm font-medium text-mp-muted mb-2">Fecha
+                            Inicio</label>
+                        <input type="date" id="cupFechaInicio" name="cupFechaInicio"
+                            value="{{ cupon.cupFechaInicio|date:'Y-m-d' }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                            required>
+                    </div>
+                    <div>
+                        <label for="cupFechaFin" class="block text-sm font-medium text-mp-muted mb-2">Fecha Fin</label>
+                        <input type="date" id="cupFechaFin" name="cupFechaFin"
+                            value="{{ cupon.cupFechaFin|date:'Y-m-d' }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                            required>
+                    </div>
+                </div>
+
+                <!-- Activo -->
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="cupActivo" name="cupActivo"
+                        class="w-5 h-5 rounded border-mp-border text-mp-purple focus:ring-mp-purple bg-black/20" {% if
+                        cupon.cupActivo %}checked{% endif %}>
+                    <label for="cupActivo" class="text-sm font-medium text-white">Cupón Activo</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-6 border-t border-mp-border">
+                    <a href="{% url 'admin_cupones' %}"
+                        class="px-4 py-2 text-mp-muted hover:text-white transition">Cancelar</a>
+                    <button type="submit"
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2 rounded-lg transition font-medium">
+                        Guardar Cupón
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

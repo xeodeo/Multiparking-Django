@@ -1,0 +1,206 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Gestión de Espacios</h1>
+        <p class="text-mp-muted text-sm mt-1">Espacios de parqueo por piso y tipo</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{% url 'admin_espacios_rango' %}"
+            class="bg-mp-card hover:bg-mp-border text-white px-4 py-2.5 rounded-lg border border-mp-border transition flex items-center gap-2 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+            Crear Rango
+        </a>
+        <a href="{% url 'admin_espacios_crear' %}"
+            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-4 py-2.5 rounded-lg transition flex items-center gap-2 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Nuevo Espacio
+        </a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Total Espacios</p>
+                <p class="text-2xl font-bold text-white">{{ total }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Disponibles</p>
+                <p class="text-2xl font-bold text-green-400">{{ disponibles }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Ocupados</p>
+                <p class="text-2xl font-bold text-red-400">{{ ocupados }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Inactivos</p>
+                <p class="text-2xl font-bold text-gray-400">{{ inactivos }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-4 mb-6">
+    <form method="GET" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-medium text-mp-muted mb-1">Buscar por número</label>
+            <input type="text" name="q" value="{{ q }}" placeholder="A-01..."
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+        </div>
+        <div class="w-48">
+            <label class="block text-xs font-medium text-mp-muted mb-1">Piso</label>
+            <select name="piso"
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                <option value="">Todos</option>
+                {% for p in pisos %}
+                <option value="{{ p.pk }}" {% if piso_sel == p.pk %}selected{% endif %}>{{ p.pisNombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="w-48">
+            <label class="block text-xs font-medium text-mp-muted mb-1">Tipo</label>
+            <select name="tipo"
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                <option value="">Todos</option>
+                {% for t in tipos %}
+                <option value="{{ t.pk }}" {% if tipo_sel == t.pk %}selected{% endif %}>{{ t.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="w-48">
+            <label class="block text-xs font-medium text-mp-muted mb-1">Estado</label>
+            <select name="estado"
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                <option value="">Todos</option>
+                <option value="DISPONIBLE" {% if estado_sel == 'DISPONIBLE' %}selected{% endif %}>Disponible</option>
+                <option value="OCUPADO" {% if estado_sel == 'OCUPADO' %}selected{% endif %}>Ocupado</option>
+                <option value="INACTIVO" {% if estado_sel == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+            </select>
+        </div>
+        <button type="submit"
+            class="bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light border border-mp-purple/30 px-4 py-2 rounded-lg text-sm transition font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            Filtrar
+        </button>
+        {% if q or piso_sel or tipo_sel or estado_sel %}
+        <a href="{% url 'admin_espacios' %}" class="text-mp-muted text-sm hover:text-white transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            Limpiar
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-black/20 text-mp-muted text-xs uppercase tracking-wider">
+            <tr>
+                <th class="px-6 py-4 font-medium">Espacio</th>
+                <th class="px-6 py-4 font-medium">Piso</th>
+                <th class="px-6 py-4 font-medium">Tipo</th>
+                <th class="px-6 py-4 text-center font-medium">Estado</th>
+                <th class="px-6 py-4 text-right font-medium">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-mp-border text-sm">
+            {% for espacio in espacios %}
+            <tr class="hover:bg-white/5 transition">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg {% if espacio.espEstado == 'DISPONIBLE' %}bg-green-500/15{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500/15{% else %}bg-gray-700/50{% endif %} flex items-center justify-center">
+                            <svg class="w-4 h-4 {% if espacio.espEstado == 'DISPONIBLE' %}text-green-400{% elif espacio.espEstado == 'OCUPADO' %}text-red-400{% else %}text-gray-500{% endif %}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
+                        </div>
+                        <span class="font-bold text-white">{{ espacio.espNumero }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-mp-muted">{{ espacio.fkIdPiso.pisNombre }}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-900/30 text-cyan-300 border border-cyan-800/50">
+                        {{ espacio.fkIdTipoEspacio.nombre }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    {% if espacio.espEstado == 'DISPONIBLE' %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-900/30 text-green-300 border border-green-800/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                        Disponible
+                    </span>
+                    {% elif espacio.espEstado == 'OCUPADO' %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-900/30 text-red-300 border border-red-800/50">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                        Ocupado
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-800/50 text-gray-400 border border-gray-700">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                        Inactivo
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{% url 'admin_espacios_editar' pk=espacio.pk %}"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-mp-purple/10 text-mp-purple-light border border-mp-purple/20 hover:bg-mp-purple/20 hover:text-white transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            Editar
+                        </a>
+                        <form action="{% url 'admin_espacios_eliminar' pk=espacio.pk %}" method="POST" class="inline-block"
+                            onsubmit="return confirm('¿Eliminar espacio {{ espacio.espNumero }}?');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition {% if espacio.espEstado == 'OCUPADO' %}bg-gray-800/50 text-gray-500 border-gray-700 cursor-not-allowed{% else %}bg-red-900/10 text-red-400 border-red-500/20 hover:bg-red-900/20 hover:text-red-300{% endif %}"
+                                {% if espacio.espEstado == 'OCUPADO' %}disabled{% endif %}>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-mp-border flex items-center justify-center">
+                            <svg class="w-6 h-6 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
+                        </div>
+                        <p class="text-mp-muted">No se encontraron espacios.</p>
+                        <a href="{% url 'admin_espacios_crear' %}" class="text-mp-purple-light hover:text-white text-sm transition">Crear el primero</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

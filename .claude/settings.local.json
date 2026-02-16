@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(django-admin startproject:*)",
+      "Bash(python -m django:*)",
+      "Bash(python manage.py:*)",
+      "Bash(python manage.py startapp:*)",
+      "Bash(python -c:*)",
+      "Bash(ls:*)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

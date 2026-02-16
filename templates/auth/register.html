@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Cuenta - MultiParking{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-lg">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <a href="{% url 'home' %}" class="text-3xl font-extrabold">
+                <span class="text-mp-purple-light">Multi</span>Parking
+            </a>
+            <h2 class="mt-4 text-2xl font-bold">Crear Cuenta</h2>
+            <p class="mt-2 text-mp-muted text-sm">Regístrate para acceder al sistema de parqueadero</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg text-sm
+                {% if message.tags == 'error' %}bg-red-900/50 border border-red-700 text-red-300
+                {% elif message.tags == 'success' %}bg-green-900/50 border border-green-700 text-green-300
+                {% else %}bg-blue-900/50 border border-blue-700 text-blue-300{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="POST" class="bg-mp-card border border-mp-border rounded-xl p-8 space-y-5">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="sm:col-span-2">
+                    <label for="documento" class="block text-sm font-medium text-mp-muted mb-2">Documento de identidad</label>
+                    <input type="text" id="documento" name="documento" required
+                           value="{{ form_data.documento|default:'' }}"
+                           placeholder="1234567890"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="nombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre completo</label>
+                    <input type="text" id="nombre" name="nombre" required
+                           value="{{ form_data.nombre|default:'' }}"
+                           placeholder="Juan Carlos Pérez López"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="correo" class="block text-sm font-medium text-mp-muted mb-2">Correo electrónico</label>
+                    <input type="email" id="correo" name="correo" required
+                           value="{{ form_data.correo|default:'' }}"
+                           placeholder="correo@ejemplo.com"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="telefono" class="block text-sm font-medium text-mp-muted mb-2">Teléfono</label>
+                    <input type="text" id="telefono" name="telefono"
+                           value="{{ form_data.telefono|default:'' }}"
+                           placeholder="3001234567"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="clave" class="block text-sm font-medium text-mp-muted mb-2">Contraseña</label>
+                    <input type="password" id="clave" name="clave" required
+                           placeholder="••••••••"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="clave_confirm" class="block text-sm font-medium text-mp-muted mb-2">Confirmar contraseña</label>
+                    <input type="password" id="clave_confirm" name="clave_confirm" required
+                           placeholder="••••••••"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-mp-purple hover:bg-mp-purple-dark text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/>
+                </svg>
+                Crear Cuenta
+            </button>
+        </form>
+
+        <p class="text-center text-mp-muted text-sm mt-6">
+            ¿Ya tienes cuenta?
+            <a href="{% url 'login' %}" class="text-mp-purple-light hover:underline font-medium">Iniciar Sesión</a>
+        </p>
+
+        <p class="text-center mt-4">
+            <a href="{% url 'home' %}" class="text-mp-muted hover:text-white text-sm transition">&larr; Volver al inicio</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

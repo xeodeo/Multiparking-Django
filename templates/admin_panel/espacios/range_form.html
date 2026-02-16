@@ -1,0 +1,90 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'admin_espacios' %}" class="text-mp-muted hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold">Crear Rango de Espacios</h1>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="mb-6 p-4 bg-blue-900/20 border border-blue-900/50 rounded-lg text-sm text-blue-200">
+            <p>Esta herramienta generará múltiples espacios automáticamente. Ej: A-01, A-02, ..., A-20.</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Prefijo -->
+                <div>
+                    <label for="prefijo" class="block text-sm font-medium text-mp-muted mb-2">Prefijo</label>
+                    <input type="text" id="prefijo" name="prefijo" value="{{ prefijo }}"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                        placeholder="Ej: A-" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Inicio -->
+                    <div>
+                        <label for="inicio" class="block text-sm font-medium text-mp-muted mb-2">Número Inicio</label>
+                        <input type="number" id="inicio" name="inicio" value="{{ inicio }}" min="1"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: 1" required>
+                    </div>
+
+                    <!-- Fin -->
+                    <div>
+                        <label for="fin" class="block text-sm font-medium text-mp-muted mb-2">Número Fin</label>
+                        <input type="number" id="fin" name="fin" value="{{ fin }}" min="1"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: 20" required>
+                    </div>
+                </div>
+
+                <!-- Piso -->
+                <div>
+                    <label for="fkIdPiso" class="block text-sm font-medium text-mp-muted mb-2">Piso</label>
+                    <select id="fkIdPiso" name="fkIdPiso" required
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                        <option value="">Seleccione un piso</option>
+                        {% for p in pisos %}
+                        <option value="{{ p.pk }}" {% if piso_sel == p.pk %}selected{% endif %}>
+                            {{ p.pisNombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                    <label for="fkIdTipoEspacio" class="block text-sm font-medium text-mp-muted mb-2">Tipo de
+                        Espacio</label>
+                    <select id="fkIdTipoEspacio" name="fkIdTipoEspacio" required
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                        <option value="">Seleccione un tipo</option>
+                        {% for t in tipos %}
+                        <option value="{{ t.pk }}" {% if tipo_sel == t.pk %}selected{% endif %}>
+                            {{ t.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <a href="{% url 'admin_espacios' %}"
+                        class="px-4 py-2 text-mp-muted hover:text-white transition">Cancelar</a>
+                    <button type="submit"
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2 rounded-lg transition font-medium">
+                        Generar Espacios
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Gestión de Pisos{% endblock %}
+
+{% block content %}
+<div class="flex items-start justify-between mb-6">
+    <div>
+        <h1 class="text-3xl font-bold">Gestión de Pisos</h1>
+        <p class="text-mp-muted mt-1">Los pisos no tienen tarifa — contienen espacios</p>
+    </div>
+    <a href="{% url 'admin_pisos_crear' %}"
+        class="inline-flex items-center gap-2 bg-mp-purple hover:bg-mp-purple-dark text-white font-semibold px-5 py-2.5 rounded-lg transition text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Nuevo Piso
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for piso in pisos %}
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-white font-semibold text-lg flex items-center gap-2">
+                <svg class="w-5 h-5 text-mp-purple-light" fill="none" stroke="currentColor" stroke-width="1.5"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21" />
+                </svg>
+                {{ piso.pisNombre }}
+            </h3>
+            <div class="flex gap-2">
+                <a href="{% url 'admin_pisos_editar' pk=piso.pk %}"
+                    class="text-mp-muted hover:text-mp-purple-light transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                    </svg>
+                </a>
+                <form method="POST" action="{% url 'admin_pisos_eliminar' pk=piso.pk %}"
+                    onsubmit="return confirm('¿Eliminar este piso?')" style="display:inline">
+                    {% csrf_token %}
+                    <button class="text-mp-muted hover:text-red-400 transition"><svg class="w-5 h-5" fill="none"
+                            stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg></button>
+                </form>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 text-center mb-4">
+            <div>
+                <p class="text-2xl font-bold">{{ piso.total }}</p>
+                <p class="text-mp-muted text-xs">Total</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-red-400">{{ piso.ocupados }}</p>
+                <p class="text-mp-muted text-xs">Ocupados</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-green-400">{{ piso.libres }}</p>
+                <p class="text-mp-muted text-xs">Libres</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-between text-sm mb-2">
+            <span class="text-mp-muted">Ocupación</span>
+            <span class="text-mp-muted">{{ piso.porcentaje }}%</span>
+        </div>
+        <div class="w-full bg-mp-border rounded-full h-2">
+            <div class="bg-mp-purple h-2 rounded-full" style="width: {{ piso.porcentaje }}%"></div>
+        </div>
+        {% if not piso.pisEstado %}
+        <p class="text-yellow-500 text-xs mt-3">Piso inactivo</p>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-mp-muted col-span-3">No hay pisos registrados.</p>
+    {% endfor %}
+</div>
+{% endblock %}

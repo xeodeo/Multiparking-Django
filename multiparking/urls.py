@@ -1,0 +1,81 @@
+from django.contrib import admin
+from django.urls import include, path
+
+from usuarios.views import (
+    dashboard_view,
+    home_view,
+    login_view,
+    logout_view,
+    register_view,
+)
+from parqueadero.views import (
+    AdminDashboardView,
+    PisoListView, PisoCreateView, PisoUpdateView, PisoDeleteView,
+    TipoEspacioListView, TipoEspacioCreateView, TipoEspacioUpdateView, TipoEspacioDeleteView,
+    EspacioListView, EspacioCreateView, EspacioUpdateView, EspacioDeleteView, EspacioRangeCreateView
+)
+from tarifas.views import (
+    TarifaListView, TarifaCreateView, TarifaUpdateView, TarifaToggleView, TarifaDeleteView
+)
+from cupones.views import (
+    CuponListView, CuponCreateView, CuponUpdateView, CuponDeleteView
+)
+from reservas.views import ReservaListView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # Páginas principales
+    path('', home_view, name='home'),
+    path('login/', login_view, name='login'),
+    path('register/', register_view, name='register'),
+    path('logout/', logout_view, name='logout'),
+    path('dashboard/', dashboard_view, name='dashboard'),
+    # API endpoints
+    path('api/usuarios/', include('usuarios.urls')),
+    path('api/vehiculos/', include('vehiculos.urls')),
+    path('api/parqueadero/', include('parqueadero.urls')),
+    path('api/tarifas/', include('tarifas.urls')),
+    path('api/pagos/', include('pagos.urls')),
+    path('api/cupones/', include('cupones.urls')),
+    path('api/reservas/', include('reservas.urls')),
+
+    # ── ADMIN PANEL ──────────────────────────────────────────────────
+
+    # Dashboard
+    path('admin-panel/', AdminDashboardView.as_view(), name='admin_dashboard'),
+
+    # Pisos
+    path('admin-panel/pisos/', PisoListView.as_view(), name='admin_pisos'),
+    path('admin-panel/pisos/crear/', PisoCreateView.as_view(), name='admin_pisos_crear'),
+    path('admin-panel/pisos/<int:pk>/editar/', PisoUpdateView.as_view(), name='admin_pisos_editar'),
+    path('admin-panel/pisos/<int:pk>/eliminar/', PisoDeleteView.as_view(), name='admin_pisos_eliminar'),
+
+    # Tipos de Espacio
+    path('admin-panel/tipos-espacio/', TipoEspacioListView.as_view(), name='admin_tipos_espacio'),
+    path('admin-panel/tipos-espacio/crear/', TipoEspacioCreateView.as_view(), name='admin_tipos_espacio_crear'),
+    path('admin-panel/tipos-espacio/<int:pk>/editar/', TipoEspacioUpdateView.as_view(), name='admin_tipos_espacio_editar'),
+    path('admin-panel/tipos-espacio/<int:pk>/eliminar/', TipoEspacioDeleteView.as_view(), name='admin_tipos_espacio_eliminar'),
+
+    # Espacios
+    path('admin-panel/espacios/', EspacioListView.as_view(), name='admin_espacios'),
+    path('admin-panel/espacios/crear/', EspacioCreateView.as_view(), name='admin_espacios_crear'),
+    path('admin-panel/espacios/rango/', EspacioRangeCreateView.as_view(), name='admin_espacios_range'),
+    path('admin-panel/espacios/<int:pk>/editar/', EspacioUpdateView.as_view(), name='admin_espacios_editar'),
+    path('admin-panel/espacios/<int:pk>/eliminar/', EspacioDeleteView.as_view(), name='admin_espacios_eliminar'),
+
+    # Tarifas
+    path('admin-panel/tarifas/', TarifaListView.as_view(), name='admin_tarifas'),
+    path('admin-panel/tarifas/crear/', TarifaCreateView.as_view(), name='admin_tarifas_crear'),
+    path('admin-panel/tarifas/<int:pk>/editar/', TarifaUpdateView.as_view(), name='admin_tarifas_editar'),
+    path('admin-panel/tarifas/<int:pk>/toggle/', TarifaToggleView.as_view(), name='admin_tarifas_toggle'),
+    path('admin-panel/tarifas/<int:pk>/eliminar/', TarifaDeleteView.as_view(), name='admin_tarifas_eliminar'),
+
+    # Cupones
+    path('admin-panel/cupones/', CuponListView.as_view(), name='admin_cupones'),
+    path('admin-panel/cupones/crear/', CuponCreateView.as_view(), name='admin_cupones_crear'),
+    path('admin-panel/cupones/<int:pk>/editar/', CuponUpdateView.as_view(), name='admin_cupones_editar'),
+    path('admin-panel/cupones/<int:pk>/eliminar/', CuponDeleteView.as_view(), name='admin_cupones_eliminar'),
+
+    # Reservas
+    path('admin-panel/reservas/', ReservaListView.as_view(), name='admin_reservas'),
+]

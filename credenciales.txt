@@ -1,0 +1,105 @@
+============================================================
+  CREDENCIALES DE ACCESO - MultiParking
+============================================================
+
+------------------------------------------------------------
+ADMIN DJANGO (panel /admin/)
+------------------------------------------------------------
+Usuario:    admin
+Contraseña: admin123
+URL:        http://127.0.0.1:8000/admin/
+
+============================================================
+USUARIOS DEL SISTEMA (popup login en Home)
+============================================================
+
+Contraseña para TODOS: password123
+
+--- ADMINISTRADORES ---
+
+Correo:     carlos.martinez@multiparking.com
+Contraseña: password123
+Nombre:     Carlos Andrés Martínez López
+Rol:        ADMIN
+Estado:     Activo
+
+Correo:     laura.gomez@multiparking.com
+Contraseña: password123
+Nombre:     Laura Patricia Gómez Ruiz
+Rol:        ADMIN
+Estado:     Activo
+
+--- VIGILANTES ---
+
+Correo:     pedro.ramirez@multiparking.com
+Contraseña: password123
+Nombre:     Pedro José Ramírez Castro
+Rol:        VIGILANTE
+Estado:     Activo
+
+Correo:     maria.torres@multiparking.com
+Contraseña: password123
+Nombre:     María Fernanda Torres Díaz
+Rol:        VIGILANTE
+Estado:     Activo
+
+Correo:     jorge.hernandez@multiparking.com
+Contraseña: password123
+Nombre:     Jorge Luis Hernández Peña
+Rol:        VIGILANTE
+Estado:     Inactivo (no puede iniciar sesión)
+
+--- CLIENTES ---
+
+Correo:     andrea.vargas@gmail.com
+Contraseña: password123
+Nombre:     Andrea Sofía Vargas Mendoza
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     santiago.morales@gmail.com
+Contraseña: password123
+Nombre:     Santiago David Morales Ríos
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     valentina.restrepo@hotmail.com
+Contraseña: password123
+Nombre:     Valentina Restrepo Aguilar
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     daniel.ospina@yahoo.com
+Contraseña: password123
+Nombre:     Daniel Felipe Ospina Cardona
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     camila.parra@gmail.com
+Contraseña: password123
+Nombre:     Camila Alejandra Parra Suárez
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     nicolas.rojas@outlook.com
+Contraseña: password123
+Nombre:     Nicolás Esteban Rojas Luna
+Rol:        CLIENTE
+Estado:     Inactivo (no puede iniciar sesión)
+
+============================================================
+URLS DEL PROYECTO
+============================================================
+Home:       http://127.0.0.1:8000/
+Dashboard:  http://127.0.0.1:8000/dashboard/
+Admin:      http://127.0.0.1:8000/admin/
+
+============================================================
+COMANDO PARA INICIAR
+============================================================
+python manage.py runserver
+
+============================================================
+COMANDO PARA RECARGAR DATOS DE PRUEBA
+============================================================
+python manage.py seed_data

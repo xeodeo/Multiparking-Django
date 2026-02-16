@@ -1,0 +1,120 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Gestión de Tipos de Espacio</h1>
+        <p class="text-mp-muted text-sm mt-1">Categorías de espacios de parqueo (Carro, Moto, etc.)</p>
+    </div>
+    <a href="{% url 'admin_tipos_espacio_crear' %}"
+        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-4 py-2.5 rounded-lg transition flex items-center gap-2 font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Nuevo Tipo
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Total Tipos</p>
+                <p class="text-2xl font-bold text-white">{{ tipos|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Total Espacios</p>
+                <p class="text-2xl font-bold text-white">{% for t in tipos %}{{ t.total_espacios }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Total Tarifas</p>
+                <p class="text-2xl font-bold text-white">{% for t in tipos %}{{ t.total_tarifas }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-black/20 text-mp-muted text-xs uppercase tracking-wider">
+            <tr>
+                <th class="px-6 py-4 font-medium">Nombre</th>
+                <th class="px-6 py-4 text-center font-medium">Espacios Asociados</th>
+                <th class="px-6 py-4 text-center font-medium">Tarifas Configuradas</th>
+                <th class="px-6 py-4 text-right font-medium">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-mp-border text-sm">
+            {% for tipo in tipos %}
+            <tr class="hover:bg-white/5 transition">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/15 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+                        </div>
+                        <span class="font-bold text-white">{{ tipo.nombre }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-900/30 text-blue-300 border border-blue-800/50">
+                        {{ tipo.total_espacios }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-900/30 text-purple-300 border border-purple-800/50">
+                        {{ tipo.total_tarifas }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{% url 'admin_tipos_espacio_editar' pk=tipo.pk %}"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-mp-purple/10 text-mp-purple-light border border-mp-purple/20 hover:bg-mp-purple/20 hover:text-white transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            Editar
+                        </a>
+                        <form action="{% url 'admin_tipos_espacio_eliminar' pk=tipo.pk %}" method="POST"
+                            class="inline-block" onsubmit="return confirm('¿Eliminar tipo {{ tipo.nombre }}? Solo es posible si no tiene espacios asociados.');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition {% if tipo.total_espacios > 0 %}bg-gray-800/50 text-gray-500 border-gray-700 cursor-not-allowed{% else %}bg-red-900/10 text-red-400 border-red-500/20 hover:bg-red-900/20 hover:text-red-300{% endif %}"
+                                {% if tipo.total_espacios > 0 %}disabled{% endif %}>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-mp-border flex items-center justify-center">
+                            <svg class="w-6 h-6 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>
+                        </div>
+                        <p class="text-mp-muted">No hay tipos de espacio creados aún.</p>
+                        <a href="{% url 'admin_tipos_espacio_crear' %}" class="text-mp-purple-light hover:text-white text-sm transition">Crear el primero</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
