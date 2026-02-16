@@ -100,7 +100,6 @@ DATABASES = {
             'mysql://root:@127.0.0.1:3306/multiparking'
         ),
         conn_max_age=600,
-        engine='django.db.backends.mysql'
     )
 }
 
