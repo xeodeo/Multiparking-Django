@@ -1,4 +1,5 @@
 {% extends "admin_panel/base.html" %}
+{% load l10n %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto">
@@ -33,8 +34,7 @@
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
                             <option value="">Seleccione...</option>
                             {% for t in tipos %}
-                            <option value="{{ t.pk }}" {% if tarifa.fkIdTipoEspacio_id==t.pk or
-                                tarifa.fkIdTipoEspacio.pk==t.pk %}selected{% endif %}>
+                            <option value="{{ t.pk }}" {% if tarifa.fkIdTipoEspacio_id == t.pk or tarifa.fkIdTipoEspacio.pk == t.pk %}selected{% endif %}>
                                 {{ t.nombre }}
                             </option>
                             {% endfor %}
@@ -48,7 +48,7 @@
                         <label for="precioHora" class="block text-sm font-medium text-mp-muted mb-2">Precio Hora</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
-                            <input type="number" id="precioHora" name="precioHora" value="{{ tarifa.precioHora }}"
+                            <input type="number" id="precioHora" name="precioHora" value="{{ tarifa.precioHora|unlocalize }}"
                                 step="0.01"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
@@ -58,7 +58,7 @@
                         <label for="precioDia" class="block text-sm font-medium text-mp-muted mb-2">Precio Día</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
-                            <input type="number" id="precioDia" name="precioDia" value="{{ tarifa.precioDia }}"
+                            <input type="number" id="precioDia" name="precioDia" value="{{ tarifa.precioDia|unlocalize }}"
                                 step="0.01"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
@@ -70,7 +70,7 @@
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
                             <input type="number" id="precioMensual" name="precioMensual"
-                                value="{{ tarifa.precioMensual }}" step="0.01"
+                                value="{{ tarifa.precioMensual|unlocalize }}" step="0.01"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
                         </div>
@@ -80,34 +80,53 @@
                 <!-- Fechas -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="fechaInicio" class="block text-sm font-medium text-mp-muted mb-2">Fecha
-                            Inicio</label>
+                        <label for="fechaInicio" class="block text-sm font-medium text-mp-muted mb-2">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Fecha Inicio
+                            </span>
+                        </label>
                         <input type="date" id="fechaInicio" name="fechaInicio"
                             value="{{ tarifa.fechaInicio|date:'Y-m-d' }}"
-                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition cursor-pointer"
                             required>
                     </div>
                     <div>
-                        <label for="fechaFin" class="block text-sm font-medium text-mp-muted mb-2">Fecha Fin
-                            (Opcional)</label>
+                        <label for="fechaFin" class="block text-sm font-medium text-mp-muted mb-2">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Fecha Fin (Opcional)
+                            </span>
+                        </label>
                         <input type="date" id="fechaFin" name="fechaFin" value="{{ tarifa.fechaFin|date:'Y-m-d' }}"
-                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition cursor-pointer">
                     </div>
                 </div>
 
                 <!-- Activa -->
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="activa" name="activa"
-                        class="w-5 h-5 rounded border-mp-border text-mp-purple focus:ring-mp-purple bg-black/20" {% if
-                        tarifa.activa %}checked{% endif %}>
-                    <label for="activa" class="text-sm font-medium text-white">Tarifa Activa</label>
+                <div class="flex items-center gap-4">
+                    <label for="activa" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="activa" name="activa" class="sr-only peer"
+                            {% if tarifa.activa %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-mp-purple transition-colors duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform after:duration-300 peer-checked:after:translate-x-5 after:shadow-md"></div>
+                    </label>
+                    <span class="text-sm font-medium text-white">Tarifa Activa</span>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-6 border-t border-mp-border">
+                <div class="flex justify-end gap-4 pt-6 border-t border-mp-border">
                     <a href="{% url 'admin_tarifas' %}"
-                        class="px-4 py-2 text-mp-muted hover:text-white transition">Cancelar</a>
+                        class="px-5 py-2.5 border border-mp-border text-mp-muted hover:text-white hover:border-white/30 rounded-lg transition font-medium">
+                        Cancelar
+                    </a>
                     <button type="submit"
-                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2 rounded-lg transition font-medium">
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg transition font-medium shadow-lg shadow-purple-900/30 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
                         Guardar Tarifa
                     </button>
                 </div>

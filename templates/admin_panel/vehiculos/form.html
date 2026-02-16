@@ -1,0 +1,125 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'admin_vehiculos' %}" class="text-mp-muted hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Placa -->
+                <div>
+                    <label for="vehPlaca" class="block text-sm font-medium text-mp-muted mb-2">Placa</label>
+                    <input type="text" id="vehPlaca" name="vehPlaca" value="{{ vehiculo.vehPlaca }}"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white uppercase focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                        placeholder="Ej: ABC-123" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Marca -->
+                    <div>
+                        <label for="vehMarca" class="block text-sm font-medium text-mp-muted mb-2">Marca</label>
+                        <input type="text" id="vehMarca" name="vehMarca" value="{{ vehiculo.vehMarca }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: Chevrolet">
+                    </div>
+
+                    <!-- Modelo -->
+                    <div>
+                        <label for="vehModelo" class="block text-sm font-medium text-mp-muted mb-2">Modelo</label>
+                        <input type="text" id="vehModelo" name="vehModelo" value="{{ vehiculo.vehModelo }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: Spark">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Color -->
+                    <div>
+                        <label for="vehColor" class="block text-sm font-medium text-mp-muted mb-2">Color</label>
+                        <input type="text" id="vehColor" name="vehColor" value="{{ vehiculo.vehColor }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: Blanco">
+                    </div>
+
+                    <!-- Tipo -->
+                    <div>
+                        <label for="vehTipo" class="block text-sm font-medium text-mp-muted mb-2">Tipo</label>
+                        <select id="vehTipo" name="vehTipo" required
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                            <option value="">Seleccione tipo</option>
+                            <option value="Carro" {% if vehiculo.vehTipo == 'Carro' %}selected{% endif %}>Carro</option>
+                            <option value="Moto" {% if vehiculo.vehTipo == 'Moto' %}selected{% endif %}>Moto</option>
+                            <option value="Eléctrico" {% if vehiculo.vehTipo == 'Eléctrico' %}selected{% endif %}>Eléctrico</option>
+                            <option value="Bicicleta" {% if vehiculo.vehTipo == 'Bicicleta' %}selected{% endif %}>Bicicleta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Propietario -->
+                <div>
+                    <label for="fkIdUsuario" class="block text-sm font-medium text-mp-muted mb-2">Propietario (usuario registrado)</label>
+                    <select id="fkIdUsuario" name="fkIdUsuario"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                        <option value="">Sin propietario (visitante)</option>
+                        {% for u in usuarios %}
+                        <option value="{{ u.pk }}" {% if vehiculo.fkIdUsuario_id == u.pk or vehiculo.fkIdUsuario.pk == u.pk %}selected{% endif %}>
+                            {{ u.usuNombreCompleto }} ({{ u.usuDocumento }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Contacto visitante -->
+                <div id="contactoVisitante" class="space-y-4 p-4 bg-amber-900/10 border border-amber-800/30 rounded-lg">
+                    <p class="text-xs font-medium text-amber-400 uppercase">Datos de contacto (visitante)</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="nombre_contacto" class="block text-sm font-medium text-mp-muted mb-2">Nombre</label>
+                            <input type="text" id="nombre_contacto" name="nombre_contacto" value="{{ vehiculo.nombre_contacto }}"
+                                class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                                placeholder="Nombre del contacto">
+                        </div>
+                        <div>
+                            <label for="telefono_contacto" class="block text-sm font-medium text-mp-muted mb-2">Teléfono</label>
+                            <input type="text" id="telefono_contacto" name="telefono_contacto" value="{{ vehiculo.telefono_contacto }}"
+                                class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                                placeholder="Teléfono del contacto">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <a href="{% url 'admin_vehiculos' %}"
+                        class="px-4 py-2 text-mp-muted hover:text-white transition">Cancelar</a>
+                    <button type="submit"
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2 rounded-lg transition font-medium">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const usuarioSelect = document.getElementById('fkIdUsuario');
+    const contactoDiv = document.getElementById('contactoVisitante');
+
+    function toggleContacto() {
+        contactoDiv.style.display = usuarioSelect.value ? 'none' : 'block';
+    }
+
+    usuarioSelect.addEventListener('change', toggleContacto);
+    toggleContacto();
+</script>
+{% endblock %}

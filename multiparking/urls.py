@@ -20,7 +20,10 @@ from tarifas.views import (
 from cupones.views import (
     CuponListView, CuponCreateView, CuponUpdateView, CuponDeleteView
 )
-from reservas.views import ReservaListView
+from reservas.views import ReservaListView, ReservaFinalizarView, ReservaCancelarView
+from vehiculos.views import (
+    VehiculoListView, VehiculoCreateView, VehiculoUpdateView, VehiculoDeleteView
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -59,7 +62,7 @@ urlpatterns = [
     # Espacios
     path('admin-panel/espacios/', EspacioListView.as_view(), name='admin_espacios'),
     path('admin-panel/espacios/crear/', EspacioCreateView.as_view(), name='admin_espacios_crear'),
-    path('admin-panel/espacios/rango/', EspacioRangeCreateView.as_view(), name='admin_espacios_range'),
+    path('admin-panel/espacios/rango/', EspacioRangeCreateView.as_view(), name='admin_espacios_rango'),
     path('admin-panel/espacios/<int:pk>/editar/', EspacioUpdateView.as_view(), name='admin_espacios_editar'),
     path('admin-panel/espacios/<int:pk>/eliminar/', EspacioDeleteView.as_view(), name='admin_espacios_eliminar'),
 
@@ -76,6 +79,14 @@ urlpatterns = [
     path('admin-panel/cupones/<int:pk>/editar/', CuponUpdateView.as_view(), name='admin_cupones_editar'),
     path('admin-panel/cupones/<int:pk>/eliminar/', CuponDeleteView.as_view(), name='admin_cupones_eliminar'),
 
+    # Vehículos
+    path('admin-panel/vehiculos/', VehiculoListView.as_view(), name='admin_vehiculos'),
+    path('admin-panel/vehiculos/crear/', VehiculoCreateView.as_view(), name='admin_vehiculos_crear'),
+    path('admin-panel/vehiculos/<int:pk>/editar/', VehiculoUpdateView.as_view(), name='admin_vehiculos_editar'),
+    path('admin-panel/vehiculos/<int:pk>/eliminar/', VehiculoDeleteView.as_view(), name='admin_vehiculos_eliminar'),
+
     # Reservas
     path('admin-panel/reservas/', ReservaListView.as_view(), name='admin_reservas'),
+    path('admin-panel/reservas/<int:pk>/finalizar/', ReservaFinalizarView.as_view(), name='admin_reservas_finalizar'),
+    path('admin-panel/reservas/<int:pk>/cancelar/', ReservaCancelarView.as_view(), name='admin_reservas_cancelar'),
 ]

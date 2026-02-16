@@ -33,7 +33,7 @@
             </div>
             <div>
                 <p class="text-mp-muted text-xs uppercase font-bold">Total Espacios</p>
-                <p class="text-2xl font-bold text-white">{% for t in tipos %}{{ t.total_espacios }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</p>
+                <p class="text-2xl font-bold text-white">{{ total_espacios }}</p>
             </div>
         </div>
     </div>
@@ -44,7 +44,7 @@
             </div>
             <div>
                 <p class="text-mp-muted text-xs uppercase font-bold">Total Tarifas</p>
-                <p class="text-2xl font-bold text-white">{% for t in tipos %}{{ t.total_tarifas }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}</p>
+                <p class="text-2xl font-bold text-white">{{ total_tarifas }}</p>
             </div>
         </div>
     </div>

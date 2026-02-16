@@ -155,6 +155,13 @@
     <div class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold">Vista General de Reservas</h2>
+            <a href="{% url 'admin_reservas' %}"
+                class="text-sm bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light px-4 py-2 rounded-lg transition font-medium flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+                Ver todas
+            </a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -195,7 +202,7 @@
         <div class="h-64"><canvas id="occupancyChart"></canvas></div>
     </div>
     <div class="bg-mp-card border border-mp-border rounded-xl p-6">
-        <h2 class="text-lg font-bold mb-4">Ingresos por Turno</h2>
+        <h2 class="text-lg font-bold mb-4">Ingresos Últimos 7 Días</h2>
         <div class="h-64"><canvas id="incomeChart"></canvas></div>
     </div>
 </div>
@@ -521,7 +528,10 @@
         document.getElementById('exitModal').classList.add('flex');
 
         fetch(`{% url 'admin_detalle_ocupacion' %}?espacio_id=${id}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`Error ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 document.getElementById('exitLoading').classList.add('hidden');
                 if(data.found) {
@@ -544,7 +554,13 @@
                     document.getElementById('exitTotal').textContent = data.total_pagar;
                     document.getElementById('exitDetails').classList.remove('hidden');
                     document.getElementById('exitFooter').classList.remove('hidden');
+                } else {
+                    document.getElementById('exitLoading').innerHTML = '<p class="text-red-400 text-sm">No se encontró registro activo para este espacio.</p>';
                 }
+            })
+            .catch(err => {
+                console.error('Error cargando detalles de salida:', err);
+                document.getElementById('exitLoading').innerHTML = '<p class="text-red-400 text-sm">Error al cargar los detalles. Recarga la página e intenta de nuevo.</p>';
             });
     }
 
@@ -603,11 +619,12 @@
             new Chart(ctxInc, {
                 type: 'bar',
                 data: {
-                    labels: ['Mañana', 'Tarde', 'Noche'],
+                    labels: {{ ingresos_labels|safe }},
                     datasets: [{
-                        label: 'Ingresos',
+                        label: 'Ingresos ($)',
                         data: {{ ingresos_data|safe }},
-                        backgroundColor: ['#A78BFA', '#34D399', '#FBBF24'],
+                        backgroundColor: '#7c3aed',
+                        hoverBackgroundColor: '#a78bfa',
                         borderRadius: 8
                     }]
                 },
@@ -617,7 +634,13 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#6b7280' } },
-                        y: { grid: { color: '#1e1e3a' }, ticks: { color: '#6b7280' } }
+                        y: {
+                            grid: { color: '#1e1e3a' },
+                            ticks: {
+                                color: '#6b7280',
+                                callback: function(v) { return '$' + v.toLocaleString(); }
+                            }
+                        }
                     }
                 }
             });

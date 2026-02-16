@@ -1,4 +1,5 @@
 from django.contrib import messages
+from datetime import timedelta
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
@@ -47,46 +48,37 @@ class AdminDashboardView(AdminRequiredMixin, View):
             'fkIdVehiculo__fkIdUsuario', 'fkIdEspacio__fkIdPiso'
         ).order_by('-resFechaReserva', '-resHoraInicio')[:5]
 
-        # 2. Ingresos por Turno (Hoy) - TIMEZONE AWARE
-        now = timezone.now() # Fecha con zona horaria
+        # 2. Ingresos Últimos 7 Días
+        now = timezone.now()
         hoy_local = timezone.localtime(now).date()
-        
-        # Definir rangos horarios localizados
-        def get_range(start_hour, end_hour):
-            start = timezone.make_aware(timezone.datetime.combine(hoy_local, timezone.datetime.min.time().replace(hour=start_hour)))
-            end = timezone.make_aware(timezone.datetime.combine(hoy_local, timezone.datetime.min.time().replace(hour=end_hour))) if end_hour < 24 else \
-                  timezone.make_aware(timezone.datetime.combine(hoy_local + timezone.timedelta(days=1), timezone.datetime.min.time()))
-            return start, end
+        hace_7_dias = hoy_local - timedelta(days=6)
 
-        start_manana, end_manana = get_range(6, 14)
-        start_tarde, end_tarde = get_range(14, 22)
-        
-        # Noche: 22:00 hoy - 06:00 mañana (pero el grafico dice 'Ingresos por Turno' y usualmente se muestra lo del dia)
-        # Interpretación: Noche cubre 00:00-06:00 Y 22:00-23:59 del día actual para reporte diario
-        start_noche1, end_noche1 = get_range(0, 6)
-        start_noche2, end_noche2 = get_range(22, 24)
+        pagos_semana = Pago.objects.filter(
+            pagFechaPago__date__gte=hace_7_dias,
+            pagFechaPago__date__lte=hoy_local,
+            pagEstado='PAGADO',
+        )
 
-        pagos = Pago.objects.filter(pagFechaPago__date=hoy_local, pagEstado='PAGADO')
-        
-        # Filtro en memoria para evitar complejidad de DB con SQLite/Timezones
-        # Es eficiente porque filtramos primero por día
-        p_manana = 0
-        p_tarde = 0
-        p_noche = 0
+        # Acumular montos por día en memoria
+        ingresos_por_dia = {}
+        for d in range(7):
+            dia = hace_7_dias + timedelta(days=d)
+            ingresos_por_dia[dia] = 0
 
-        for p in pagos:
-            p_local = timezone.localtime(p.pagFechaPago)
-            h = p_local.hour
-            monto = float(p.pagMonto)
-            
-            if 6 <= h < 14:
-                p_manana += monto
-            elif 14 <= h < 22:
-                p_tarde += monto
-            else: # 22-23 o 00-05
-                p_noche += monto
+        for p in pagos_semana:
+            dia_pago = timezone.localtime(p.pagFechaPago).date()
+            if dia_pago in ingresos_por_dia:
+                ingresos_por_dia[dia_pago] += float(p.pagMonto)
 
-        ingresos_data = json.dumps([p_manana, p_tarde, p_noche])
+        dias_semana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+        ingresos_labels = []
+        ingresos_valores = []
+        for dia in sorted(ingresos_por_dia.keys()):
+            ingresos_labels.append(f"{dias_semana[dia.weekday()]} {dia.day}")
+            ingresos_valores.append(ingresos_por_dia[dia])
+
+        ingresos_data = json.dumps(ingresos_valores)
+        ingresos_labels_json = json.dumps(ingresos_labels)
 
         # 3. Tendencias de Ocupación (Por hora hoy) - TIMEZONE AWARE
         ocupacion_data = []
@@ -119,6 +111,7 @@ class AdminDashboardView(AdminRequiredMixin, View):
             'pisos': pisos_list,
             'reservas_recientes': reservas_recientes,
             'ingresos_data': ingresos_data,
+            'ingresos_labels': ingresos_labels_json,
             'ocupacion_data': json.dumps(ocupacion_data),
             'ocupacion_labels': json.dumps(labels_horas),
         })
@@ -203,12 +196,18 @@ class PisoDeleteView(AdminRequiredMixin, View):
 class TipoEspacioListView(AdminRequiredMixin, View):
     def get(self, request):
         tipos = TipoEspacio.objects.annotate(
-            total_espacios=Count('espacios'),
-            total_tarifas=Count('tarifas'),
+            total_espacios=Count('espacios', distinct=True),
+            total_tarifas=Count('tarifas', distinct=True),
         ).order_by('pk')
+
+        total_espacios = sum(t.total_espacios for t in tipos)
+        total_tarifas = sum(t.total_tarifas for t in tipos)
+
         return render(request, 'admin_panel/tipos_espacio/list.html', {
             'active_page': 'tipos_espacio',
             'tipos': tipos,
+            'total_espacios': total_espacios,
+            'total_tarifas': total_tarifas,
         })
 
 
@@ -545,35 +544,39 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
         espacio_id = request.GET.get('espacio_id')
         if not espacio_id:
             return JsonResponse({'error': 'ID de espacio requerido'}, status=400)
-        
-        espacio = get_object_or_404(Espacio, pk=espacio_id)
-        registro = InventarioParqueo.objects.filter(
-            fkIdEspacio=espacio,
-            parHoraSalida__isnull=True
-        ).first()
 
-        if registro:
+        try:
+            espacio = get_object_or_404(Espacio, pk=espacio_id)
+            registro = InventarioParqueo.objects.select_related(
+                'fkIdVehiculo', 'fkIdVehiculo__fkIdUsuario'
+            ).filter(
+                fkIdEspacio=espacio,
+                parHoraSalida__isnull=True
+            ).first()
+
+            if not registro:
+                return JsonResponse({'found': False, 'error': 'No hay registro activo'})
+
             ahora = timezone.now()
             entrada = registro.parHoraEntrada
             duracion = ahora - entrada
-            
+
             # Cálculo de Duración
             dias = duracion.days
             segundos = duracion.seconds
             horas = segundos // 3600
             minutos = (segundos % 3600) // 60
-            
+
             duracion_str = ""
             if dias > 0:
                 duracion_str += f"{dias}d "
             if horas > 0:
                 duracion_str += f"{horas}h "
             duracion_str += f"{minutos}m"
-            if not duracion_str: 
+            if not duracion_str:
                 duracion_str = "Menos de 1m"
 
             # Cálculo de Costo (Tarifa por Hora)
-            # Buscar tarifa activa para el tipo de espacio
             tarifa = Tarifa.objects.filter(
                 fkIdTipoEspacio=espacio.fkIdTipoEspacio,
                 activa=True
@@ -583,26 +586,28 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
             tarifa_info = "Sin tarifa configurada"
 
             if tarifa:
-                # Cobro por hora o fracción (redondeo hacia arriba)
                 horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-                if horas_totales == 0 and dias == 0: horas_totales = 1 # Mínimo 1 hora
-                
+                if horas_totales == 0 and dias == 0:
+                    horas_totales = 1
                 total_pagar = float(tarifa.precioHora) * horas_totales
                 tarifa_info = f"${tarifa.precioHora:,.0f} / Hora"
 
+            vehiculo = registro.fkIdVehiculo
+            usuario = vehiculo.fkIdUsuario
+
             return JsonResponse({
                 'found': True,
-                'placa': registro.fkIdVehiculo.vehPlaca,
+                'placa': vehiculo.vehPlaca,
                 'entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
                 'duracion': duracion_str,
-                'cliente': registro.fkIdVehiculo.fkIdUsuario.usuNombreCompleto if registro.fkIdVehiculo.fkIdUsuario else (registro.fkIdVehiculo.nombre_contacto or "Visitante"),
-                'tipo_cliente': 'USUARIO' if registro.fkIdVehiculo.fkIdUsuario else 'VISITANTE',
-                'telefono': registro.fkIdVehiculo.fkIdUsuario.usuTelefono if registro.fkIdVehiculo.fkIdUsuario else (registro.fkIdVehiculo.telefono_contacto or "Sin teléfono"),
+                'cliente': usuario.usuNombreCompleto if usuario else (vehiculo.nombre_contacto or "Visitante"),
+                'tipo_cliente': 'USUARIO' if usuario else 'VISITANTE',
+                'telefono': usuario.usuTelefono if usuario else (vehiculo.telefono_contacto or "Sin teléfono"),
                 'tarifa_info': tarifa_info,
                 'total_pagar': f"${total_pagar:,.0f}"
             })
-        
-        return JsonResponse({'found': False, 'error': 'No hay registro activo'})
+        except Exception as e:
+            return JsonResponse({'found': False, 'error': str(e)}, status=500)
 
 
 class RegistrarSalidaView(AdminRequiredMixin, View):

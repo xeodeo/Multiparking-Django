@@ -9,7 +9,8 @@
       "Bash(python -c:*)",
       "Bash(ls:*)",
       "Bash(/c/xampp/mysql/bin/mysql.exe:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(grep:*)"
     ]
   }
 }

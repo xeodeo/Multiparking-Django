@@ -1,54 +1,107 @@
 {% extends "admin_panel/base.html" %}
-
 {% block title %}Reservas{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">Gestión de Reservas</h1>
+<div class="mb-6">
+    <h1 class="text-3xl font-bold">Reservas</h1>
+    <p class="text-mp-muted mt-1">Una reserva activa bloquea el espacio asignado</p>
 </div>
 
+<!-- Filtros -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-5 mb-6">
+    <form method="GET" class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+            <svg class="w-4 h-4 absolute left-3 top-3 text-mp-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por placa o espacio..."
+                class="w-full bg-black/20 border border-mp-border rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+        </div>
+        <select name="estado"
+            class="bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none min-w-[160px]">
+            <option value="">Todos</option>
+            <option value="PENDIENTE" {% if estado_sel == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+            <option value="CONFIRMADA" {% if estado_sel == 'CONFIRMADA' %}selected{% endif %}>Confirmada</option>
+            <option value="COMPLETADA" {% if estado_sel == 'COMPLETADA' %}selected{% endif %}>Completada</option>
+            <option value="CANCELADA" {% if estado_sel == 'CANCELADA' %}selected{% endif %}>Cancelada</option>
+        </select>
+        <button type="submit"
+            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-2.5 rounded-lg transition font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            Filtrar
+        </button>
+        {% if q or estado_sel %}
+        <a href="{% url 'admin_reservas' %}"
+            class="border border-mp-border text-mp-muted hover:text-white hover:border-white/30 px-4 py-2.5 rounded-lg transition font-medium text-center">
+            Limpiar
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
 <div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-mp-border">
+        <h2 class="text-lg font-bold">Reservas ({{ total }})</h2>
+    </div>
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-black/20 text-xs text-mp-muted uppercase border-b border-mp-border">
-                    <th class="px-6 py-4 font-medium">ID</th>
-                    <th class="px-6 py-4 font-medium">Cliente</th>
                     <th class="px-6 py-4 font-medium">Vehículo</th>
                     <th class="px-6 py-4 font-medium">Espacio</th>
-                    <th class="px-6 py-4 font-medium">Fecha</th>
-                    <th class="px-6 py-4 font-medium">Horario</th>
+                    <th class="px-6 py-4 font-medium">Inicio</th>
+                    <th class="px-6 py-4 font-medium">Fin</th>
                     <th class="px-6 py-4 font-medium">Estado</th>
+                    <th class="px-6 py-4 font-medium text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody class="text-sm divide-y divide-mp-border/50">
                 {% for res in reservas %}
                 <tr class="hover:bg-white/5 transition">
-                    <td class="px-6 py-4 text-mp-muted">#{{ res.pk }}</td>
-                    <td class="px-6 py-4 font-medium text-white">{{ res.fkIdVehiculo.fkIdUsuario.usuNombre }} {{
-                        res.fkIdVehiculo.fkIdUsuario.usuApellido }}</td>
-                    <td class="px-6 py-4">{{ res.fkIdVehiculo.vehPlaca }}</td>
                     <td class="px-6 py-4">
-                        <span class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded text-xs font-bold">
-                            {{ res.fkIdEspacio.espNumero }}
-                        </span>
-                        <span class="text-xs text-mp-muted ml-1">{{ res.fkIdEspacio.fkIdPiso.pisNombre }}</span>
+                        <span class="font-mono font-bold text-white">{{ res.fkIdVehiculo.vehPlaca }}</span>
                     </td>
-                    <td class="px-6 py-4">{{ res.resFechaReserva }}</td>
-                    <td class="px-6 py-4 text-mp-muted">{{ res.resHoraInicio }} - {{ res.resHoraFin }}</td>
                     <td class="px-6 py-4">
-                        <span class="px-2 py-1 rounded text-xs font-medium
-                            {% if res.resEstado == 'CONFIRMADA' %}bg-green-500/20 text-green-400
-                            {% elif res.resEstado == 'PENDIENTE' %}bg-yellow-500/20 text-yellow-400
-                            {% elif res.resEstado == 'COMPLETADA' %}bg-blue-500/20 text-blue-400
-                            {% else %}bg-gray-500/20 text-gray-400{% endif %}">
-                            {{ res.resEstado }}
-                        </span>
+                        <span class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded text-xs font-bold">{{ res.fkIdEspacio.espNumero }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-mp-muted">{{ res.resFechaReserva }}, {{ res.resHoraInicio }}</td>
+                    <td class="px-6 py-4 text-mp-muted">{{ res.resFechaReserva }}, {{ res.resHoraFin }}</td>
+                    <td class="px-6 py-4">
+                        {% if res.resEstado == 'CONFIRMADA' or res.resEstado == 'PENDIENTE' %}
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full text-xs font-bold">Activa</span>
+                        {% elif res.resEstado == 'COMPLETADA' %}
+                        <span class="bg-pink-500/20 text-pink-400 px-2.5 py-1 rounded-full text-xs font-bold">Finalizada</span>
+                        {% elif res.resEstado == 'CANCELADA' %}
+                        <span class="bg-gray-500/20 text-gray-400 px-2.5 py-1 rounded-full text-xs font-bold">Cancelada</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        {% if res.resEstado == 'CONFIRMADA' or res.resEstado == 'PENDIENTE' %}
+                        <div class="flex justify-end gap-2">
+                            <form method="POST" action="{% url 'admin_reservas_finalizar' res.pk %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                                    Finalizar
+                                </button>
+                            </form>
+                            <form method="POST" action="{% url 'admin_reservas_cancelar' res.pk %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                                    Cancelar
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="px-6 py-8 text-center text-mp-muted">No hay reservas registradas.</td>
+                    <td colspan="6" class="px-6 py-12 text-center text-mp-muted">No hay reservas registradas.</td>
                 </tr>
                 {% endfor %}
             </tbody>

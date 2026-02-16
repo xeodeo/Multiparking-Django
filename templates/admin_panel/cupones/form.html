@@ -1,4 +1,5 @@
 {% extends "admin_panel/base.html" %}
+{% load l10n %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
@@ -31,10 +32,8 @@
                             Descuento</label>
                         <select id="cupTipo" name="cupTipo" required
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
-                            <option value="PORCENTAJE" {% if cupon.cupTipo=='PORCENTAJE' %}selected{% endif %}>
-                                Porcentaje (%)</option>
-                            <option value="VALOR_FIJO" {% if cupon.cupTipo=='VALOR_FIJO' %}selected{% endif %}>Valor
-                                Fijo ($)</option>
+                            <option value="PORCENTAJE" {% if cupon.cupTipo == 'PORCENTAJE' %}selected{% endif %}>Porcentaje (%)</option>
+                            <option value="VALOR_FIJO" {% if cupon.cupTipo == 'VALOR_FIJO' %}selected{% endif %}>Valor Fijo ($)</option>
                         </select>
                     </div>
                 </div>
@@ -43,7 +42,7 @@
                 <div>
                     <label for="cupValor" class="block text-sm font-medium text-mp-muted mb-2">Valor del
                         Descuento</label>
-                    <input type="number" id="cupValor" name="cupValor" value="{{ cupon.cupValor }}" step="0.01"
+                    <input type="number" id="cupValor" name="cupValor" value="{{ cupon.cupValor|unlocalize }}" step="0.01"
                         class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                         placeholder="Ej: 10 para 10% o 5000 para $5000" required>
                 </div>
@@ -59,35 +58,55 @@
                 <!-- Fechas -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="cupFechaInicio" class="block text-sm font-medium text-mp-muted mb-2">Fecha
-                            Inicio</label>
+                        <label for="cupFechaInicio" class="block text-sm font-medium text-mp-muted mb-2">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Fecha Inicio
+                            </span>
+                        </label>
                         <input type="date" id="cupFechaInicio" name="cupFechaInicio"
                             value="{{ cupon.cupFechaInicio|date:'Y-m-d' }}"
-                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition cursor-pointer"
                             required>
                     </div>
                     <div>
-                        <label for="cupFechaFin" class="block text-sm font-medium text-mp-muted mb-2">Fecha Fin</label>
+                        <label for="cupFechaFin" class="block text-sm font-medium text-mp-muted mb-2">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Fecha Fin
+                            </span>
+                        </label>
                         <input type="date" id="cupFechaFin" name="cupFechaFin"
                             value="{{ cupon.cupFechaFin|date:'Y-m-d' }}"
-                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition cursor-pointer"
                             required>
                     </div>
                 </div>
 
                 <!-- Activo -->
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="cupActivo" name="cupActivo"
-                        class="w-5 h-5 rounded border-mp-border text-mp-purple focus:ring-mp-purple bg-black/20" {% if
-                        cupon.cupActivo %}checked{% endif %}>
-                    <label for="cupActivo" class="text-sm font-medium text-white">Cupón Activo</label>
+                <div class="flex items-center gap-4">
+                    <label for="cupActivo" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="cupActivo" name="cupActivo" class="sr-only peer"
+                            {% if cupon.cupActivo %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-mp-purple transition-colors duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform after:duration-300 peer-checked:after:translate-x-5 after:shadow-md"></div>
+                    </label>
+                    <span class="text-sm font-medium text-white">Cupón Activo</span>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-6 border-t border-mp-border">
+                <div class="flex justify-end gap-4 pt-6 border-t border-mp-border">
                     <a href="{% url 'admin_cupones' %}"
-                        class="px-4 py-2 text-mp-muted hover:text-white transition">Cancelar</a>
+                        class="px-5 py-2.5 border border-mp-border text-mp-muted hover:text-white hover:border-white/30 rounded-lg transition font-medium">
+                        Cancelar
+                    </a>
                     <button type="submit"
-                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2 rounded-lg transition font-medium">
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg transition font-medium shadow-lg shadow-purple-900/30 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
                         Guardar Cupón
                     </button>
                 </div>
