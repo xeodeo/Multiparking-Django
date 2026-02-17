@@ -77,10 +77,14 @@ def register_view(request):
     if request.method == 'POST':
         documento = request.POST.get('documento', '').strip()
         nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
         correo = request.POST.get('correo', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         clave = request.POST.get('clave', '')
         clave_confirm = request.POST.get('clave_confirm', '')
+
+        # Si viene apellido separado (modal home), concatenar. Sino usar nombre directamente
+        nombre_completo = f"{nombre} {apellido}".strip() if apellido else nombre
 
         def _err(msg):
             if _is_ajax(request):
@@ -117,7 +121,7 @@ def register_view(request):
 
         Usuario.objects.create(
             usuDocumento=documento,
-            usuNombreCompleto=nombre,
+            usuNombreCompleto=nombre_completo,
             usuCorreo=correo,
             usuTelefono=telefono,
             usuClaveHash=make_password(clave),
