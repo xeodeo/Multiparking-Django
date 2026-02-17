@@ -34,10 +34,13 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="sm:col-span-2">
-                    <label for="documento" class="block text-sm font-medium text-mp-muted mb-2">Documento de identidad</label>
+                    <label for="documento" class="block text-sm font-medium text-mp-muted mb-2">
+                        Número de Cédula
+                        <span class="text-red-400">*</span>
+                    </label>
                     <input type="text" id="documento" name="documento" required
                            value="{{ form_data.documento|default:'' }}"
-                           placeholder="1234567890"
+                           placeholder="Ej: 1234567890"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
 
