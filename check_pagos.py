@@ -18,6 +18,7 @@ if pagos.exists():
         print(f'  ID: {p.pk}, Monto: {p.pagMonto}, Fecha: {p.pagFechaPago}, Estado: {p.pagEstado}')
 
     # Ver rango de fechas
+    from datetime import datetime
     now = timezone.now()
     hoy_local = timezone.localtime(now).date()
     hace_7_dias = hoy_local - timedelta(days=6)
@@ -25,10 +26,12 @@ if pagos.exists():
     print(f'  Hoy: {hoy_local}')
     print(f'  Hace 7 días: {hace_7_dias}')
 
-    # Ver pagos en ese rango
+    # Ver pagos en ese rango usando __range (compatible con MySQL + timezones)
+    inicio_rango = timezone.make_aware(datetime.combine(hace_7_dias, datetime.min.time()))
+    fin_rango = timezone.make_aware(datetime.combine(hoy_local, datetime.max.time()))
+
     pagos_semana = Pago.objects.filter(
-        pagFechaPago__date__gte=hace_7_dias,
-        pagFechaPago__date__lte=hoy_local,
+        pagFechaPago__range=(inicio_rango, fin_rango),
         pagEstado='PAGADO',
     )
     print(f'\nPagos últimos 7 días (PAGADO): {pagos_semana.count()}')

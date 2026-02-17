@@ -105,11 +105,27 @@ print("\n>> Generando pagos de prueba (ultimos 7 dias)...")
 now = timezone.now()
 pagos_creados = 0
 
-# Borrar pagos de prueba anteriores (opcional)
-Pago.objects.filter(pagMetodo='EFECTIVO', pagEstado='PAGADO').delete()
-InventarioParqueo.objects.filter(parHoraSalida__isnull=False).delete()
+# NO borrar pagos anteriores - queremos datos persistentes
+# Verificar si ya existen pagos recientes
+hoy_local = timezone.localtime(now).date()
+hace_7_dias = hoy_local - timedelta(days=6)
+pagos_recientes = Pago.objects.filter(
+    pagFechaPago__date__gte=hace_7_dias,
+    pagFechaPago__date__lte=hoy_local,
+    pagEstado='PAGADO',
+).count()
+
+print(f"[INFO] Pagos existentes en ultimos 7 dias: {pagos_recientes}")
+
+if pagos_recientes >= 15:
+    print("[INFO] Ya hay suficientes pagos recientes. Saltando generacion.")
+    pagos_creados = 0
+else:
+    print(f"[INFO] Generando mas pagos para completar datos de demostracion...")
 
 for dia_offset in range(7):  # Últimos 7 días
+    if pagos_recientes >= 15:
+        break
     dia = now - timedelta(days=dia_offset)
 
     # Crear 2-4 pagos por día
@@ -131,25 +147,29 @@ for dia_offset in range(7):  # Últimos 7 días
         hora_salida = dia - timedelta(hours=i)
 
         # Crear registro de inventario
+        # Nota: parHoraEntrada tiene auto_now_add=True
         registro = InventarioParqueo.objects.create(
             fkIdVehiculo=vehiculo,
             fkIdEspacio=espacio,
-            parHoraEntrada=hora_entrada,
             parHoraSalida=hora_salida,
         )
+        # Actualizar manualmente para datos de prueba
+        InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada)
 
         # Calcular monto (3 horas * tarifa)
         horas = 3
         monto = float(tarifa.precioHora) * horas
 
         # Crear pago
-        Pago.objects.create(
+        # Nota: pagFechaPago también tiene auto_now_add=True
+        pago = Pago.objects.create(
             pagMonto=monto,
             pagMetodo='EFECTIVO',
             pagEstado='PAGADO',
             fkIdParqueo=registro,
-            pagFechaPago=hora_salida,
         )
+        # Actualizar manualmente para datos de prueba
+        Pago.objects.filter(pk=pago.pk).update(pagFechaPago=hora_salida)
         pagos_creados += 1
 
 print(f"[OK] Pagos creados: {pagos_creados}")
