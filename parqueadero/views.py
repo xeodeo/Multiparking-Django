@@ -53,9 +53,13 @@ class AdminDashboardView(AdminRequiredMixin, View):
         hoy_local = timezone.localtime(now).date()
         hace_7_dias = hoy_local - timedelta(days=6)
 
+        # Usar __range con datetimes para compatibilidad con MySQL + timezones
+        from datetime import datetime
+        inicio_rango = timezone.make_aware(datetime.combine(hace_7_dias, datetime.min.time()))
+        fin_rango = timezone.make_aware(datetime.combine(hoy_local, datetime.max.time()))
+
         pagos_semana = Pago.objects.filter(
-            pagFechaPago__date__gte=hace_7_dias,
-            pagFechaPago__date__lte=hoy_local,
+            pagFechaPago__range=(inicio_rango, fin_rango),
             pagEstado='PAGADO',
         )
 
