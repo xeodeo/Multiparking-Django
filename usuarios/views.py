@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.http import JsonResponse
@@ -77,26 +75,31 @@ def register_view(request):
         return redirect('admin_dashboard' if request.session.get('usuario_rol') == 'ADMIN' else 'dashboard')
 
     if request.method == 'POST':
+        documento = request.POST.get('documento', '').strip()
         nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
         correo = request.POST.get('correo', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         clave = request.POST.get('clave', '')
         clave_confirm = request.POST.get('clave_confirm', '')
 
-        nombre_completo = f'{nombre} {apellido}'.strip()
-
-        # Generar documento automático único (max 20 chars)
-        documento = uuid.uuid4().hex[:20]
-
         def _err(msg):
             if _is_ajax(request):
                 return JsonResponse({'ok': False, 'error': msg})
             messages.error(request, msg)
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/register.html', {
+                'form_data': {
+                    'documento': documento,
+                    'nombre': nombre,
+                    'correo': correo,
+                    'telefono': telefono
+                }
+            })
 
-        if not all([nombre, apellido, correo, clave]):
+        if not all([documento, nombre, correo, clave]):
             return _err('Todos los campos obligatorios deben estar llenos.')
+
+        if len(documento) < 6:
+            return _err('El documento debe tener al menos 6 caracteres.')
 
         if clave != clave_confirm:
             return _err('Las contraseñas no coinciden.')
@@ -104,15 +107,17 @@ def register_view(request):
         if len(clave) < 6:
             return _err('La contraseña debe tener al menos 6 caracteres.')
 
-        if Usuario.objects.filter(usuCorreo=correo).exists():
-            return _err('Ya existe un usuario con ese correo.')
-
+        # Validar documento duplicado
         if Usuario.objects.filter(usuDocumento=documento).exists():
-            return _err('Ya existe un usuario con ese documento.')
+            return _err('Ya existe un usuario registrado con ese número de documento.')
+
+        # Validar correo duplicado
+        if Usuario.objects.filter(usuCorreo=correo).exists():
+            return _err('Ya existe un usuario registrado con ese correo electrónico.')
 
         Usuario.objects.create(
             usuDocumento=documento,
-            usuNombreCompleto=nombre_completo,
+            usuNombreCompleto=nombre,
             usuCorreo=correo,
             usuTelefono=telefono,
             usuClaveHash=make_password(clave),
