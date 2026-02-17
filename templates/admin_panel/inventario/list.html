@@ -1,0 +1,315 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Inventario de Parqueo{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-white mb-1">Inventario de Parqueo</h1>
+        <p class="text-sm text-mp-muted">Registro real de entradas y salidas. Al registrar salida se calcula el pago automáticamente.</p>
+    </div>
+    <a href="#" class="inline-flex items-center gap-2 px-4 py-2.5 bg-mp-purple hover:bg-mp-purple-dark rounded-lg text-white text-sm font-medium transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Registrar Entrada
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-mp-muted text-sm mb-1">Vehículos Dentro</p>
+                <p class="text-3xl font-bold text-white">{{ vehiculos_dentro }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-mp-muted text-sm mb-1">Salidas Hoy</p>
+                <p class="text-3xl font-bold text-white">{{ salidas_hoy }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-mp-muted text-sm mb-1">Total Registros</p>
+                <p class="text-3xl font-bold text-white">{{ total_registros }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-mp-purple/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-mp-purple-light" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<form method="get" class="mb-6">
+    <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-mp-muted pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="Buscar por placa o espacio..."
+            class="w-full pl-12 pr-4 py-3 bg-mp-card border border-mp-border rounded-xl text-white placeholder-mp-muted focus:outline-none focus:ring-2 focus:ring-mp-purple focus:border-transparent"
+        >
+    </div>
+</form>
+
+<!-- Table -->
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-mp-dark border-b border-mp-border">
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Vehículo</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Espacio</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Entrada</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Salida</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Monto</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Estado</th>
+                    <th class="text-left px-6 py-4 text-mp-muted font-medium">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-mp-border">
+                {% for registro in registros %}
+                <tr class="hover:bg-mp-dark/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <span class="font-mono font-bold text-white">{{ registro.fkIdVehiculo.vehPlaca }}</span>
+                        <p class="text-xs text-mp-muted mt-0.5">{{ registro.fkIdVehiculo.vehTipo }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-mp-purple/10 text-mp-purple-light text-xs font-medium">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            {{ registro.fkIdEspacio.espNumero }} - P{{ registro.fkIdEspacio.fkIdPiso.pisNombre }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-white">
+                        {{ registro.parHoraEntrada|date:"d/m/Y" }}<br>
+                        <span class="text-xs text-mp-muted">{{ registro.parHoraEntrada|date:"H:i" }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-white">
+                        {% if registro.parHoraSalida %}
+                            {{ registro.parHoraSalida|date:"d/m/Y" }}<br>
+                            <span class="text-xs text-mp-muted">{{ registro.parHoraSalida|date:"H:i" }}</span>
+                        {% else %}
+                            <span class="text-mp-muted text-xs">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if registro.pago_monto %}
+                            <span class="font-semibold text-green-400">${{ registro.pago_monto.pagMonto|floatformat:0 }}</span>
+                        {% else %}
+                            <span class="text-mp-muted text-xs">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if registro.parHoraSalida %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/10 text-green-400 text-xs font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                Finalizado
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+                                En curso
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if not registro.parHoraSalida %}
+                            <button
+                                onclick="openExitModal({{ registro.pk }}, '{{ registro.fkIdEspacio.espNumero }}')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-mp-purple hover:bg-mp-purple-dark rounded-lg text-white text-xs font-medium transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3V15" />
+                                </svg>
+                                Registrar Salida
+                            </button>
+                        {% else %}
+                            <span class="text-mp-muted text-xs">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-mp-muted">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                        </svg>
+                        <p>No hay registros{% if query %} que coincidan con "{{ query }}"{% endif %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Salida (reutilizar el del dashboard) -->
+<div id="exitModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-mp-card border border-mp-border rounded-2xl max-w-lg w-full shadow-2xl">
+        <!-- Modal header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-mp-border">
+            <h3 class="text-lg font-bold text-white">Registrar Salida</h3>
+            <button onclick="closeExitModal()" class="text-mp-muted hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal body -->
+        <div id="exitLoading" class="p-6">
+            <div class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-mp-purple"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentExitRegistroId = null;
+
+function openExitModal(registroId, espacioNumero) {
+    currentExitRegistroId = registroId;
+    const modal = document.getElementById('exitModal');
+    const loading = document.getElementById('exitLoading');
+
+    loading.innerHTML = `
+        <div class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-mp-purple"></div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+
+    // Cargar detalles del vehículo
+    fetch(`{% url 'admin_detalle_ocupacion' %}?registro_id=${registroId}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.found === false) {
+            loading.innerHTML = '<p class="text-yellow-400 text-sm text-center">No se encontró el registro.</p>';
+            return;
+        }
+        loading.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 p-4 bg-mp-dark rounded-xl">
+                    <div class="w-12 h-12 rounded-full bg-mp-purple/10 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-mp-purple-light" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-white font-bold text-lg font-mono">${data.placa}</p>
+                        <p class="text-mp-muted text-sm">${data.tipo_vehiculo}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-mp-dark rounded-xl">
+                        <p class="text-mp-muted text-xs mb-1">Espacio</p>
+                        <p class="text-white font-semibold">${espacioNumero}</p>
+                    </div>
+                    <div class="p-4 bg-mp-dark rounded-xl">
+                        <p class="text-mp-muted text-xs mb-1">Tipo Espacio</p>
+                        <p class="text-white font-semibold">${data.tipo_espacio}</p>
+                    </div>
+                    <div class="p-4 bg-mp-dark rounded-xl">
+                        <p class="text-mp-muted text-xs mb-1">Hora Entrada</p>
+                        <p class="text-white font-semibold">${data.hora_entrada}</p>
+                    </div>
+                    <div class="p-4 bg-mp-dark rounded-xl">
+                        <p class="text-mp-muted text-xs mb-1">Tiempo</p>
+                        <p class="text-white font-semibold">${data.tiempo_estadia}</p>
+                    </div>
+                </div>
+
+                ${data.usuario_nombre ? `
+                <div class="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl">
+                    <p class="text-blue-400 text-xs mb-1">Propietario</p>
+                    <p class="text-white font-medium">${data.usuario_nombre}</p>
+                    <p class="text-mp-muted text-xs mt-0.5">${data.usuario_correo || ''}</p>
+                </div>
+                ` : `
+                <div class="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+                    <p class="text-yellow-400 text-xs mb-1">Visitante</p>
+                    <p class="text-white font-medium">${data.contacto_nombre || 'Sin nombre'}</p>
+                    <p class="text-mp-muted text-xs mt-0.5">${data.contacto_telefono || 'Sin teléfono'}</p>
+                </div>
+                `}
+
+                ${data.monto_estimado ? `
+                <div class="p-5 bg-gradient-to-br from-mp-purple/20 to-mp-purple/5 border border-mp-purple/30 rounded-xl">
+                    <p class="text-mp-purple-light text-sm mb-1">Monto Estimado</p>
+                    <p class="text-white font-bold text-2xl">$${data.monto_estimado}</p>
+                    <p class="text-mp-muted text-xs mt-1">${data.tarifa_info || ''}</p>
+                </div>
+                ` : ''}
+
+                <form method="post" action="{% url 'admin_registrar_salida' %}" class="flex gap-3 pt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="registro_id" value="${registroId}">
+                    <button type="button" onclick="closeExitModal()"
+                        class="flex-1 px-4 py-3 bg-mp-dark hover:bg-mp-border border border-mp-border rounded-xl text-white font-medium transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 px-4 py-3 bg-mp-purple hover:bg-mp-purple-dark rounded-xl text-white font-medium transition-colors shadow-lg shadow-mp-purple/20">
+                        Confirmar Salida
+                    </button>
+                </form>
+            </div>
+        `;
+    })
+    .catch(err => {
+        console.error('Error cargando detalles de salida:', err);
+        loading.innerHTML = '<p class="text-red-400 text-sm text-center">Error al cargar los detalles. Recarga la página e intenta de nuevo.</p>';
+    });
+}
+
+function closeExitModal() {
+    document.getElementById('exitModal').classList.add('hidden');
+    currentExitRegistroId = null;
+}
+
+// Cerrar modal con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeExitModal();
+});
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('exitModal').addEventListener('click', function(e) {
+    if (e.target === this) closeExitModal();
+});
+</script>
+{% endblock %}

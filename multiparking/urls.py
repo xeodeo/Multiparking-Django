@@ -12,7 +12,8 @@ from parqueadero.views import (
     AdminDashboardView,
     PisoListView, PisoCreateView, PisoUpdateView, PisoDeleteView,
     TipoEspacioListView, TipoEspacioCreateView, TipoEspacioUpdateView, TipoEspacioDeleteView,
-    EspacioListView, EspacioCreateView, EspacioUpdateView, EspacioDeleteView, EspacioRangeCreateView
+    EspacioListView, EspacioCreateView, EspacioUpdateView, EspacioDeleteView, EspacioRangeCreateView,
+    InventarioListView
 )
 from tarifas.views import (
     TarifaListView, TarifaCreateView, TarifaUpdateView, TarifaToggleView, TarifaDeleteView
@@ -89,4 +90,7 @@ urlpatterns = [
     path('admin-panel/reservas/', ReservaListView.as_view(), name='admin_reservas'),
     path('admin-panel/reservas/<int:pk>/finalizar/', ReservaFinalizarView.as_view(), name='admin_reservas_finalizar'),
     path('admin-panel/reservas/<int:pk>/cancelar/', ReservaCancelarView.as_view(), name='admin_reservas_cancelar'),
+
+    # Inventario
+    path('admin-panel/inventario/', InventarioListView.as_view(), name='admin_inventario'),
 ]

@@ -542,20 +542,40 @@ import math
 class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
     def get(self, request):
         espacio_id = request.GET.get('espacio_id')
-        if not espacio_id:
-            return JsonResponse({'error': 'ID de espacio requerido'}, status=400)
+        registro_id = request.GET.get('registro_id')
+
+        if not espacio_id and not registro_id:
+            return JsonResponse({'error': 'ID de espacio o registro requerido'}, status=400)
 
         try:
-            espacio = get_object_or_404(Espacio, pk=espacio_id)
-            registro = InventarioParqueo.objects.select_related(
-                'fkIdVehiculo', 'fkIdVehiculo__fkIdUsuario'
-            ).filter(
-                fkIdEspacio=espacio,
-                parHoraSalida__isnull=True
-            ).first()
+            # Obtener registro según el parámetro recibido
+            if registro_id:
+                # Viene del Inventario
+                registro = InventarioParqueo.objects.select_related(
+                    'fkIdVehiculo', 'fkIdVehiculo__fkIdUsuario',
+                    'fkIdEspacio__fkIdPiso', 'fkIdEspacio__fkIdTipoEspacio'
+                ).filter(
+                    pk=registro_id,
+                    parHoraSalida__isnull=True
+                ).first()
 
-            if not registro:
-                return JsonResponse({'found': False, 'error': 'No hay registro activo'})
+                if not registro:
+                    return JsonResponse({'found': False, 'error': 'No hay registro activo'})
+
+                espacio = registro.fkIdEspacio
+            else:
+                # Viene del Dashboard
+                espacio = get_object_or_404(Espacio, pk=espacio_id)
+                registro = InventarioParqueo.objects.select_related(
+                    'fkIdVehiculo', 'fkIdVehiculo__fkIdUsuario',
+                    'fkIdEspacio__fkIdPiso', 'fkIdEspacio__fkIdTipoEspacio'
+                ).filter(
+                    fkIdEspacio=espacio,
+                    parHoraSalida__isnull=True
+                ).first()
+
+                if not registro:
+                    return JsonResponse({'found': False, 'error': 'No hay registro activo'})
 
             ahora = timezone.now()
             entrada = registro.parHoraEntrada
@@ -598,12 +618,22 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
             return JsonResponse({
                 'found': True,
                 'placa': vehiculo.vehPlaca,
+                'tipo_vehiculo': vehiculo.vehTipo,
+                'tipo_espacio': espacio.fkIdTipoEspacio.nombre,
+                'hora_entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
+                'tiempo_estadia': duracion_str,
+                'usuario_nombre': usuario.usuNombreCompleto if usuario else None,
+                'usuario_correo': usuario.usuCorreo if usuario else None,
+                'contacto_nombre': vehiculo.nombre_contacto if not usuario else None,
+                'contacto_telefono': vehiculo.telefono_contacto if not usuario else None,
+                'tarifa_info': tarifa_info,
+                'monto_estimado': f"{total_pagar:,.0f}",
+                # Campos legacy para compatibilidad con dashboard
                 'entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
                 'duracion': duracion_str,
                 'cliente': usuario.usuNombreCompleto if usuario else (vehiculo.nombre_contacto or "Visitante"),
                 'tipo_cliente': 'USUARIO' if usuario else 'VISITANTE',
                 'telefono': usuario.usuTelefono if usuario else (vehiculo.telefono_contacto or "Sin teléfono"),
-                'tarifa_info': tarifa_info,
                 'total_pagar': f"${total_pagar:,.0f}"
             })
         except Exception as e:
@@ -613,23 +643,33 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
 class RegistrarSalidaView(AdminRequiredMixin, View):
     def post(self, request):
         espacio_id = request.POST.get('espacio_id')
-        
-        # 1. Validar Espacio y Ocupación
-        espacio = get_object_or_404(Espacio, pk=espacio_id)
-        if espacio.espEstado != 'OCUPADO':
-            messages.error(request, f'El espacio {espacio.espNumero} no está ocupado.')
-            return redirect('admin_dashboard')
+        registro_id = request.POST.get('registro_id')
 
-        # 2. Buscar Registro Activo
-        registro = InventarioParqueo.objects.filter(
-            fkIdEspacio=espacio,
-            parHoraSalida__isnull=True
-        ).first()
+        # Determinar de dónde viene la solicitud y obtener el registro
+        if registro_id:
+            # Viene del Inventario - tenemos el registro directamente
+            registro = get_object_or_404(InventarioParqueo, pk=registro_id, parHoraSalida__isnull=True)
+            espacio = registro.fkIdEspacio
+        elif espacio_id:
+            # Viene del Dashboard - buscamos por espacio
+            espacio = get_object_or_404(Espacio, pk=espacio_id)
+            if espacio.espEstado != 'OCUPADO':
+                messages.error(request, f'El espacio {espacio.espNumero} no está ocupado.')
+                return redirect('admin_dashboard')
 
-        if not registro:
-            espacio.espEstado = 'DISPONIBLE'
-            espacio.save()
-            messages.warning(request, f'Espacio {espacio.espNumero} liberado (no se encontró registro activo).')
+            # Buscar Registro Activo
+            registro = InventarioParqueo.objects.filter(
+                fkIdEspacio=espacio,
+                parHoraSalida__isnull=True
+            ).first()
+
+            if not registro:
+                espacio.espEstado = 'DISPONIBLE'
+                espacio.save()
+                messages.warning(request, f'Espacio {espacio.espNumero} liberado (no se encontró registro activo).')
+                return redirect('admin_dashboard')
+        else:
+            messages.error(request, 'Datos inválidos.')
             return redirect('admin_dashboard')
 
         # 3. Calcular Costo Final y Registrar Pago
@@ -671,4 +711,52 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
 
         msg_pago = f" Pago registrado: ${monto_pagado:,.0f}" if monto_pagado > 0 else ""
         messages.success(request, f'Salida registrada para {registro.fkIdVehiculo.vehPlaca}.{msg_pago}')
-        return redirect('admin_dashboard')
+
+        # Redirect según de dónde vino la solicitud
+        if registro_id:
+            return redirect('admin_inventario')
+        else:
+            return redirect('admin_dashboard')
+
+
+# ── Inventario de Parqueo ────────────────────────────────────────
+class InventarioListView(AdminRequiredMixin, View):
+    def get(self, request):
+        # Búsqueda
+        query = request.GET.get('q', '').strip()
+
+        registros = InventarioParqueo.objects.select_related(
+            'fkIdVehiculo__fkIdUsuario',
+            'fkIdEspacio__fkIdPiso',
+            'fkIdEspacio__fkIdTipoEspacio'
+        ).prefetch_related('pagos').order_by('-parHoraEntrada')
+
+        if query:
+            registros = registros.filter(
+                Q(fkIdVehiculo__vehPlaca__icontains=query) |
+                Q(fkIdEspacio__espNumero__icontains=query)
+            )
+
+        # Obtener pago si existe para cada registro
+        for r in registros:
+            r.pago_monto = r.pagos.filter(pagEstado='PAGADO').first()
+
+        # Estadísticas
+        hoy_local = timezone.localtime(timezone.now()).date()
+        inicio_hoy = timezone.make_aware(timezone.datetime.combine(hoy_local, timezone.datetime.min.time()))
+        fin_hoy = timezone.make_aware(timezone.datetime.combine(hoy_local, timezone.datetime.max.time()))
+
+        vehiculos_dentro = InventarioParqueo.objects.filter(parHoraSalida__isnull=True).count()
+        salidas_hoy = InventarioParqueo.objects.filter(
+            parHoraSalida__range=(inicio_hoy, fin_hoy)
+        ).count()
+        total_registros = InventarioParqueo.objects.count()
+
+        return render(request, 'admin_panel/inventario/list.html', {
+            'active_page': 'inventario',
+            'registros': registros,
+            'query': query,
+            'vehiculos_dentro': vehiculos_dentro,
+            'salidas_hoy': salidas_hoy,
+            'total_registros': total_registros,
+        })
