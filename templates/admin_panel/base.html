@@ -154,6 +154,14 @@
                 </svg>
                 Cupones
             </a>
+            <a href="{% url 'admin_usuarios' %}"
+                class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg {% if active_page == 'usuarios' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                </svg>
+                Usuarios
+            </a>
         </nav>
 
         <!-- Logout -->
@@ -272,6 +280,105 @@
                 }
             });
         });
+    </script>
+    <!-- Searchable Select Component -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select[data-searchable]').forEach(function(select) {
+            select.style.display = 'none';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'searchable-select relative';
+            select.parentNode.insertBefore(wrapper, select);
+            wrapper.appendChild(select);
+
+            // Selected display button
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white text-left focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition flex items-center justify-between';
+            const selectedOpt = select.options[select.selectedIndex];
+            btn.innerHTML = '<span class="truncate">' + (selectedOpt ? selectedOpt.textContent.trim() : 'Seleccionar...') + '</span>' +
+                '<svg class="w-4 h-4 text-mp-muted flex-shrink-0 ml-2 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>';
+            wrapper.insertBefore(btn, select);
+
+            // Dropdown panel
+            const dropdown = document.createElement('div');
+            dropdown.className = 'absolute z-50 mt-1 w-full bg-mp-card border border-mp-border rounded-lg shadow-xl overflow-hidden hidden';
+            dropdown.style.maxHeight = '280px';
+            wrapper.appendChild(dropdown);
+
+            // Search input
+            const searchBox = document.createElement('div');
+            searchBox.className = 'p-2 border-b border-mp-border';
+            searchBox.innerHTML = '<input type="text" placeholder="Buscar..." class="w-full bg-black/30 border border-mp-border rounded-md px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">';
+            dropdown.appendChild(searchBox);
+            const searchInput = searchBox.querySelector('input');
+
+            // Options list
+            const optList = document.createElement('div');
+            optList.className = 'overflow-y-auto';
+            optList.style.maxHeight = '220px';
+            dropdown.appendChild(optList);
+
+            function buildOptions(filter) {
+                optList.innerHTML = '';
+                const f = (filter || '').toLowerCase();
+                let hasResults = false;
+                Array.from(select.options).forEach(function(opt) {
+                    const text = opt.textContent.trim();
+                    if (f && !text.toLowerCase().includes(f)) return;
+                    hasResults = true;
+                    const item = document.createElement('div');
+                    item.className = 'px-4 py-2.5 text-sm cursor-pointer hover:bg-mp-purple/20 transition ' +
+                        (opt.value === select.value ? 'bg-mp-purple/10 text-mp-purple-light font-medium' : 'text-white');
+                    item.textContent = text;
+                    item.addEventListener('click', function() {
+                        select.value = opt.value;
+                        select.dispatchEvent(new Event('change'));
+                        btn.querySelector('span').textContent = text;
+                        closeDropdown();
+                    });
+                    optList.appendChild(item);
+                });
+                if (!hasResults) {
+                    const empty = document.createElement('div');
+                    empty.className = 'px-4 py-3 text-sm text-mp-muted text-center';
+                    empty.textContent = 'No se encontraron resultados';
+                    optList.appendChild(empty);
+                }
+            }
+
+            function openDropdown() {
+                dropdown.classList.remove('hidden');
+                btn.querySelector('svg').classList.add('rotate-180');
+                searchInput.value = '';
+                buildOptions('');
+                setTimeout(function() { searchInput.focus(); }, 50);
+            }
+
+            function closeDropdown() {
+                dropdown.classList.add('hidden');
+                btn.querySelector('svg').classList.remove('rotate-180');
+            }
+
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (dropdown.classList.contains('hidden')) { openDropdown(); } else { closeDropdown(); }
+            });
+
+            searchInput.addEventListener('input', function() {
+                buildOptions(this.value);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!wrapper.contains(e.target)) closeDropdown();
+            });
+        });
+    });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

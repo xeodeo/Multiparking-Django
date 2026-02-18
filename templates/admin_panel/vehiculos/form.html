@@ -68,7 +68,7 @@
                 <!-- Propietario -->
                 <div>
                     <label for="fkIdUsuario" class="block text-sm font-medium text-mp-muted mb-2">Propietario (usuario registrado)</label>
-                    <select id="fkIdUsuario" name="fkIdUsuario"
+                    <select id="fkIdUsuario" name="fkIdUsuario" data-searchable
                         class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
                         <option value="">Sin propietario (visitante)</option>
                         {% for u in usuarios %}

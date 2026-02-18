@@ -1,0 +1,187 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Administraci&oacute;n de Usuarios</h1>
+        <p class="text-mp-muted text-sm mt-1">Roles: Administrador, Vigilante o Cliente</p>
+    </div>
+    <a href="{% url 'admin_usuarios_crear' %}"
+        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-4 py-2.5 rounded-lg transition flex items-center gap-2 font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Nuevo Usuario
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Total</p>
+                <p class="text-2xl font-bold text-white">{{ total }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Activos</p>
+                <p class="text-2xl font-bold text-green-400">{{ activos }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Inactivos</p>
+                <p class="text-2xl font-bold text-red-400">{{ inactivos }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            </div>
+            <div>
+                <p class="text-mp-muted text-xs uppercase font-bold">Admins</p>
+                <p class="text-2xl font-bold text-purple-400">{{ admins }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Buscar -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-4 mb-6">
+    <form method="GET" class="flex gap-3">
+        <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mp-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre, documento o correo..."
+                class="w-full bg-black/20 border border-mp-border rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition text-sm">
+        </div>
+        <button type="submit"
+            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-2.5 rounded-lg transition font-medium text-sm">
+            Buscar
+        </button>
+        {% if q %}
+        <a href="{% url 'admin_usuarios' %}"
+            class="border border-mp-border text-mp-muted hover:text-white hover:border-white/30 px-4 py-2.5 rounded-lg transition text-sm">
+            Limpiar
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-black/20 text-mp-muted text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-4 font-medium">Documento</th>
+                    <th class="px-6 py-4 font-medium">Nombre</th>
+                    <th class="px-6 py-4 font-medium">Correo</th>
+                    <th class="px-6 py-4 font-medium hidden md:table-cell">Tel&eacute;fono</th>
+                    <th class="px-6 py-4 text-center font-medium">Rol</th>
+                    <th class="px-6 py-4 text-center font-medium">Estado</th>
+                    <th class="px-6 py-4 text-right font-medium">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-mp-border text-sm">
+                {% for u in usuarios %}
+                <tr class="hover:bg-white/5 transition">
+                    <td class="px-6 py-4">
+                        <span class="font-mono text-mp-muted">{{ u.usuDocumento }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full {% if u.rolTipoRol == 'ADMIN' %}bg-purple-500/20{% elif u.rolTipoRol == 'VIGILANTE' %}bg-amber-500/20{% else %}bg-blue-500/20{% endif %} flex items-center justify-center">
+                                <span class="text-xs font-bold {% if u.rolTipoRol == 'ADMIN' %}text-purple-400{% elif u.rolTipoRol == 'VIGILANTE' %}text-amber-400{% else %}text-blue-400{% endif %}">{{ u.usuNombreCompleto|make_list|first|upper }}</span>
+                            </div>
+                            <span class="font-medium text-white">{{ u.usuNombreCompleto }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-mp-muted">{{ u.usuCorreo }}</td>
+                    <td class="px-6 py-4 text-mp-muted hidden md:table-cell">{{ u.usuTelefono|default:"-" }}</td>
+                    <td class="px-6 py-4 text-center">
+                        {% if u.rolTipoRol == 'ADMIN' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-purple-900/30 text-purple-300 border border-purple-800/50">Administrador</span>
+                        {% elif u.rolTipoRol == 'VIGILANTE' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-amber-900/30 text-amber-300 border border-amber-800/50">Vigilante</span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-900/30 text-blue-300 border border-blue-800/50">Cliente</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <form action="{% url 'admin_usuarios_toggle' pk=u.pk %}" method="POST" class="inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="relative inline-flex items-center cursor-pointer group" title="Clic para {% if u.usuEstado %}desactivar{% else %}activar{% endif %}">
+                                <div class="w-11 h-6 rounded-full transition-colors duration-300 {% if u.usuEstado %}bg-mp-purple{% else %}bg-gray-700{% endif %} group-hover:brightness-110">
+                                    <div class="absolute top-[2px] {% if u.usuEstado %}left-[22px]{% else %}left-[2px]{% endif %} bg-white rounded-full h-5 w-5 transition-all duration-300 shadow-md"></div>
+                                </div>
+                            </button>
+                        </form>
+                        <span class="ml-2 text-xs {% if u.usuEstado %}text-green-400{% else %}text-red-400{% endif %}">
+                            {% if u.usuEstado %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{% url 'admin_usuarios_editar' pk=u.pk %}"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-mp-purple/10 text-mp-purple-light border border-mp-purple/20 hover:bg-mp-purple/20 hover:text-white transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                Editar
+                            </a>
+                            <form action="{% url 'admin_usuarios_eliminar' pk=u.pk %}" method="POST" class="inline-block"
+                                onsubmit="return confirm('&iquest;Eliminar al usuario {{ u.usuNombreCompleto }}? Esta acci&oacute;n no se puede deshacer.');">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-900/10 text-red-400 border border-red-500/20 hover:bg-red-900/20 hover:text-red-300 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-mp-border flex items-center justify-center">
+                                <svg class="w-6 h-6 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                            </div>
+                            {% if q %}
+                            <p class="text-mp-muted">No se encontraron usuarios para "<strong class="text-white">{{ q }}</strong>"</p>
+                            <a href="{% url 'admin_usuarios' %}" class="text-mp-purple-light hover:text-white text-sm transition">Ver todos</a>
+                            {% else %}
+                            <p class="text-mp-muted">No hay usuarios registrados.</p>
+                            <a href="{% url 'admin_usuarios_crear' %}" class="text-mp-purple-light hover:text-white text-sm transition">Crear el primero</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Info: Total de registros -->
+{% if usuarios %}
+<div class="mt-4 text-center text-mp-muted text-xs">
+    Mostrando {{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }}
+    {% if q %} para la b&uacute;squeda "{{ q }}"{% endif %}
+</div>
+{% endif %}
+{% endblock %}

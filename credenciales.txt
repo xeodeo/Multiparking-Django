@@ -10,6 +10,100 @@ Contraseña: admin123
 URL:        http://127.0.0.1:8000/admin/
 
 ============================================================
+USUARIOS DEL SISTEMA (login en Home / Admin Panel)
+============================================================
+
+--- ADMINISTRADOR ---
+
+Correo:     admin@multiparking.com
+Contraseña: admin123
+Nombre:     Carlos Administrador
+Documento:  1000000001
+Rol:        ADMIN
+Estado:     Activo
+
+--- VIGILANTE ---
+
+Correo:     vigilante@multiparking.com
+Contraseña: vigilante123
+Nombre:     Jorge Vigilante Principal
+Documento:  1000000002
+Rol:        VIGILANTE
+Estado:     Activo
+
+--- CLIENTES ---
+
+Correo:     cliente@test.com
+Contraseña: test123
+Nombre:     María González
+Documento:  1234567890
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     juan.perez@email.com
+Contraseña: test123
+Nombre:     Juan Pérez
+Documento:  1234567891
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     ana.rodriguez@email.com
+Contraseña: test123
+Nombre:     Ana Rodríguez
+Documento:  1234567892
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     carlos.martinez@email.com
+Contraseña: test123
+Nombre:     Carlos Martínez
+Documento:  1234567893
+Rol:        CLIENTE
+Estado:     Activo
+
+Correo:     laura.lopez@email.com
+Contraseña: test123
+Nombre:     Laura López
+Documento:  1234567894
+Rol:        CLIENTE
+Estado:     Inactivo (no puede iniciar sesión)
+
+============================================================
+URLS DEL PROYECTO
+============================================================
+Home:           http://127.0.0.1:8000/
+Login:          http://127.0.0.1:8000/login/
+Dashboard:      http://127.0.0.1:8000/dashboard/
+Admin Panel:    http://127.0.0.1:8000/admin-panel/
+Django Admin:   http://127.0.0.1:8000/admin/
+Demo (Render):  https://multiparking-django.onrender.com
+
+============================================================
+COMANDOS ÚTILES
+============================================================
+Iniciar servidor:
+  python manage.py runserver
+
+Regenerar datos de prueba:
+  python scripts/reiniciar_base_datos_v2.py
+  python scripts/mantener_datos_demo.py
+
+Verificar pagos:
+  python scripts/check_pagos.py
+
+
+============================================================
+  CREDENCIALES DE ACCESO - MultiParking
+============================================================
+
+------------------------------------------------------------
+ADMIN DJANGO (panel /admin/)
+------------------------------------------------------------
+Usuario:    admin
+Contraseña: admin123
+URL:        http://127.0.0.1:8000/admin/
+
+============================================================
 USUARIOS DEL SISTEMA (popup login en Home)
 ============================================================
 

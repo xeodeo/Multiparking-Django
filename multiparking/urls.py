@@ -7,6 +7,7 @@ from usuarios.views import (
     login_view,
     logout_view,
     register_view,
+    UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioDeleteView, UsuarioToggleView,
 )
 from parqueadero.views import (
     AdminDashboardView,
@@ -93,4 +94,11 @@ urlpatterns = [
 
     # Inventario
     path('admin-panel/inventario/', InventarioListView.as_view(), name='admin_inventario'),
+
+    # Usuarios
+    path('admin-panel/usuarios/', UsuarioListView.as_view(), name='admin_usuarios'),
+    path('admin-panel/usuarios/crear/', UsuarioCreateView.as_view(), name='admin_usuarios_crear'),
+    path('admin-panel/usuarios/<int:pk>/editar/', UsuarioUpdateView.as_view(), name='admin_usuarios_editar'),
+    path('admin-panel/usuarios/<int:pk>/eliminar/', UsuarioDeleteView.as_view(), name='admin_usuarios_eliminar'),
+    path('admin-panel/usuarios/<int:pk>/toggle/', UsuarioToggleView.as_view(), name='admin_usuarios_toggle'),
 ]

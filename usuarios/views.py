@@ -1,8 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
+from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 
+from .mixins import AdminRequiredMixin
 from .models import Usuario
 
 
@@ -153,3 +156,196 @@ def dashboard_view(request):
         'usuario_nombre': request.session.get('usuario_nombre'),
         'usuario_rol': request.session.get('usuario_rol'),
     })
+
+
+# ── ADMIN PANEL — Gestión de Usuarios ───────────────────────────────
+
+class UsuarioListView(AdminRequiredMixin, View):
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        usuarios = Usuario.objects.order_by('-usuEstado', 'usuNombreCompleto')
+
+        if q:
+            usuarios = usuarios.filter(
+                Q(usuNombreCompleto__icontains=q)
+                | Q(usuDocumento__icontains=q)
+                | Q(usuCorreo__icontains=q)
+            )
+
+        total = usuarios.count()
+        activos = usuarios.filter(usuEstado=True).count()
+        admins = usuarios.filter(rolTipoRol='ADMIN').count()
+        clientes = usuarios.filter(rolTipoRol='CLIENTE').count()
+        vigilantes = usuarios.filter(rolTipoRol='VIGILANTE').count()
+
+        return render(request, 'admin_panel/usuarios/list.html', {
+            'active_page': 'usuarios',
+            'usuarios': usuarios,
+            'total': total,
+            'activos': activos,
+            'inactivos': total - activos,
+            'admins': admins,
+            'clientes': clientes,
+            'vigilantes': vigilantes,
+            'q': q,
+        })
+
+
+class UsuarioCreateView(AdminRequiredMixin, View):
+    def get(self, request):
+        return render(request, 'admin_panel/usuarios/form.html', {
+            'active_page': 'usuarios',
+            'title': 'Nuevo Usuario',
+            'roles': Usuario.RolChoices.choices,
+        })
+
+    def post(self, request):
+        documento = request.POST.get('usuDocumento', '').strip()
+        nombre = request.POST.get('usuNombreCompleto', '').strip()
+        correo = request.POST.get('usuCorreo', '').strip()
+        telefono = request.POST.get('usuTelefono', '').strip()
+        rol = request.POST.get('rolTipoRol', 'CLIENTE')
+        clave = request.POST.get('clave', '')
+        activo = 'usuEstado' in request.POST
+
+        ctx = {
+            'active_page': 'usuarios',
+            'title': 'Nuevo Usuario',
+            'roles': Usuario.RolChoices.choices,
+            'usuario': {
+                'usuDocumento': documento,
+                'usuNombreCompleto': nombre,
+                'usuCorreo': correo,
+                'usuTelefono': telefono,
+                'rolTipoRol': rol,
+                'usuEstado': activo,
+            },
+        }
+
+        if not all([documento, nombre, correo, clave]):
+            messages.error(request, 'Documento, nombre, correo y contraseña son obligatorios.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if len(documento) < 6:
+            messages.error(request, 'El documento debe tener al menos 6 caracteres.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if len(clave) < 6:
+            messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if Usuario.objects.filter(usuDocumento=documento).exists():
+            messages.error(request, 'Ya existe un usuario con ese documento.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if Usuario.objects.filter(usuCorreo=correo).exists():
+            messages.error(request, 'Ya existe un usuario con ese correo.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        Usuario.objects.create(
+            usuDocumento=documento,
+            usuNombreCompleto=nombre,
+            usuCorreo=correo,
+            usuTelefono=telefono,
+            rolTipoRol=rol,
+            usuClaveHash=make_password(clave),
+            usuEstado=activo,
+        )
+        messages.success(request, f'Usuario {nombre} creado exitosamente.')
+        return redirect('admin_usuarios')
+
+
+class UsuarioUpdateView(AdminRequiredMixin, View):
+    def get(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk)
+        return render(request, 'admin_panel/usuarios/form.html', {
+            'active_page': 'usuarios',
+            'title': 'Editar Usuario',
+            'roles': Usuario.RolChoices.choices,
+            'usuario': usuario,
+            'editing': True,
+        })
+
+    def post(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk)
+        documento = request.POST.get('usuDocumento', '').strip()
+        nombre = request.POST.get('usuNombreCompleto', '').strip()
+        correo = request.POST.get('usuCorreo', '').strip()
+        telefono = request.POST.get('usuTelefono', '').strip()
+        rol = request.POST.get('rolTipoRol', 'CLIENTE')
+        clave = request.POST.get('clave', '')
+        activo = 'usuEstado' in request.POST
+
+        ctx = {
+            'active_page': 'usuarios',
+            'title': 'Editar Usuario',
+            'roles': Usuario.RolChoices.choices,
+            'usuario': usuario,
+            'editing': True,
+        }
+
+        if not all([documento, nombre, correo]):
+            messages.error(request, 'Documento, nombre y correo son obligatorios.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if len(documento) < 6:
+            messages.error(request, 'El documento debe tener al menos 6 caracteres.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        # Validar duplicados excluyendo el usuario actual
+        if Usuario.objects.filter(usuDocumento=documento).exclude(pk=pk).exists():
+            messages.error(request, 'Ya existe otro usuario con ese documento.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if Usuario.objects.filter(usuCorreo=correo).exclude(pk=pk).exists():
+            messages.error(request, 'Ya existe otro usuario con ese correo.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        usuario.usuDocumento = documento
+        usuario.usuNombreCompleto = nombre
+        usuario.usuCorreo = correo
+        usuario.usuTelefono = telefono
+        usuario.rolTipoRol = rol
+        usuario.usuEstado = activo
+
+        # Solo actualizar contraseña si se proporcionó una nueva
+        if clave:
+            if len(clave) < 6:
+                messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+                return render(request, 'admin_panel/usuarios/form.html', ctx)
+            usuario.usuClaveHash = make_password(clave)
+
+        usuario.save()
+        messages.success(request, f'Usuario {nombre} actualizado.')
+        return redirect('admin_usuarios')
+
+
+class UsuarioDeleteView(AdminRequiredMixin, View):
+    def post(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk)
+
+        # No permitir eliminarse a sí mismo
+        if usuario.pk == request.session.get('usuario_id'):
+            messages.error(request, 'No puedes eliminar tu propia cuenta.')
+            return redirect('admin_usuarios')
+
+        nombre = usuario.usuNombreCompleto
+        usuario.delete()
+        messages.success(request, f'Usuario {nombre} eliminado.')
+        return redirect('admin_usuarios')
+
+
+class UsuarioToggleView(AdminRequiredMixin, View):
+    def post(self, request, pk):
+        usuario = get_object_or_404(Usuario, pk=pk)
+
+        # No permitir desactivarse a sí mismo
+        if usuario.pk == request.session.get('usuario_id'):
+            messages.error(request, 'No puedes desactivar tu propia cuenta.')
+            return redirect('admin_usuarios')
+
+        usuario.usuEstado = not usuario.usuEstado
+        usuario.save()
+        estado = 'activado' if usuario.usuEstado else 'desactivado'
+        messages.success(request, f'Usuario {usuario.usuNombreCompleto} {estado}.')
+        return redirect('admin_usuarios')
