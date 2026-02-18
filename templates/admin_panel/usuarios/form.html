@@ -1,0 +1,132 @@
+{% extends "admin_panel/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'admin_usuarios' %}" class="text-mp-muted hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Documento y Nombre -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="usuDocumento" class="block text-sm font-medium text-mp-muted mb-2">
+                            N&uacute;mero de Documento <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="usuDocumento" name="usuDocumento"
+                            value="{{ usuario.usuDocumento }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: 1234567890" required>
+                    </div>
+
+                    <div>
+                        <label for="usuNombreCompleto" class="block text-sm font-medium text-mp-muted mb-2">
+                            Nombre Completo <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="usuNombreCompleto" name="usuNombreCompleto"
+                            value="{{ usuario.usuNombreCompleto }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: Juan P&eacute;rez" required>
+                    </div>
+                </div>
+
+                <!-- Correo y Teléfono -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="usuCorreo" class="block text-sm font-medium text-mp-muted mb-2">
+                            Correo Electr&oacute;nico <span class="text-red-400">*</span>
+                        </label>
+                        <input type="email" id="usuCorreo" name="usuCorreo"
+                            value="{{ usuario.usuCorreo }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="correo@ejemplo.com" required>
+                    </div>
+
+                    <div>
+                        <label for="usuTelefono" class="block text-sm font-medium text-mp-muted mb-2">
+                            Tel&eacute;fono
+                        </label>
+                        <input type="text" id="usuTelefono" name="usuTelefono"
+                            value="{{ usuario.usuTelefono }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="Ej: 3001234567">
+                    </div>
+                </div>
+
+                <!-- Rol -->
+                <div>
+                    <label for="rolTipoRol" class="block text-sm font-medium text-mp-muted mb-2">
+                        Rol <span class="text-red-400">*</span>
+                    </label>
+                    <select id="rolTipoRol" name="rolTipoRol" required
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
+                        {% for value, label in roles %}
+                        <option value="{{ value }}" {% if usuario.rolTipoRol == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Contraseña -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="clave" class="block text-sm font-medium text-mp-muted mb-2">
+                            {% if editing %}
+                            Nueva Contrase&ntilde;a
+                            <span class="text-xs text-mp-muted font-normal">(dejar vac&iacute;o para no cambiar)</span>
+                            {% else %}
+                            Contrase&ntilde;a <span class="text-red-400">*</span>
+                            {% endif %}
+                        </label>
+                        <input type="password" id="clave" name="clave"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="M&iacute;nimo 6 caracteres"
+                            {% if not editing %}required{% endif %}
+                            minlength="6">
+                    </div>
+
+                    <div class="flex items-end">
+                        <p class="text-xs text-mp-muted pb-3">
+                            <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                            La contrase&ntilde;a se almacena cifrada con hash seguro.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Estado Activo -->
+                <div class="flex items-center gap-4">
+                    <label for="usuEstado" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="usuEstado" name="usuEstado" class="sr-only peer"
+                            {% if usuario.usuEstado or not editing and not usuario %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-mp-purple transition-colors duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform after:duration-300 peer-checked:after:translate-x-5 after:shadow-md"></div>
+                    </label>
+                    <span class="text-sm font-medium text-white">Usuario Activo</span>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex justify-end gap-4 pt-6 border-t border-mp-border">
+                    <a href="{% url 'admin_usuarios' %}"
+                        class="px-5 py-2.5 border border-mp-border text-mp-muted hover:text-white hover:border-white/30 rounded-lg transition font-medium">
+                        Cancelar
+                    </a>
+                    <button type="submit"
+                        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg transition font-medium shadow-lg shadow-purple-900/30 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Guardar Usuario
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
