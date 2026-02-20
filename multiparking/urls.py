@@ -14,7 +14,8 @@ from parqueadero.views import (
     PisoListView, PisoCreateView, PisoUpdateView, PisoDeleteView,
     TipoEspacioListView, TipoEspacioCreateView, TipoEspacioUpdateView, TipoEspacioDeleteView,
     EspacioListView, EspacioCreateView, EspacioUpdateView, EspacioDeleteView, EspacioRangeCreateView,
-    InventarioListView
+    InventarioListView,
+    EntradaParqueaderoView, EscanearQRView, GenerarQRView
 )
 from tarifas.views import (
     TarifaListView, TarifaCreateView, TarifaUpdateView, TarifaToggleView, TarifaDeleteView
@@ -25,6 +26,13 @@ from cupones.views import (
 from reservas.views import ReservaListView, ReservaFinalizarView, ReservaCancelarView
 from vehiculos.views import (
     VehiculoListView, VehiculoCreateView, VehiculoUpdateView, VehiculoDeleteView
+)
+from pagos.views import PagosListView
+from parqueadero.reportes_views import ReportesView, ExportarPDFReportesView, ExportarExcelReportesView
+from vehiculos.cliente_views import ClienteCrearVehiculoView, ClienteEditarVehiculoView
+from reservas.cliente_views import (
+    ClienteCrearReservaView, ClienteEditarReservaView,
+    ClienteCancelarReservaView, ClienteConfirmarReservaView
 )
 
 urlpatterns = [
@@ -95,10 +103,37 @@ urlpatterns = [
     # Inventario
     path('admin-panel/inventario/', InventarioListView.as_view(), name='admin_inventario'),
 
+    # Pagos
+    path('admin-panel/pagos/', PagosListView.as_view(), name='admin_pagos'),
+
+    # Reportes
+    path('admin-panel/reportes/', ReportesView.as_view(), name='admin_reportes'),
+    path('admin-panel/reportes/exportar-pdf/', ExportarPDFReportesView.as_view(), name='admin_reportes_pdf'),
+    path('admin-panel/reportes/exportar-excel/', ExportarExcelReportesView.as_view(), name='admin_reportes_excel'),
+
     # Usuarios
     path('admin-panel/usuarios/', UsuarioListView.as_view(), name='admin_usuarios'),
     path('admin-panel/usuarios/crear/', UsuarioCreateView.as_view(), name='admin_usuarios_crear'),
     path('admin-panel/usuarios/<int:pk>/editar/', UsuarioUpdateView.as_view(), name='admin_usuarios_editar'),
     path('admin-panel/usuarios/<int:pk>/eliminar/', UsuarioDeleteView.as_view(), name='admin_usuarios_eliminar'),
     path('admin-panel/usuarios/<int:pk>/toggle/', UsuarioToggleView.as_view(), name='admin_usuarios_toggle'),
+
+    # Código QR
+    path('admin-panel/qr/generar/', GenerarQRView.as_view(), name='admin_generar_qr'),
+
+    # ── CLIENTE PANEL ────────────────────────────────────────────────────
+
+    # Entrada al Parqueadero
+    path('parqueadero/escanear/', EscanearQRView.as_view(), name='escanear_qr'),
+    path('parqueadero/entrada/', EntradaParqueaderoView.as_view(), name='entrada_parqueadero'),
+
+    # Vehículos del Cliente
+    path('cliente/vehiculos/crear/', ClienteCrearVehiculoView.as_view(), name='cliente_crear_vehiculo'),
+    path('cliente/vehiculos/<int:pk>/editar/', ClienteEditarVehiculoView.as_view(), name='cliente_editar_vehiculo'),
+
+    # Reservas del Cliente
+    path('cliente/reservas/crear/', ClienteCrearReservaView.as_view(), name='cliente_crear_reserva'),
+    path('cliente/reservas/<int:pk>/editar/', ClienteEditarReservaView.as_view(), name='cliente_editar_reserva'),
+    path('cliente/reservas/<int:pk>/cancelar/', ClienteCancelarReservaView.as_view(), name='cliente_cancelar_reserva'),
+    path('cliente/reservas/<int:pk>/confirmar/', ClienteConfirmarReservaView.as_view(), name='cliente_confirmar_reserva'),
 ]

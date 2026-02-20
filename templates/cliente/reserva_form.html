@@ -1,0 +1,201 @@
+{% extends "cliente/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'dashboard' %}" class="text-mp-muted hover:text-white transition inline-flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Volver al Dashboard
+        </a>
+        <h1 class="text-3xl font-bold">{{ title }}</h1>
+        <p class="text-mp-muted mt-2">Reserva un espacio de parqueo con anticipación</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" class="bg-mp-card border border-mp-border rounded-xl p-6">
+        {% csrf_token %}
+
+        <!-- Seleccionar Vehículo -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">
+                Seleccionar Vehículo <span class="text-red-500">*</span>
+            </label>
+            {% if vehiculos %}
+            <select
+                name="vehiculo_id"
+                required
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                <option value="">-- Selecciona un vehículo --</option>
+                {% for vehiculo in vehiculos %}
+                <option value="{{ vehiculo.pk }}" {% if reserva and reserva.fkIdVehiculo.pk == vehiculo.pk %}selected{% endif %}>{{ vehiculo.vehPlaca }} - {{ vehiculo.vehColor }} {{ vehiculo.vehMarca }} {{ vehiculo.vehModelo }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 text-yellow-300">
+                <p class="text-sm">No tienes vehículos activos. <a href="{% url 'cliente_crear_vehiculo' %}" class="underline font-bold">Agregar vehículo</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Fecha y Hora de Inicio -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">
+                Fecha de Inicio <span class="text-red-500">*</span>
+            </label>
+            <input
+                type="date"
+                name="fecha_inicio"
+                id="fecha_inicio"
+                required
+                min="{{ today }}"
+                value="{% if reserva %}{{ reserva.resFechaReserva|date:'Y-m-d' }}{% endif %}"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+            <p class="text-xs text-mp-muted mt-1">Selecciona el día en que planeas ingresar al parqueadero</p>
+        </div>
+
+        <!-- Horario -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-mp-muted mb-2">
+                    Hora de Entrada <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="time"
+                    name="hora_inicio"
+                    required
+                    value="{% if reserva %}{{ reserva.resHoraInicio|time:'H:i' }}{% endif %}"
+                    class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-mp-muted mb-2">
+                    Hora Estimada de Salida <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="time"
+                    name="hora_salida"
+                    required
+                    value="{% if reserva %}{{ reserva.resHoraFin|time:'H:i' }}{% endif %}"
+                    class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+            </div>
+        </div>
+        <p class="text-xs text-mp-muted -mt-4 mb-6">La hora de salida es solo una estimación para calcular el costo aproximado</p>
+
+        <!-- Seleccionar Espacio -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-4">
+                Seleccionar Espacio <span class="text-red-500">*</span>
+            </label>
+
+            {% if pisos %}
+            <!-- Tabs de Pisos -->
+            <div class="flex flex-wrap gap-2 mb-4 border-b border-mp-border pb-2">
+                {% for piso in pisos %}
+                <button type="button" onclick="showPiso('piso-{{ piso.pk }}')" id="btn-piso-{{ piso.pk }}"
+                    class="px-4 py-2 rounded-t-lg font-medium transition-colors border-b-2 border-transparent hover:bg-white/5 text-mp-muted tab-btn-reserva {% if forloop.first %}active{% endif %}">
+                    {{ piso.pisNombre }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Espacios por Piso -->
+            {% for piso in pisos %}
+            <div id="piso-{{ piso.pk }}" class="piso-content-reserva {% if not forloop.first %}hidden{% endif %}">
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mb-4">
+                    {% for espacio in piso.espacios.all %}
+                    {% if espacio.espEstado == 'DISPONIBLE' or reserva and reserva.fkIdEspacio.pk == espacio.pk %}
+                    <label class="relative cursor-pointer group">
+                        <input
+                            type="radio"
+                            name="espacio_id"
+                            value="{{ espacio.pk }}"
+                            required
+                            {% if reserva and reserva.fkIdEspacio.pk == espacio.pk %}checked{% endif %}
+                            class="peer sr-only">
+                        <div class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border-2 transition-all
+                            bg-green-500/20 border-green-600 text-white hover:bg-green-500/30
+                            peer-checked:bg-green-500 peer-checked:border-green-400 peer-checked:scale-110 peer-checked:shadow-lg peer-checked:shadow-green-900/50">
+                            {{ espacio.espNumero }}
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="text-xs text-mp-muted">
+                    <span class="inline-block w-3 h-3 rounded bg-green-500 mr-1"></span>
+                    Disponible - Haz clic para seleccionar
+                </p>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-mp-muted text-sm">No hay pisos disponibles en este momento.</p>
+            {% endif %}
+        </div>
+
+        <!-- Información -->
+        <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
+            <h3 class="font-bold text-blue-300 mb-2">Información importante:</h3>
+            <ul class="text-sm text-blue-200 space-y-1">
+                <li>• Las reservas deben hacerse con al menos 1 hora de anticipación</li>
+                <li>• El costo de la reserva es de $8.000 COP</li>
+                <li>• Si no llegas en los primeros 15 minutos, la reserva puede ser cancelada</li>
+                <li>• Puedes cancelar tu reserva hasta 1 hora antes del inicio</li>
+            </ul>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-4 justify-end pt-4 border-t border-mp-border">
+            <a href="{% url 'dashboard' %}"
+                class="px-6 py-2.5 rounded-lg text-mp-muted hover:text-white hover:bg-white/5 transition">
+                Cancelar
+            </a>
+            <button
+                type="submit"
+                {% if not vehiculos %}disabled{% endif %}
+                class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirmar Reserva
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tabs de Pisos
+function showPiso(id) {
+    // Ocultar todos los contenidos
+    document.querySelectorAll('.piso-content-reserva').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn-reserva').forEach(el => {
+        el.classList.remove('border-mp-purple', 'text-white', 'bg-white/5');
+        el.classList.add('border-transparent', 'text-mp-muted');
+    });
+
+    // Mostrar el seleccionado
+    const target = document.getElementById(id);
+    if(target) target.classList.remove('hidden');
+
+    const btn = document.getElementById('btn-'+id);
+    if(btn) {
+        btn.classList.remove('border-transparent', 'text-mp-muted');
+        btn.classList.add('border-mp-purple', 'text-white', 'bg-white/5');
+    }
+}
+
+// Activar primer tab al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    const firstBtn = document.querySelector('.tab-btn-reserva');
+    if(firstBtn) firstBtn.click();
+
+    // Set min date to today
+    const dateInput = document.querySelector('input[name="fecha_inicio"]');
+    if(dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+});
+</script>
+{% endblock %}

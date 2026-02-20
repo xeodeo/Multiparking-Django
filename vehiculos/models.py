@@ -2,11 +2,21 @@ from django.db import models
 
 
 class Vehiculo(models.Model):
+
+    class TipoChoices(models.TextChoices):
+        CARRO = 'CARRO', 'Carro'
+        MOTO = 'MOTO', 'Moto'
+
     vehPlaca = models.CharField(max_length=10, unique=True)
-    vehTipo = models.CharField(max_length=30)
+    vehTipo = models.CharField(
+        max_length=30,
+        choices=TipoChoices.choices,
+        default=TipoChoices.CARRO,
+    )
     vehColor = models.CharField(max_length=30, blank=True)
     vehMarca = models.CharField(max_length=50, blank=True)
     vehModelo = models.CharField(max_length=50, blank=True)
+    vehEstado = models.BooleanField(default=True)
     fkIdUsuario = models.ForeignKey(
         'usuarios.Usuario',
         on_delete=models.CASCADE,

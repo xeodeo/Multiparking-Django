@@ -1,0 +1,150 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Generar QR Universal{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-2">Código QR Universal de Entrada</h1>
+        <p class="text-mp-muted">Genera e imprime el código QR para colocar en la entrada del parqueadero</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- QR Code Display -->
+        <div class="bg-mp-card border border-mp-border rounded-xl p-8">
+            <h2 class="text-xl font-bold mb-6 text-center">Código QR</h2>
+
+            <!-- QR Container -->
+            <div class="bg-white p-8 rounded-xl mb-6 flex items-center justify-center">
+                <div id="qrcode"></div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="space-y-3">
+                <button onclick="descargarQR()" class="w-full bg-mp-purple hover:bg-mp-purple-dark text-white py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Descargar QR
+                </button>
+
+                <button onclick="imprimirQR()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    Imprimir
+                </button>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="space-y-6">
+            <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    ¿Cómo funciona?
+                </h3>
+                <ol class="space-y-3 text-sm text-mp-muted">
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mp-purple text-white flex items-center justify-center text-xs font-bold">1</span>
+                        <span>Descarga o imprime el código QR</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mp-purple text-white flex items-center justify-center text-xs font-bold">2</span>
+                        <span>Colócalo en un lugar visible en la entrada del parqueadero</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mp-purple text-white flex items-center justify-center text-xs font-bold">3</span>
+                        <span>Los clientes escanean el QR con su teléfono al llegar</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-mp-purple text-white flex items-center justify-center text-xs font-bold">4</span>
+                        <span>El sistema asigna automáticamente un espacio disponible</span>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                <h4 class="font-bold text-blue-300 mb-2">💡 Tip:</h4>
+                <p class="text-sm text-blue-200">
+                    Imprime el QR en tamaño A4 para que sea fácil de escanear desde la distancia. Protégelo con un plástico transparente si estará a la intemperie.
+                </p>
+            </div>
+
+            <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                <h4 class="font-bold text-green-300 mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    URL del QR:
+                </h4>
+                <code class="text-xs text-green-200 break-all bg-black/20 p-2 rounded block">{{ qr_url }}</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Página oculta para imprimir -->
+<div id="print-area" style="display:none;">
+    <div style="text-align:center; padding:40px;">
+        <h1 style="font-size:32px; margin-bottom:20px;">Multiparking - Entrada</h1>
+        <p style="font-size:18px; margin-bottom:40px;">Escanea el código QR para ingresar</p>
+        <div id="qrcode-print" style="display:inline-block;"></div>
+        <p style="font-size:14px; margin-top:40px; color:#666;">Coloca tu cámara sobre el código para acceder</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- QRCode.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// URL del QR
+const QR_URL = "{{ qr_url }}";
+
+// Generar QR principal
+const qrcode = new QRCode(document.getElementById("qrcode"), {
+    text: QR_URL,
+    width: 256,
+    height: 256,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+});
+
+// Generar QR para impresión
+const qrcodePrint = new QRCode(document.getElementById("qrcode-print"), {
+    text: QR_URL,
+    width: 400,
+    height: 400,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+});
+
+// Función para descargar QR
+function descargarQR() {
+    const canvas = document.querySelector('#qrcode canvas');
+    if (canvas) {
+        const link = document.createElement('a');
+        link.download = 'qr-entrada-multiparking.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+}
+
+// Función para imprimir QR
+function imprimirQR() {
+    const printContents = document.getElementById('print-area').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    location.reload(); // Recargar para restaurar el estado
+}
+</script>
+{% endblock %}

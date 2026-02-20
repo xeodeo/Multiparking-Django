@@ -1,0 +1,170 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Pagos{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Pagos</h1>
+<p class="text-mp-muted mb-8">Los pagos se generan automáticamente al registrar la salida del vehículo</p>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <!-- Total Recaudado -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Total Recaudado</p>
+            <p class="text-3xl font-bold text-white mb-1">${{ total_recaudado|floatformat:0 }}</p>
+            <div class="absolute top-2 right-0">
+                <svg class="w-10 h-10 text-green-500/30" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos Realizados -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Pagos Realizados</p>
+            <p class="text-3xl font-bold text-white mb-1">{{ pagos_realizados }}</p>
+            <div class="absolute top-2 right-0">
+                <svg class="w-10 h-10 text-purple-500/30" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Pendientes</p>
+            <p class="text-3xl font-bold text-white mb-1">{{ pagos_pendientes }}</p>
+            <div class="absolute top-2 right-0">
+                <svg class="w-10 h-10 text-yellow-500/30" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Pagos -->
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <!-- Barra de búsqueda y filtros -->
+    <div class="p-6 border-b border-mp-border">
+        <form method="GET" action="{% url 'admin_pagos' %}" class="flex flex-col sm:flex-row gap-4">
+            <!-- Búsqueda -->
+            <div class="flex-1">
+                <div class="relative">
+                    <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-mp-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                    </svg>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        placeholder="Buscar por ID pago, placa, registro..."
+                        class="w-full bg-black/20 border border-mp-border rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                </div>
+            </div>
+
+            <!-- Filtro por estado -->
+            <div class="w-full sm:w-48">
+                <select
+                    name="estado"
+                    onchange="this.form.submit()"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                    <option value="TODOS" {% if estado_filter == 'TODOS' %}selected{% endif %}>Todos</option>
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if estado_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition">
+                Filtrar
+            </button>
+        </form>
+    </div>
+
+    <!-- Encabezado -->
+    <div class="px-6 py-4 border-b border-mp-border">
+        <h2 class="text-xl font-bold">Pagos ({{ pagos|length }})</h2>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="text-xs text-mp-muted border-b border-mp-border">
+                    <th class="px-6 py-4 font-medium">ID</th>
+                    <th class="px-6 py-4 font-medium">Registro</th>
+                    <th class="px-6 py-4 font-medium">Placa</th>
+                    <th class="px-6 py-4 font-medium text-right">Monto</th>
+                    <th class="px-6 py-4 font-medium text-right">Descuento</th>
+                    <th class="px-6 py-4 font-medium text-right">Total</th>
+                    <th class="px-6 py-4 font-medium">Método</th>
+                    <th class="px-6 py-4 font-medium">Estado</th>
+                    <th class="px-6 py-4 font-medium">Fecha</th>
+                </tr>
+            </thead>
+            <tbody class="text-sm">
+                {% for item in pagos %}
+                <tr class="border-b border-mp-border/50 hover:bg-white/5 transition">
+                    <td class="px-6 py-4">
+                        <span class="font-mono text-mp-purple-light font-medium">{{ item.id }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-mono text-blue-400">{{ item.registro }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-mono font-bold">{{ item.placa }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="text-white">${{ item.pago.pagMonto|floatformat:0 }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        {% if item.descuento > 0 %}
+                        <span class="text-red-400">-${{ item.descuento|floatformat:0 }}</span>
+                        {% else %}
+                        <span class="text-mp-muted">$0</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="text-green-400 font-bold text-base">${{ item.total|floatformat:0 }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-white">{{ item.pago.get_pagMetodo_display }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if item.pago.pagEstado == 'PAGADO' %}
+                        <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">Pagado</span>
+                        {% elif item.pago.pagEstado == 'PENDIENTE' %}
+                        <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-bold">Pendiente</span>
+                        {% else %}
+                        <span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold">Anulado</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-mp-muted">{{ item.pago.pagFechaPago|date:"d/m/Y, g:i a" }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <svg class="w-16 h-16 text-mp-muted/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                            </svg>
+                            <p class="text-mp-muted text-lg">No se encontraron pagos</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

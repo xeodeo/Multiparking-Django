@@ -9,6 +9,7 @@ import json
 
 from reservas.models import Reserva
 from usuarios.mixins import AdminRequiredMixin
+from usuarios.models import Usuario
 from pagos.models import Pago
 from tarifas.models import Tarifa
 
@@ -28,8 +29,16 @@ class AdminDashboardView(AdminRequiredMixin, View):
             resEstado__in=['PENDIENTE', 'CONFIRMADA']
         ).count()
         # Solo pisos activos
-        pisos = Piso.objects.filter(pisEstado=True).prefetch_related('espacios').order_by('pisNombre')
-        
+        pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
+            'espacios',
+            'espacios__reservas'
+        ).order_by('pisNombre')
+
+        # Calcular reservas próximas (menos de 2h)
+        from datetime import datetime
+        now = timezone.now()
+        limite_2h = now + timedelta(hours=2)
+
         # Convertir a lista para mantener los atributos calculados y evitar re-evaluación
         pisos_list = []
         for piso in pisos:
@@ -38,6 +47,24 @@ class AdminDashboardView(AdminRequiredMixin, View):
             piso.ocupacion_pct = int((ocupados_piso / total_piso) * 100) if total_piso > 0 else 0
             piso.total_espacios = total_piso
             piso.ocupados_espacios = ocupados_piso
+
+            # Agregar información de reservas próximas a cada espacio
+            espacios_list = []
+            for espacio in piso.espacios.all():
+                reserva_proxima = None
+                # Buscar reserva activa (PENDIENTE o CONFIRMADA) en las próximas 2h
+                for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
+                    fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
+                    fecha_hora_reserva = timezone.make_aware(fecha_hora_reserva)
+
+                    if now <= fecha_hora_reserva <= limite_2h:
+                        reserva_proxima = reserva
+                        break
+
+                espacio.reserva_proxima = reserva_proxima
+                espacios_list.append(espacio)
+
+            piso.espacios_list = espacios_list
             pisos_list.append(piso)
 
 
@@ -763,4 +790,182 @@ class InventarioListView(AdminRequiredMixin, View):
             'vehiculos_dentro': vehiculos_dentro,
             'salidas_hoy': salidas_hoy,
             'total_registros': total_registros,
+        })
+
+
+# ── Entrada al Parqueadero (Cliente) ────────────────────────────────
+
+class ClienteRequiredMixin:
+    """Mixin para requerir que el usuario sea un cliente autenticado"""
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get('usuario_id'):
+            messages.error(request, 'Debes iniciar sesión.')
+            return redirect('login')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class EntradaParqueaderoView(ClienteRequiredMixin, View):
+    """Vista para la entrada al parqueadero mediante escaneo de QR universal"""
+
+    def get(self, request):
+        usuario_id = request.session.get('usuario_id')
+        usuario = Usuario.objects.get(pk=usuario_id)
+
+        # Verificar si el usuario ya tiene un vehículo dentro del parqueadero
+        vehiculo_dentro = InventarioParqueo.objects.filter(
+            fkIdVehiculo__fkIdUsuario=usuario,
+            parHoraSalida__isnull=True
+        ).select_related('fkIdVehiculo', 'fkIdEspacio__fkIdPiso').first()
+
+        if vehiculo_dentro:
+            messages.error(
+                request,
+                f'Ya tienes el vehículo {vehiculo_dentro.fkIdVehiculo.vehPlaca} dentro del parqueadero en el espacio {vehiculo_dentro.fkIdEspacio.espNumero}.'
+            )
+            return redirect('dashboard')
+
+        now = timezone.now()
+        hoy = now.date()
+
+        # Cancelar reservas vencidas (más de 15 minutos después de la hora de inicio)
+        from datetime import datetime
+        reservas_vencidas = Reserva.objects.filter(
+            resFechaReserva=hoy,
+            resEstado__in=['PENDIENTE', 'CONFIRMADA']
+        )
+
+        for reserva in reservas_vencidas:
+            fecha_hora_inicio = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
+            fecha_hora_inicio = timezone.make_aware(fecha_hora_inicio)
+            tiempo_desde_inicio = now - fecha_hora_inicio
+
+            # Si pasaron más de 15 minutos desde la hora de inicio, cancelar
+            if tiempo_desde_inicio > timedelta(minutes=15) and tiempo_desde_inicio < timedelta(hours=24):
+                reserva.resEstado = 'CANCELADA'
+                reserva.save()
+
+        # Buscar reserva activa del usuario para hoy
+        reserva_hoy = Reserva.objects.filter(
+            fkIdVehiculo__fkIdUsuario=usuario,
+            resFechaReserva=hoy,
+            resEstado__in=['PENDIENTE', 'CONFIRMADA']
+        ).select_related('fkIdVehiculo', 'fkIdEspacio__fkIdPiso').first()
+
+        # Obtener vehículos activos del usuario
+        vehiculos = Vehiculo.objects.filter(
+            fkIdUsuario=usuario,
+            es_visitante=False,
+            vehEstado=True
+        )
+
+        return render(request, 'cliente/entrada_qr.html', {
+            'reserva': reserva_hoy,
+            'vehiculos': vehiculos,
+        })
+
+    def post(self, request):
+        usuario_id = request.session.get('usuario_id')
+        usuario = Usuario.objects.get(pk=usuario_id)
+
+        now = timezone.now()
+        hoy = now.date()
+
+        # Buscar reserva activa del usuario para hoy
+        from datetime import datetime
+        reserva_hoy = Reserva.objects.filter(
+            fkIdVehiculo__fkIdUsuario=usuario,
+            resFechaReserva=hoy,
+            resEstado__in=['PENDIENTE', 'CONFIRMADA']
+        ).select_related('fkIdVehiculo', 'fkIdEspacio').first()
+
+        # Determinar el vehículo y espacio
+        if reserva_hoy:
+            # Usuario tiene reserva - usar vehículo y espacio de la reserva
+            vehiculo = reserva_hoy.fkIdVehiculo
+            espacio = reserva_hoy.fkIdEspacio
+
+            # Verificar que el espacio esté disponible
+            if espacio.espEstado != 'DISPONIBLE':
+                messages.error(
+                    request,
+                    f'El espacio reservado {espacio.espNumero} no está disponible. Contacta al administrador.'
+                )
+                return redirect('entrada_parqueadero')
+        else:
+            # Usuario NO tiene reserva - debe seleccionar vehículo y buscar espacio disponible
+            vehiculo_id = request.POST.get('vehiculo_id')
+            if not vehiculo_id:
+                messages.error(request, 'Debes seleccionar un vehículo.')
+                return redirect('entrada_parqueadero')
+
+            try:
+                vehiculo = Vehiculo.objects.get(
+                    pk=vehiculo_id,
+                    fkIdUsuario=usuario,
+                    es_visitante=False,
+                    vehEstado=True
+                )
+            except Vehiculo.DoesNotExist:
+                messages.error(request, 'Vehículo no válido.')
+                return redirect('entrada_parqueadero')
+
+            # Buscar espacio disponible según el tipo de vehículo
+            if vehiculo.vehTipo == 'MOTO':
+                tipo_nombre = 'MOTO'
+            else:  # CARRO
+                tipo_nombre = 'CARRO'
+
+            espacio = Espacio.objects.filter(
+                espEstado='DISPONIBLE',
+                fkIdTipoEspacio__tipNombre=tipo_nombre
+            ).select_related('fkIdPiso').order_by('fkIdPiso__pisNumero', 'espNumero').first()
+
+            if not espacio:
+                messages.error(
+                    request,
+                    f'Lo sentimos, no hay espacios disponibles para {tipo_nombre} en este momento. Por favor intenta más tarde.'
+                )
+                return redirect('entrada_parqueadero')
+
+        # Crear registro en InventarioParqueo
+        InventarioParqueo.objects.create(
+            parHoraEntrada=now,
+            fkIdEspacio=espacio,
+            fkIdVehiculo=vehiculo
+        )
+
+        # Cambiar estado del espacio a OCUPADO
+        espacio.espEstado = 'OCUPADO'
+        espacio.save()
+
+        # Si había reserva, marcarla como COMPLETADA
+        if reserva_hoy:
+            reserva_hoy.resEstado = 'COMPLETADA'
+            reserva_hoy.save()
+
+        messages.success(
+            request,
+            f'¡Bienvenido! Tu vehículo {vehiculo.vehPlaca} ha sido asignado al espacio {espacio.espNumero} en {espacio.fkIdPiso.pisNombre}.'
+        )
+        return redirect('dashboard')
+
+
+# ── Escáner QR (Cliente) ─────────────────────────────────────────────
+class EscanearQRView(ClienteRequiredMixin, View):
+    """Vista para escanear QR con la cámara del dispositivo"""
+
+    def get(self, request):
+        return render(request, 'cliente/escanear_qr.html')
+
+
+# ── Generar QR Universal (Admin) ─────────────────────────────────────
+class GenerarQRView(AdminRequiredMixin, View):
+    """Vista para que el admin genere y descargue el QR universal"""
+
+    def get(self, request):
+        # Construir URL completa para el QR
+        qr_url = request.build_absolute_uri('/parqueadero/entrada/')
+        return render(request, 'admin_panel/qr/generar.html', {
+            'active_page': 'qr',
+            'qr_url': qr_url,
         })

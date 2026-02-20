@@ -1,0 +1,279 @@
+{% extends "cliente/base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Saludo -->
+<div class="mb-8">
+    <h1 class="text-4xl font-bold mb-2">¡Hola, {{ usuario.usuNombreCompleto }}! 👋</h1>
+    <p class="text-mp-muted text-lg">Bienvenido de nuevo a tu panel de control de parqueadero</p>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Ingresar al Parqueadero (QR) -->
+    <a href="{% url 'escanear_qr' %}" class="group bg-gradient-to-br from-purple-900/20 to-purple-900/5 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl p-6 hover:shadow-lg hover:shadow-purple-900/20 transition-all duration-200">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition mb-4">
+                <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                </svg>
+            </div>
+            <h3 class="font-bold text-white text-lg mb-1">Ingresar al Parqueadero</h3>
+            <p class="text-sm text-mp-muted">Escanear Código QR</p>
+        </div>
+    </a>
+
+    <!-- Mis Vehículos -->
+    <a href="#vehiculos" onclick="scrollToSection('vehiculos')" class="group bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-500/20 hover:border-green-500/40 rounded-2xl p-6 hover:shadow-lg hover:shadow-green-900/20 transition-all duration-200">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-xl bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition mb-4">
+                <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                </svg>
+            </div>
+            <h3 class="font-bold text-white text-lg mb-1">Mis Vehículos</h3>
+            <p class="text-sm text-mp-muted">Gestionar vehículos registrados</p>
+        </div>
+    </a>
+
+    <!-- Hacer Reserva -->
+    <a href="{% url 'cliente_crear_reserva' %}" class="group bg-gradient-to-br from-yellow-900/20 to-yellow-900/5 border border-yellow-500/20 hover:border-yellow-500/40 rounded-2xl p-6 hover:shadow-lg hover:shadow-yellow-900/20 transition-all duration-200">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-xl bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition mb-4">
+                <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                </svg>
+            </div>
+            <h3 class="font-bold text-white text-lg mb-1">Hacer Reserva</h3>
+            <p class="text-sm text-mp-muted">Reservar espacio de parqueo</p>
+        </div>
+    </a>
+
+    <!-- Marcar Salida -->
+    <div class="group bg-gradient-to-br from-red-900/20 to-red-900/5 border border-red-500/20 hover:border-red-500/40 rounded-2xl p-6 cursor-pointer hover:shadow-lg hover:shadow-red-900/20 transition-all duration-200" onclick="alert('Por favor, dirígete a la salida del parqueadero donde el vigilante procesará tu salida.')">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-xl bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition mb-4">
+                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+                </svg>
+            </div>
+            <h3 class="font-bold text-white text-lg mb-1">Marcar Salida</h3>
+            <p class="text-sm text-mp-muted">Salir del parqueadero</p>
+        </div>
+    </div>
+</div>
+
+<!-- Layout principal con secciones -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <!-- Mis Vehículos (2 columnas) -->
+    <div id="vehiculos" class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                </svg>
+                Mis Vehículos
+            </h2>
+            <a href="{% url 'cliente_crear_vehiculo' %}" class="bg-mp-purple hover:bg-mp-purple-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Agregar Vehículo
+            </a>
+        </div>
+
+        <div class="space-y-4">
+            {% for vehiculo in vehiculos %}
+            <div class="bg-black/20 border border-mp-border rounded-xl p-5 hover:border-mp-purple/30 transition">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xl text-white font-mono">{{ vehiculo.vehPlaca }}</h3>
+                            <p class="text-mp-muted text-sm">{{ vehiculo.vehColor }} {{ vehiculo.vehMarca }} {{ vehiculo.vehModelo }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {% if vehiculo.vehEstado %}
+                        <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold">Activo</span>
+                        {% else %}
+                        <span class="bg-gray-500/20 text-gray-400 px-3 py-1 rounded-full text-xs font-bold">Inactivo</span>
+                        {% endif %}
+
+                        <a href="{% url 'cliente_editar_vehiculo' vehiculo.pk %}" class="text-mp-muted hover:text-white transition p-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-12 text-mp-muted">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                </svg>
+                <p class="text-lg mb-2">No tienes vehículos registrados</p>
+                <p class="text-sm">Agrega tu primer vehículo para empezar a usar el parqueadero</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Mis Reservas (1 columna) -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+            Mis Reservas
+        </h2>
+
+        <div class="space-y-4">
+            {% for item in reservas %}
+            <div class="bg-black/20 border border-mp-border rounded-xl p-4 {% if item.necesita_confirmacion %}border-yellow-500/50{% endif %}">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-bold text-white text-lg font-mono">{{ item.reserva.fkIdVehiculo.vehPlaca }}</h3>
+                            {% if item.confirmada %}
+                            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs font-bold">{{ item.reserva.get_resEstado_display }}</span>
+                    </div>
+                </div>
+
+                {% if item.necesita_confirmacion %}
+                <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 mb-3">
+                    <p class="text-yellow-300 text-sm font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        ¡Tu reserva está cerca! Por favor confirma tu asistencia.
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="space-y-2 text-sm mb-4">
+                    <div class="flex items-center gap-2 text-mp-muted">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        {{ item.reserva.resFechaReserva|date:"Y-m-d" }}
+                    </div>
+                    <div class="flex items-center gap-2 text-mp-muted">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ item.reserva.resHoraInicio|time:"H:i" }} - {{ item.reserva.resHoraFin|time:"H:i" }}
+                    </div>
+                    <div class="flex items-center gap-2 text-mp-muted">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        {{ item.reserva.fkIdEspacio.fkIdPiso.pisNombre }} - #{{ item.reserva.fkIdEspacio.espNumero }}
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex gap-2 pt-3 border-t border-mp-border">
+                    {% if item.necesita_confirmacion %}
+                    <form method="POST" action="{% url 'cliente_confirmar_reserva' item.reserva.pk %}" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-bold transition text-sm">
+                            Confirmar Reserva
+                        </button>
+                    </form>
+                    <form method="POST" action="{% url 'cliente_cancelar_reserva' item.reserva.pk %}" class="flex-1" onsubmit="return confirm('¿Estás seguro de cancelar esta reserva?');">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-medium transition text-sm">
+                            Cancelar
+                        </button>
+                    </form>
+                    {% elif item.puede_editar %}
+                    <a href="{% url 'cliente_editar_reserva' item.reserva.pk %}" class="flex-1 text-center bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded-lg font-medium transition text-sm">
+                        Editar
+                    </a>
+                    <form method="POST" action="{% url 'cliente_cancelar_reserva' item.reserva.pk %}" class="flex-1" onsubmit="return confirm('¿Estás seguro de cancelar esta reserva?');">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-medium transition text-sm">
+                            Cancelar
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="flex-1 text-center text-mp-muted text-sm py-2">
+                        {% if item.confirmada %}
+                        <span class="text-green-400">✓ Confirmada</span>
+                        {% else %}
+                        Reserva próxima
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 text-mp-muted">
+                <p class="text-sm">No tienes reservas activas</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Pagos -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-6">
+    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+        </svg>
+        Historial de Pagos
+    </h2>
+
+    <div class="space-y-4">
+        {% for item in pagos %}
+        <div class="bg-black/20 border border-mp-border rounded-xl p-5 hover:border-blue-500/30 transition">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-2xl text-white">${{ item.pago.pagMonto|floatformat:0 }} COP</h3>
+                        <p class="text-mp-muted text-sm">{{ item.placa }} • {{ item.duracion }} • {{ item.pago.pagFechaPago|date:"Y-m-d" }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded text-xs font-bold block mb-1">Digital</span>
+                    <span class="text-xs text-mp-muted">Completado</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12 text-mp-muted">
+            <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+            </svg>
+            <p class="text-lg">No tienes historial de pagos</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollToSection(id) {
+    event.preventDefault();
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+{% endblock %}

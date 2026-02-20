@@ -1,0 +1,153 @@
+{% extends "cliente/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'dashboard' %}" class="text-mp-muted hover:text-white transition inline-flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Volver al Dashboard
+        </a>
+        <h1 class="text-3xl font-bold">{{ title }}</h1>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" class="bg-mp-card border border-mp-border rounded-xl p-6">
+        {% csrf_token %}
+
+        <!-- Placa -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">
+                Placa del Vehículo <span class="text-red-500">*</span>
+            </label>
+            <input
+                type="text"
+                name="vehPlaca"
+                value="{% if vehiculo %}{{ vehiculo.vehPlaca }}{% else %}{{ placa }}{% endif %}"
+                required
+                maxlength="10"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                placeholder="ABC-123">
+            <p class="text-xs text-mp-muted mt-1">Formato: ABC-123 o ABC123</p>
+        </div>
+
+        <!-- Tipo de Vehículo -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">
+                Tipo de Vehículo <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 gap-4">
+                <label class="relative cursor-pointer group">
+                    <input
+                        type="radio"
+                        name="vehTipo"
+                        value="CARRO"
+                        {% if vehiculo %}
+                            {% if vehiculo.vehTipo == 'CARRO' %}checked{% endif %}
+                        {% else %}
+                            checked
+                        {% endif %}
+                        class="peer sr-only">
+                    <div class="border-2 border-mp-border rounded-lg p-4 text-center transition-all peer-checked:border-mp-purple peer-checked:bg-mp-purple/10 group-hover:border-mp-muted">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-mp-muted peer-checked:text-mp-purple transition" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                        </svg>
+                        <span class="font-medium text-white">Carro</span>
+                    </div>
+                </label>
+                <label class="relative cursor-pointer group">
+                    <input
+                        type="radio"
+                        name="vehTipo"
+                        value="MOTO"
+                        {% if vehiculo %}
+                            {% if vehiculo.vehTipo == 'MOTO' %}checked{% endif %}
+                        {% endif %}
+                        class="peer sr-only">
+                    <div class="border-2 border-mp-border rounded-lg p-4 text-center transition-all peer-checked:border-mp-purple peer-checked:bg-mp-purple/10 group-hover:border-mp-muted">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-mp-muted peer-checked:text-mp-purple transition" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.44 9.03L15.41 5H11v2h3.59l2 2H5c-2.8 0-5 2.2-5 5s2.2 5 5 5c2.46 0 4.45-1.69 4.9-4h1.65l2.77-2.77c-.21.54-.32 1.14-.32 1.77 0 2.8 2.2 5 5 5s5-2.2 5-5c0-2.65-1.97-4.77-4.56-4.97zM5 19c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm14 0c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                        </svg>
+                        <span class="font-medium text-white">Moto</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Marca -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">Marca</label>
+            <input
+                type="text"
+                name="vehMarca"
+                value="{% if vehiculo %}{{ vehiculo.vehMarca }}{% else %}{{ marca }}{% endif %}"
+                maxlength="50"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                placeholder="Toyota, Yamaha, etc.">
+        </div>
+
+        <!-- Modelo -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">Modelo</label>
+            <input
+                type="text"
+                name="vehModelo"
+                value="{% if vehiculo %}{{ vehiculo.vehModelo }}{% else %}{{ modelo }}{% endif %}"
+                maxlength="50"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                placeholder="Corolla 2020, MT-07, etc.">
+        </div>
+
+        <!-- Color -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">Color</label>
+            <input
+                type="text"
+                name="vehColor"
+                value="{% if vehiculo %}{{ vehiculo.vehColor }}{% else %}{{ color }}{% endif %}"
+                maxlength="30"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                placeholder="Blanco, Negro, Rojo, etc.">
+        </div>
+
+        <!-- Estado -->
+        <div class="mb-6">
+            <div class="flex items-center gap-4">
+                <label for="vehEstado" class="relative inline-flex items-center cursor-pointer">
+                    <input
+                        type="checkbox"
+                        id="vehEstado"
+                        name="vehEstado"
+                        class="sr-only peer"
+                        {% if vehiculo %}
+                            {% if vehiculo.vehEstado %}checked{% endif %}
+                        {% else %}
+                            checked
+                        {% endif %}>
+                    <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-mp-purple transition-colors duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform after:duration-300 peer-checked:after:translate-x-5 after:shadow-md"></div>
+                </label>
+                <div>
+                    <span class="text-sm font-medium text-white block">Vehículo activo</span>
+                    <p class="text-xs text-mp-muted">Si está inactivo, no podrás usarlo para reservas ni ingresos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-4 justify-end pt-4 border-t border-mp-border">
+            <a href="{% url 'dashboard' %}"
+                class="px-6 py-2.5 rounded-lg text-mp-muted hover:text-white hover:bg-white/5 transition">
+                Cancelar
+            </a>
+            <button
+                type="submit"
+                class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition">
+                {% if vehiculo %}Actualizar Vehículo{% else %}Agregar Vehículo{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

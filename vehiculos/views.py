@@ -45,10 +45,11 @@ class VehiculoCreateView(AdminRequiredMixin, View):
 
     def post(self, request):
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        tipo = request.POST.get('vehTipo', '').strip()
+        tipo = request.POST.get('vehTipo', 'CARRO')
         color = request.POST.get('vehColor', '').strip()
         marca = request.POST.get('vehMarca', '').strip()
         modelo = request.POST.get('vehModelo', '').strip()
+        estado = request.POST.get('vehEstado') == 'on'
         usuario_id = request.POST.get('fkIdUsuario', '')
         es_visitante = request.POST.get('es_visitante') == 'on'
         nombre_contacto = request.POST.get('nombre_contacto', '').strip()
@@ -60,7 +61,7 @@ class VehiculoCreateView(AdminRequiredMixin, View):
             'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombreCompleto'),
             'vehiculo': {
                 'vehPlaca': placa, 'vehTipo': tipo, 'vehColor': color,
-                'vehMarca': marca, 'vehModelo': modelo,
+                'vehMarca': marca, 'vehModelo': modelo, 'vehEstado': estado,
                 'es_visitante': es_visitante,
                 'nombre_contacto': nombre_contacto,
                 'telefono_contacto': telefono_contacto,
@@ -81,6 +82,7 @@ class VehiculoCreateView(AdminRequiredMixin, View):
             vehColor=color,
             vehMarca=marca,
             vehModelo=modelo,
+            vehEstado=estado if estado else True,
             fkIdUsuario_id=usuario_id if usuario_id else None,
             es_visitante=es_visitante or not usuario_id,
             nombre_contacto=nombre_contacto,
@@ -103,10 +105,11 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
     def post(self, request, pk):
         vehiculo = get_object_or_404(Vehiculo, pk=pk)
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        vehiculo.vehTipo = request.POST.get('vehTipo', '').strip()
+        vehiculo.vehTipo = request.POST.get('vehTipo', 'CARRO')
         vehiculo.vehColor = request.POST.get('vehColor', '').strip()
         vehiculo.vehMarca = request.POST.get('vehMarca', '').strip()
         vehiculo.vehModelo = request.POST.get('vehModelo', '').strip()
+        vehiculo.vehEstado = request.POST.get('vehEstado') == 'on'
         usuario_id = request.POST.get('fkIdUsuario', '')
         vehiculo.es_visitante = request.POST.get('es_visitante') == 'on' or not usuario_id
         vehiculo.nombre_contacto = request.POST.get('nombre_contacto', '').strip()
