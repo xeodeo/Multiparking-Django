@@ -53,10 +53,9 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         espacio_id = request.POST.get('espacio_id')
         fecha_inicio = request.POST.get('fecha_inicio')
         hora_inicio = request.POST.get('hora_inicio')
-        hora_salida = request.POST.get('hora_salida')
 
         # Validaciones
-        if not all([vehiculo_id, espacio_id, fecha_inicio, hora_inicio, hora_salida]):
+        if not all([vehiculo_id, espacio_id, fecha_inicio, hora_inicio]):
             messages.error(request, 'Todos los campos son obligatorios.')
             return self.get(request)
 
@@ -85,39 +84,50 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             messages.error(request, 'No puedes reservar en fechas pasadas.')
             return self.get(request)
 
-        # Validar que la hora de salida sea después de la hora de inicio
+        # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
-        hora_salida_obj = datetime.strptime(hora_salida, '%H:%M').time()
 
-        if hora_salida_obj <= hora_inicio_obj:
-            messages.error(request, 'La hora de salida debe ser posterior a la hora de entrada.')
+        # Validar que la hora de reserva sea mayor a la hora actual
+        now = timezone.now()
+        now_local = timezone.localtime(now)  # Convertir a hora local de Bogotá
+
+        # Si es hoy, la hora debe ser mayor a la hora actual
+        if fecha_obj == date.today():
+            hora_actual = now_local.time().hour
+            hora_reserva = hora_inicio_obj.hour
+
+            if hora_reserva <= hora_actual:
+                messages.error(request, f'No puedes reservar para la misma hora. La reserva debe ser para las {hora_actual + 1}:00 en adelante.')
+                return self.get(request)
+
+        # Validar que la reserva sea con al menos 1 hora de anticipación
+        fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
+        if fecha_hora_inicio - now < timedelta(hours=1):
+            messages.error(request, 'Debes reservar con al menos 1 hora de anticipación.')
             return self.get(request)
 
-        # Verificar que no haya otra reserva para el mismo espacio en ese horario
+        # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora
         reservas_conflicto = Reserva.objects.filter(
             fkIdEspacio=espacio,
             resFechaReserva=fecha_inicio,
+            resHoraInicio=hora_inicio_obj,
             resEstado__in=['PENDIENTE', 'CONFIRMADA']
-        ).filter(
-            resHoraInicio__lt=hora_salida,
-            resHoraFin__gt=hora_inicio
         )
 
         if reservas_conflicto.exists():
             messages.error(request, 'El espacio ya está reservado en ese horario.')
             return self.get(request)
 
-        # Crear la reserva
+        # Crear la reserva (sin hora de fin)
         Reserva.objects.create(
             resFechaReserva=fecha_inicio,
-            resHoraInicio=hora_inicio,
-            resHoraFin=hora_salida,
+            resHoraInicio=hora_inicio_obj,
             resEstado='PENDIENTE',
             fkIdEspacio=espacio,
             fkIdVehiculo=vehiculo
         )
 
-        messages.success(request, f'Reserva creada exitosamente para {vehiculo.vehPlaca} el {fecha_inicio} de {hora_inicio} a {hora_salida}.')
+        messages.success(request, f'Reserva creada exitosamente para {vehiculo.vehPlaca} el {fecha_inicio} a las {hora_inicio}.')
         return redirect('dashboard')
 
 
@@ -177,10 +187,9 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
         espacio_id = request.POST.get('espacio_id')
         fecha_inicio = request.POST.get('fecha_inicio')
         hora_inicio = request.POST.get('hora_inicio')
-        hora_salida = request.POST.get('hora_salida')
 
         # Validaciones
-        if not all([vehiculo_id, espacio_id, fecha_inicio, hora_inicio, hora_salida]):
+        if not all([vehiculo_id, espacio_id, fecha_inicio, hora_inicio]):
             messages.error(request, 'Todos los campos son obligatorios.')
             return self.get(request, pk)
 
@@ -209,34 +218,45 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
             messages.error(request, 'No puedes reservar en fechas pasadas.')
             return self.get(request, pk)
 
-        # Validar que la hora de salida sea después de la hora de inicio
+        # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
-        hora_salida_obj = datetime.strptime(hora_salida, '%H:%M').time()
 
-        if hora_salida_obj <= hora_inicio_obj:
-            messages.error(request, 'La hora de salida debe ser posterior a la hora de entrada.')
+        # Validar que la hora de reserva sea mayor a la hora actual
+        now = timezone.now()
+        now_local = timezone.localtime(now)  # Convertir a hora local de Bogotá
+
+        # Si es hoy, la hora debe ser mayor a la hora actual
+        if fecha_obj == date.today():
+            hora_actual = now_local.time().hour
+            hora_reserva = hora_inicio_obj.hour
+
+            if hora_reserva <= hora_actual:
+                messages.error(request, f'No puedes reservar para la misma hora. La reserva debe ser para las {hora_actual + 1}:00 en adelante.')
+                return self.get(request, pk)
+
+        # Validar que la reserva sea con al menos 1 hora de anticipación
+        fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
+        if fecha_hora_inicio - now < timedelta(hours=1):
+            messages.error(request, 'Debes reservar con al menos 1 hora de anticipación.')
             return self.get(request, pk)
 
-        # Verificar que no haya otra reserva para el mismo espacio en ese horario (excluyendo esta reserva)
+        # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora (excluyendo esta reserva)
         reservas_conflicto = Reserva.objects.filter(
             fkIdEspacio=espacio,
             resFechaReserva=fecha_inicio,
+            resHoraInicio=hora_inicio_obj,
             resEstado__in=['PENDIENTE', 'CONFIRMADA']
-        ).exclude(pk=pk).filter(
-            resHoraInicio__lt=hora_salida,
-            resHoraFin__gt=hora_inicio
-        )
+        ).exclude(pk=pk)
 
         if reservas_conflicto.exists():
             messages.error(request, 'El espacio ya está reservado en ese horario.')
             return self.get(request, pk)
 
-        # Actualizar la reserva
+        # Actualizar la reserva (sin hora de fin)
         reserva.fkIdVehiculo = vehiculo
         reserva.fkIdEspacio = espacio
         reserva.resFechaReserva = fecha_inicio
-        reserva.resHoraInicio = hora_inicio
-        reserva.resHoraFin = hora_salida
+        reserva.resHoraInicio = hora_inicio_obj
         reserva.save()
 
         messages.success(request, f'Reserva actualizada exitosamente.')

@@ -11,7 +11,7 @@ class Reserva(models.Model):
 
     resFechaReserva = models.DateField()
     resHoraInicio = models.TimeField()
-    resHoraFin = models.TimeField()
+    resHoraFin = models.TimeField(null=True, blank=True)  # Ahora es opcional
     resEstado = models.CharField(
         max_length=11,
         choices=EstadoChoices.choices,

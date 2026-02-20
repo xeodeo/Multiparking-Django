@@ -27,13 +27,18 @@
             {% if vehiculos %}
             <select
                 name="vehiculo_id"
+                id="vehiculo_select"
                 required
+                onchange="filtrarEspaciosPorTipoVehiculo()"
                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
-                <option value="">-- Selecciona un vehículo --</option>
+                <option value="" data-tipo="">-- Selecciona un vehículo --</option>
                 {% for vehiculo in vehiculos %}
-                <option value="{{ vehiculo.pk }}" {% if reserva and reserva.fkIdVehiculo.pk == vehiculo.pk %}selected{% endif %}>{{ vehiculo.vehPlaca }} - {{ vehiculo.vehColor }} {{ vehiculo.vehMarca }} {{ vehiculo.vehModelo }}</option>
+                <option value="{{ vehiculo.pk }}" data-tipo="{{ vehiculo.vehTipo }}" {% if reserva and reserva.fkIdVehiculo.pk == vehiculo.pk %}selected{% endif %}>
+                    {{ vehiculo.vehPlaca }} - {{ vehiculo.vehTipo }} - {{ vehiculo.vehColor }} {{ vehiculo.vehMarca }} {{ vehiculo.vehModelo }}
+                </option>
                 {% endfor %}
             </select>
+            <p class="text-xs text-mp-muted mt-1">Los espacios se filtrarán según el tipo de vehículo seleccionado</p>
             {% else %}
             <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 text-yellow-300">
                 <p class="text-sm">No tienes vehículos activos. <a href="{% url 'cliente_crear_vehiculo' %}" class="underline font-bold">Agregar vehículo</a></p>
@@ -58,31 +63,19 @@
         </div>
 
         <!-- Horario -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-mp-muted mb-2">
-                    Hora de Entrada <span class="text-red-500">*</span>
-                </label>
-                <input
-                    type="time"
-                    name="hora_inicio"
-                    required
-                    value="{% if reserva %}{{ reserva.resHoraInicio|time:'H:i' }}{% endif %}"
-                    class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-mp-muted mb-2">
-                    Hora Estimada de Salida <span class="text-red-500">*</span>
-                </label>
-                <input
-                    type="time"
-                    name="hora_salida"
-                    required
-                    value="{% if reserva %}{{ reserva.resHoraFin|time:'H:i' }}{% endif %}"
-                    class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
-            </div>
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-mp-muted mb-2">
+                Hora de Llegada <span class="text-red-500">*</span>
+            </label>
+            <input
+                type="time"
+                name="hora_inicio"
+                id="hora_inicio"
+                required
+                value="{% if reserva %}{{ reserva.resHoraInicio|time:'H:i' }}{% endif %}"
+                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+            <p class="text-xs text-mp-muted mt-1">Selecciona la hora aproximada en que llegarás al parqueadero</p>
         </div>
-        <p class="text-xs text-mp-muted -mt-4 mb-6">La hora de salida es solo una estimación para calcular el costo aproximado</p>
 
         <!-- Seleccionar Espacio -->
         <div class="mb-6">
@@ -104,10 +97,10 @@
             <!-- Espacios por Piso -->
             {% for piso in pisos %}
             <div id="piso-{{ piso.pk }}" class="piso-content-reserva {% if not forloop.first %}hidden{% endif %}">
-                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mb-4">
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mb-4" id="espacios-grid-{{ piso.pk }}">
                     {% for espacio in piso.espacios.all %}
                     {% if espacio.espEstado == 'DISPONIBLE' or reserva and reserva.fkIdEspacio.pk == espacio.pk %}
-                    <label class="relative cursor-pointer group">
+                    <label class="relative cursor-pointer group espacio-item" data-tipo-espacio="{{ espacio.fkIdTipoEspacio.nombre }}">
                         <input
                             type="radio"
                             name="espacio_id"
@@ -115,16 +108,20 @@
                             required
                             {% if reserva and reserva.fkIdEspacio.pk == espacio.pk %}checked{% endif %}
                             class="peer sr-only">
-                        <div class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border-2 transition-all
+                        <div class="aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-bold border-2 transition-all
                             bg-green-500/20 border-green-600 text-white hover:bg-green-500/30
                             peer-checked:bg-green-500 peer-checked:border-green-400 peer-checked:scale-110 peer-checked:shadow-lg peer-checked:shadow-green-900/50">
-                            {{ espacio.espNumero }}
+                            <span class="text-sm">{{ espacio.espNumero }}</span>
+                            <span class="text-[0.6rem] text-green-300 mt-0.5">{{ espacio.fkIdTipoEspacio.nombre }}</span>
                         </div>
                     </label>
                     {% endif %}
                     {% endfor %}
                 </div>
-                <p class="text-xs text-mp-muted">
+                <div id="sin-espacios-{{ piso.pk }}" class="hidden bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+                    <p class="text-yellow-300 text-sm">No hay espacios disponibles de este tipo en este piso.</p>
+                </div>
+                <p class="text-xs text-mp-muted espacios-leyenda">
                     <span class="inline-block w-3 h-3 rounded bg-green-500 mr-1"></span>
                     Disponible - Haz clic para seleccionar
                 </p>
@@ -165,6 +162,98 @@
 
 {% block extra_js %}
 <script>
+// Filtrar espacios por tipo de vehículo
+function filtrarEspaciosPorTipoVehiculo() {
+    const vehiculoSelect = document.getElementById('vehiculo_select');
+    const selectedOption = vehiculoSelect.options[vehiculoSelect.selectedIndex];
+    const tipoVehiculo = selectedOption.getAttribute('data-tipo');
+
+    console.log('Tipo de vehículo seleccionado:', tipoVehiculo);
+
+    // Obtener todos los espacios
+    const espacios = document.querySelectorAll('.espacio-item');
+
+    if (!tipoVehiculo) {
+        // Si no hay vehículo seleccionado, mostrar mensaje
+        espacios.forEach(espacio => {
+            espacio.style.display = 'none';
+        });
+
+        // Mostrar advertencia en cada piso
+        document.querySelectorAll('[id^="sin-espacios-"]').forEach(div => {
+            div.classList.remove('hidden');
+            div.innerHTML = '<p class="text-blue-300 text-sm">👆 Primero selecciona un vehículo para ver los espacios disponibles</p>';
+        });
+
+        // Ocultar leyenda
+        document.querySelectorAll('.espacios-leyenda').forEach(p => p.style.display = 'none');
+        return;
+    }
+
+    // Ocultar todas las advertencias de sin espacios inicialmente
+    document.querySelectorAll('[id^="sin-espacios-"]').forEach(div => {
+        div.classList.add('hidden');
+    });
+
+    // Mostrar leyenda
+    document.querySelectorAll('.espacios-leyenda').forEach(p => p.style.display = 'block');
+
+    // Mapear tipo de vehículo a tipo de espacio
+    // CARRO → Carro, MOTO → Moto (capitalizado)
+    let tipoEspacioBuscado = tipoVehiculo.trim();
+    if (tipoEspacioBuscado === 'CARRO') {
+        tipoEspacioBuscado = 'Carro';
+    } else if (tipoEspacioBuscado === 'MOTO') {
+        tipoEspacioBuscado = 'Moto';
+    }
+
+    console.log('Tipo de espacio a buscar:', tipoEspacioBuscado);
+
+    // Filtrar espacios - Normalizar comparación
+    let totalEspaciosVisibles = 0;
+    let espaciosVisiblesPorPiso = {};
+
+    espacios.forEach(espacio => {
+        const tipoEspacio = (espacio.getAttribute('data-tipo-espacio') || '').trim();
+        const pisoDiv = espacio.closest('[id^="piso-"]');
+        const pisoId = pisoDiv ? pisoDiv.id : null;
+
+        console.log(`Comparando: "${tipoEspacio}" === "${tipoEspacioBuscado}"`);
+
+        if (tipoEspacio === tipoEspacioBuscado) {
+            espacio.style.display = 'block';
+            totalEspaciosVisibles++;
+            if (pisoId) {
+                espaciosVisiblesPorPiso[pisoId] = (espaciosVisiblesPorPiso[pisoId] || 0) + 1;
+            }
+        } else {
+            espacio.style.display = 'none';
+        }
+    });
+
+    console.log('Total espacios visibles:', totalEspaciosVisibles);
+    console.log('Espacios por piso:', espaciosVisiblesPorPiso);
+
+    // Verificar cada piso y mostrar mensaje si no hay espacios
+    document.querySelectorAll('[id^="piso-"]').forEach(pisoDiv => {
+        const pisoId = pisoDiv.id;
+        const pisoNum = pisoId.replace('piso-', '');
+        const espaciosEnEstePiso = espaciosVisiblesPorPiso[pisoId] || 0;
+        const sinEspaciosDiv = document.getElementById(`sin-espacios-${pisoNum}`);
+
+        if (espaciosEnEstePiso === 0 && sinEspaciosDiv) {
+            sinEspaciosDiv.classList.remove('hidden');
+            const tipoMostrar = tipoVehiculo === 'CARRO' ? 'carros' : 'motos';
+            sinEspaciosDiv.innerHTML = `<p class="text-yellow-300 text-sm">No hay espacios disponibles para ${tipoMostrar} en este piso.</p>`;
+        }
+    });
+
+    // Si no hay espacios en ningún piso, mostrar alerta general
+    if (totalEspaciosVisibles === 0) {
+        console.warn('No se encontraron espacios para el tipo:', tipoEspacioBuscado);
+    }
+}
+
 // Tabs de Pisos
 function showPiso(id) {
     // Ocultar todos los contenidos
@@ -196,6 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
     }
+
+    // Filtrar espacios al cargar si ya hay vehículo seleccionado
+    filtrarEspaciosPorTipoVehiculo();
 });
 </script>
 {% endblock %}
