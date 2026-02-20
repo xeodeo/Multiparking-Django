@@ -7,6 +7,7 @@ class Pago(models.Model):
         EFECTIVO = 'EFECTIVO', 'Efectivo'
         TARJETA = 'TARJETA', 'Tarjeta'
         TRANSFERENCIA = 'TRANSFERENCIA', 'Transferencia'
+        PSE = 'PSE', 'PSE'
 
     class EstadoChoices(models.TextChoices):
         PENDIENTE = 'PENDIENTE', 'Pendiente'

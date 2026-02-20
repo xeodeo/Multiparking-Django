@@ -917,8 +917,8 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
 
             espacio = Espacio.objects.filter(
                 espEstado='DISPONIBLE',
-                fkIdTipoEspacio__tipNombre=tipo_nombre
-            ).select_related('fkIdPiso').order_by('fkIdPiso__pisNumero', 'espNumero').first()
+                fkIdTipoEspacio__nombre=tipo_nombre
+            ).select_related('fkIdPiso').order_by('fkIdPiso__id', 'espNumero').first()
 
             if not espacio:
                 messages.error(

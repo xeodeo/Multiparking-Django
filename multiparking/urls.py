@@ -17,6 +17,7 @@ from parqueadero.views import (
     InventarioListView,
     EntradaParqueaderoView, EscanearQRView, GenerarQRView
 )
+from parqueadero.cliente_views import ClienteSalidaView
 from tarifas.views import (
     TarifaListView, TarifaCreateView, TarifaUpdateView, TarifaToggleView, TarifaDeleteView
 )
@@ -126,6 +127,7 @@ urlpatterns = [
     # Entrada al Parqueadero
     path('parqueadero/escanear/', EscanearQRView.as_view(), name='escanear_qr'),
     path('parqueadero/entrada/', EntradaParqueaderoView.as_view(), name='entrada_parqueadero'),
+    path('parqueadero/salida/', ClienteSalidaView.as_view(), name='cliente_salida'),
 
     # Vehículos del Cliente
     path('cliente/vehiculos/crear/', ClienteCrearVehiculoView.as_view(), name='cliente_crear_vehiculo'),
