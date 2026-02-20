@@ -147,14 +147,87 @@ def logout_view(request):
 
 
 def dashboard_view(request):
+    """Dashboard para clientes/usuarios registrados"""
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:
         messages.error(request, 'Debes iniciar sesión para acceder.')
         return redirect('login')
 
-    return render(request, 'auth/dashboard.html', {
-        'usuario_nombre': request.session.get('usuario_nombre'),
-        'usuario_rol': request.session.get('usuario_rol'),
+    from vehiculos.models import Vehiculo
+    from reservas.models import Reserva
+    from pagos.models import Pago
+    from parqueadero.models import InventarioParqueo
+    from django.utils import timezone
+
+    # Obtener usuario actual
+    usuario = Usuario.objects.get(pk=usuario_id)
+
+    # Vehículos del usuario (solo no visitantes)
+    vehiculos = Vehiculo.objects.filter(
+        fkIdUsuario=usuario,
+        es_visitante=False
+    ).order_by('-pk')
+
+    # Reservas del usuario (activas y futuras)
+    from datetime import datetime, timedelta
+
+    reservas_raw = Reserva.objects.filter(
+        fkIdVehiculo__fkIdUsuario=usuario,
+        resEstado__in=['PENDIENTE', 'CONFIRMADA']
+    ).select_related(
+        'fkIdVehiculo',
+        'fkIdEspacio',
+        'fkIdEspacio__fkIdPiso'
+    ).order_by('-resFechaReserva', '-resHoraInicio')[:5]
+
+    # Calcular si falta menos de 1h para cada reserva
+    now = timezone.now()
+    reservas = []
+    for reserva in reservas_raw:
+        fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
+        fecha_hora_reserva = timezone.make_aware(fecha_hora_reserva)
+
+        tiempo_restante = fecha_hora_reserva - now
+        necesita_confirmacion = timedelta(0) <= tiempo_restante <= timedelta(hours=1)
+        puede_editar = tiempo_restante >= timedelta(hours=1)
+
+        reservas.append({
+            'reserva': reserva,
+            'necesita_confirmacion': necesita_confirmacion and not reserva.resConfirmada,
+            'puede_editar': puede_editar,
+            'confirmada': reserva.resConfirmada
+        })
+
+    # Historial de pagos del usuario
+    pagos_historial = Pago.objects.filter(
+        fkIdParqueo__fkIdVehiculo__fkIdUsuario=usuario
+    ).select_related(
+        'fkIdParqueo',
+        'fkIdParqueo__fkIdVehiculo'
+    ).order_by('-pagFechaPago')[:10]
+
+    # Calcular duración para cada pago
+    pagos_con_duracion = []
+    for pago in pagos_historial:
+        parqueo = pago.fkIdParqueo
+        if parqueo.parHoraSalida:
+            duracion = parqueo.parHoraSalida - parqueo.parHoraEntrada
+            horas = duracion.total_seconds() / 3600
+            duracion_str = f"{horas:.1f} horas"
+        else:
+            duracion_str = "En curso"
+
+        pagos_con_duracion.append({
+            'pago': pago,
+            'duracion': duracion_str,
+            'placa': parqueo.fkIdVehiculo.vehPlaca
+        })
+
+    return render(request, 'cliente/dashboard.html', {
+        'usuario': usuario,
+        'vehiculos': vehiculos,
+        'reservas': reservas,
+        'pagos': pagos_con_duracion,
     })
 
 

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from django.http import JsonResponse
 
 from usuarios.mixins import AdminRequiredMixin
 
@@ -67,3 +68,26 @@ class ReservaCancelarView(AdminRequiredMixin, View):
         else:
             messages.error(request, 'Esta reserva no se puede cancelar.')
         return redirect('admin_reservas')
+
+
+class ReservaDetallesAPIView(View):
+    """API endpoint para obtener detalles de una reserva"""
+    def get(self, request, pk):
+        try:
+            reserva = Reserva.objects.select_related(
+                'fkIdVehiculo__fkIdUsuario',
+                'fkIdEspacio__fkIdPiso'
+            ).get(pk=pk)
+
+            data = {
+                'placa': reserva.fkIdVehiculo.vehPlaca,
+                'cliente': reserva.fkIdVehiculo.fkIdUsuario.usuNombreCompleto if reserva.fkIdVehiculo.fkIdUsuario else 'Visitante',
+                'fecha': reserva.resFechaReserva.strftime('%Y-%m-%d'),
+                'hora_inicio': reserva.resHoraInicio.strftime('%H:%M'),
+                'hora_fin': reserva.resHoraFin.strftime('%H:%M'),
+                'estado': reserva.get_resEstado_display(),
+                'confirmada': reserva.resConfirmada,
+            }
+            return JsonResponse(data)
+        except Reserva.DoesNotExist:
+            return JsonResponse({'error': 'Reserva no encontrada'}, status=404)

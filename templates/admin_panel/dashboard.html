@@ -32,9 +32,10 @@
     <div class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 class="text-xl font-bold">Vista General de Pisos</h2>
-            <div class="flex items-center gap-4 text-sm">
+            <div class="flex items-center gap-4 text-sm flex-wrap">
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-mp-muted">Disponible</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-mp-muted">Ocupado</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-mp-muted">Reservado (<2h)</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-600"></span><span class="text-mp-muted">Inactivo</span></div>
             </div>
         </div>
@@ -59,13 +60,13 @@
                     {{ piso.ocupados_espacios }} espacios ocupados de {{ piso.total_espacios }} <span class="text-xs">({{ piso.ocupacion_pct }}% ocupación)</span>
                 </p>
             </div>
-            {% if piso.espacios.all %}
+            {% if piso.espacios_list %}
             <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                {% for espacio in piso.espacios.all %}
+                {% for espacio in piso.espacios_list %}
                 <div class="relative group">
-                    <div onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}')"
-                        class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
-                        title="Espacio {{ espacio.espNumero }}">
+                    <div onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {% if espacio.reserva_proxima %}'{{ espacio.reserva_proxima.pk }}'{% else %}null{% endif %})"
+                        class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.reserva_proxima %}bg-orange-500 border-orange-600 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20{% elif espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
+                        title="Espacio {{ espacio.espNumero }}{% if espacio.reserva_proxima %} - Reservado{% endif %}">
                         {{ espacio.espNumero }}
                     </div>
                 </div>
@@ -428,6 +429,111 @@
         </div>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MODAL: DETALLES DE RESERVA               -->
+<!-- ══════════════════════════════════════════ -->
+<div id="reservaModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 backdrop-blur-sm" onclick="if(event.target===this) closeReservaModal()">
+    <div class="bg-mp-card border border-mp-border rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50 mx-4 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-orange-500/10 to-transparent border-b border-mp-border px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Espacio Reservado</h3>
+                    <p class="text-sm text-mp-muted mt-0.5">
+                        Espacio <span id="reservaModalEspacioNum" class="text-orange-400 font-bold"></span>
+                        <span class="text-mp-muted/60 mx-1">&middot;</span>
+                        <span id="reservaModalPisoNombre" class="text-mp-muted"></span>
+                    </p>
+                </div>
+                <button type="button" onclick="closeReservaModal()" class="text-mp-muted hover:text-white transition p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Detalles de la Reserva -->
+        <div class="px-6 py-5">
+            <div id="reservaLoading" class="flex items-center justify-center gap-3 py-8">
+                <svg class="animate-spin h-5 w-5 text-mp-purple-light" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-mp-muted text-sm">Cargando detalles...</span>
+            </div>
+            <div id="reservaDetails" class="hidden space-y-4">
+                <div class="bg-orange-900/20 border border-orange-500/30 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-orange-300 font-bold text-sm">Reserva Próxima</p>
+                            <p class="text-orange-400/70 text-xs">Este espacio tiene una reserva en las próximas 2 horas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-mp-dark rounded-xl p-5 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Vehículo</span>
+                            <span id="reservaPlaca" class="text-white font-mono font-bold text-lg"></span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-mp-muted block mb-1">Cliente</span>
+                            <span id="reservaCliente" class="text-white font-medium text-sm"></span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-mp-border pt-4">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <span class="text-xs text-mp-muted block mb-1">Fecha</span>
+                                <span id="reservaFecha" class="text-white text-sm"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-mp-muted block mb-1">Hora Inicio</span>
+                                <span id="reservaHoraInicio" class="text-white text-sm font-mono"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-mp-muted block mb-1">Hora Fin</span>
+                                <span id="reservaHoraFin" class="text-white text-sm font-mono"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-mp-border pt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-mp-muted">Estado</span>
+                            <span id="reservaEstado" class="px-3 py-1 rounded-full text-xs font-bold"></span>
+                        </div>
+                    </div>
+
+                    <div id="reservaConfirmada" class="hidden border-t border-mp-border pt-4">
+                        <div class="flex items-center gap-2 text-green-400">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm font-bold">Reserva confirmada por el cliente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-mp-border px-6 py-4 bg-black/20 flex justify-end">
+            <button type="button" onclick="closeReservaModal()" class="px-6 py-2.5 rounded-lg bg-mp-purple/20 text-mp-purple-light hover:bg-mp-purple/30 transition font-medium">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -450,9 +556,63 @@
     }
 
     // ── Space Click Handler ──
-    function handleSpaceClick(id, num, estado, pisoNombre) {
-        if(estado === 'DISPONIBLE') openEntryModal(id, num, pisoNombre);
-        else if(estado === 'OCUPADO') openExitModal(id, num);
+    function handleSpaceClick(id, num, estado, pisoNombre, reservaId) {
+        if(reservaId) {
+            // Espacio reservado - mostrar detalles de la reserva
+            openReservaModal(id, num, pisoNombre, reservaId);
+        } else if(estado === 'DISPONIBLE') {
+            openEntryModal(id, num, pisoNombre);
+        } else if(estado === 'OCUPADO') {
+            openExitModal(id, num);
+        }
+    }
+
+    // ── Reserva Modal ──
+    function openReservaModal(espacioId, espNum, pisoNombre, reservaId) {
+        document.getElementById('reservaModalEspacioNum').textContent = espNum;
+        document.getElementById('reservaModalPisoNombre').textContent = pisoNombre || '';
+        document.getElementById('reservaLoading').classList.remove('hidden');
+        document.getElementById('reservaDetails').classList.add('hidden');
+        document.getElementById('reservaModal').classList.remove('hidden');
+        document.getElementById('reservaModal').classList.add('flex');
+
+        // Cargar detalles de la reserva desde el servidor
+        fetch(`/api/reservas/${reservaId}/detalles/`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('reservaLoading').classList.add('hidden');
+                document.getElementById('reservaDetails').classList.remove('hidden');
+
+                document.getElementById('reservaPlaca').textContent = data.placa;
+                document.getElementById('reservaCliente').textContent = data.cliente;
+                document.getElementById('reservaFecha').textContent = data.fecha;
+                document.getElementById('reservaHoraInicio').textContent = data.hora_inicio;
+                document.getElementById('reservaHoraFin').textContent = data.hora_fin;
+
+                const estadoSpan = document.getElementById('reservaEstado');
+                estadoSpan.textContent = data.estado;
+                if(data.estado === 'CONFIRMADA') {
+                    estadoSpan.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-900/30 text-green-300';
+                } else {
+                    estadoSpan.className = 'px-3 py-1 rounded-full text-xs font-bold bg-yellow-900/30 text-yellow-300';
+                }
+
+                if(data.confirmada) {
+                    document.getElementById('reservaConfirmada').classList.remove('hidden');
+                } else {
+                    document.getElementById('reservaConfirmada').classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.error('Error loading reserva:', err);
+                closeReservaModal();
+                alert('Error al cargar los detalles de la reserva');
+            });
+    }
+
+    function closeReservaModal() {
+        document.getElementById('reservaModal').classList.add('hidden');
+        document.getElementById('reservaModal').classList.remove('flex');
     }
 
     // ── Entry Modal ──

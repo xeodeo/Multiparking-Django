@@ -1,0 +1,398 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Reportes y Estadísticas{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Reportes y Estadísticas</h1>
+<p class="text-mp-muted mb-8">Análisis detallado del rendimiento del parqueadero</p>
+
+<!-- Filtros de Reporte -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-6 mb-8">
+    <div class="flex items-center gap-3 mb-6">
+        <svg class="w-6 h-6 text-mp-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+        </svg>
+        <h2 class="text-xl font-bold">Filtros de Reporte</h2>
+    </div>
+
+    <form method="GET" action="{% url 'admin_reportes' %}" class="flex flex-col sm:flex-row gap-4 items-end">
+        <!-- Período -->
+        <div class="flex-1">
+            <label class="block text-sm text-mp-muted mb-2">Período de Tiempo</label>
+            <select
+                name="periodo"
+                onchange="this.form.submit()"
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                <option value="semana" {% if periodo == 'semana' %}selected{% endif %}>Última Semana</option>
+                <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Último Mes</option>
+                <option value="año" {% if periodo == 'año' %}selected{% endif %}>Último Año</option>
+            </select>
+        </div>
+
+        <!-- Piso -->
+        <div class="flex-1">
+            <label class="block text-sm text-mp-muted mb-2">Filtrar por Piso</label>
+            <select
+                name="piso"
+                onchange="this.form.submit()"
+                class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                <option value="todos" {% if piso_id == 'todos' %}selected{% endif %}>Todos los Pisos</option>
+                {% for piso in pisos %}
+                <option value="{{ piso.pk }}" {% if piso_id == piso.pk|stringformat:"s" %}selected{% endif %}>{{ piso.pisNombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Botones de exportación -->
+        <a href="{% url 'admin_reportes_pdf' %}?periodo={{ periodo }}&piso={{ piso_id }}"
+            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Exportar PDF
+        </a>
+
+        <a href="{% url 'admin_reportes_excel' %}?periodo={{ periodo }}&piso={{ piso_id }}"
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Exportar Excel
+        </a>
+    </form>
+</div>
+
+<!-- Métricas Principales -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Ocupación Promedio -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Ocupación Promedio</p>
+            <p class="text-4xl font-bold text-white mb-2">{{ ocupacion_promedio }}%</p>
+            {% if variacion_ocupacion > 0 %}
+            <p class="text-green-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                +{{ variacion_ocupacion }}% vs mes anterior
+            </p>
+            {% elif variacion_ocupacion < 0 %}
+            <p class="text-red-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                {{ variacion_ocupacion }}% vs mes anterior
+            </p>
+            {% else %}
+            <p class="text-mp-muted text-sm">Sin cambios vs mes anterior</p>
+            {% endif %}
+            <div class="absolute top-4 right-4">
+                <svg class="w-12 h-12 text-green-500/20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingresos Mensuales -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Ingresos Mensuales</p>
+            <p class="text-4xl font-bold text-white mb-2">${{ ingresos_totales|floatformat:1 }}M</p>
+            {% if variacion_ingresos > 0 %}
+            <p class="text-green-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                +{{ variacion_ingresos }}% vs mes anterior
+            </p>
+            {% elif variacion_ingresos < 0 %}
+            <p class="text-red-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                {{ variacion_ingresos }}% vs mes anterior
+            </p>
+            {% else %}
+            <p class="text-mp-muted text-sm">Sin cambios vs mes anterior</p>
+            {% endif %}
+            <div class="absolute top-4 right-4">
+                <svg class="w-12 h-12 text-blue-500/20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usuarios Activos -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Usuarios Activos</p>
+            <p class="text-4xl font-bold text-white mb-2">{{ usuarios_activos }}</p>
+            {% if variacion_usuarios > 0 %}
+            <p class="text-green-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                +{{ variacion_usuarios }}% vs mes anterior
+            </p>
+            {% elif variacion_usuarios < 0 %}
+            <p class="text-red-400 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                {{ variacion_usuarios }}% vs mes anterior
+            </p>
+            {% else %}
+            <p class="text-mp-muted text-sm">Sin cambios vs mes anterior</p>
+            {% endif %}
+            <div class="absolute top-4 right-4">
+                <svg class="w-12 h-12 text-purple-500/20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rotación Diaria -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-16 -mt-16"></div>
+        <div class="relative">
+            <p class="text-mp-muted text-sm mb-2">Rotación Diaria</p>
+            <p class="text-4xl font-bold text-white mb-2">{{ rotacion_diaria }}</p>
+            <p class="text-mp-muted text-sm">veh/espacio</p>
+            <div class="absolute top-4 right-4">
+                <svg class="w-12 h-12 text-yellow-500/20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficas -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Tendencia de Ocupación Diaria -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Tendencia de Ocupación Diaria</h2>
+        <p class="text-sm text-mp-muted mb-4">Ingresos por hora durante el día de hoy</p>
+        <div class="h-64">
+            <canvas id="ocupacionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Ingresos Mensuales -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Ingresos Mensuales</h2>
+        <p class="text-sm text-mp-muted mb-4">Evolución de ingresos en los últimos 6 meses</p>
+        <div class="h-64">
+            <canvas id="ingresosChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Distribución de Uso y Resumen por Piso -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Distribución de Uso -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Distribución de Uso</h2>
+        <p class="text-sm text-mp-muted mb-6">Tipo de usuarios del parqueadero</p>
+        <div class="h-80 flex items-center justify-center">
+            <canvas id="distribucionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Resumen por Piso -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Resumen por Piso</h2>
+        <p class="text-sm text-mp-muted mb-6">Métricas detalladas por nivel</p>
+        <div class="space-y-4">
+            {% for piso in resumen_pisos %}
+            <div class="bg-black/20 rounded-lg p-4 border border-mp-border">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-white">{{ piso.nombre }}</h3>
+                    <span class="text-sm text-mp-muted">Ocupación: <span class="text-white font-bold">{{ piso.ocupacion }}%</span></span>
+                </div>
+                <div class="mb-3">
+                    <div class="w-full bg-mp-dark rounded-full h-2">
+                        <div class="bg-gradient-to-r from-mp-purple to-mp-purple-light h-2 rounded-full transition-all duration-300" style="width: {{ piso.ocupacion }}%"></div>
+                    </div>
+                </div>
+                <p class="text-green-400 font-bold text-lg">${{ piso.ingresos|floatformat:1 }}M ingresos</p>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 text-mp-muted">
+                <p>No hay pisos configurados</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ══════════════════════════════════════════
+    // Gráfica 1: Tendencia de Ocupación Diaria
+    // ══════════════════════════════════════════
+    const ocupacionCtx = document.getElementById('ocupacionChart');
+    if (ocupacionCtx) {
+        new Chart(ocupacionCtx, {
+            type: 'line',
+            data: {
+                labels: {{ ocupacion_labels|safe }},
+                datasets: [{
+                    label: 'Ocupación',
+                    data: {{ ocupacion_data|safe }},
+                    borderColor: '#a78bfa',
+                    backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#a78bfa',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(18, 18, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#a78bfa',
+                        borderColor: '#1e1e3a',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, color: '#1e1e3a' },
+                        ticks: { color: '#9ca3af', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: '#1e1e3a' },
+                        ticks: { color: '#9ca3af' },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // ══════════════════════════════════════════
+    // Gráfica 2: Ingresos Mensuales
+    // ══════════════════════════════════════════
+    const ingresosCtx = document.getElementById('ingresosChart');
+    if (ingresosCtx) {
+        new Chart(ingresosCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ ingresos_labels|safe }},
+                datasets: [{
+                    label: 'Ingresos',
+                    data: {{ ingresos_data|safe }},
+                    backgroundColor: '#10b981',
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(18, 18, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#10b981',
+                        borderColor: '#1e1e3a',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y: {
+                        grid: { color: '#1e1e3a' },
+                        ticks: {
+                            color: '#9ca3af',
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // ══════════════════════════════════════════
+    // Gráfica 3: Distribución de Uso (Pie)
+    // ══════════════════════════════════════════
+    const distribucionCtx = document.getElementById('distribucionChart');
+    if (distribucionCtx) {
+        new Chart(distribucionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Residentes', 'Visitantes', 'Reservas'],
+                datasets: [{
+                    data: [{{ residentes_pct }}, {{ visitantes_pct }}, {{ reservas_pct }}],
+                    backgroundColor: ['#a78bfa', '#10b981', '#f59e0b'],
+                    borderColor: '#12121f',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff',
+                            padding: 20,
+                            font: { size: 13 },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(18, 18, 31, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#1e1e3a',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -17,6 +17,7 @@ class Reserva(models.Model):
         choices=EstadoChoices.choices,
         default=EstadoChoices.PENDIENTE,
     )
+    resConfirmada = models.BooleanField(default=False)
     fkIdEspacio = models.ForeignKey(
         'parqueadero.Espacio',
         on_delete=models.CASCADE,

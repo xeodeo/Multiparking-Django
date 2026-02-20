@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .reportes_views import ReportesView, ExportarPDFReportesView, ExportarExcelReportesView
 
 urlpatterns = [
     path('', views.AdminDashboardView.as_view(), name='admin_dashboard'),
@@ -41,4 +42,9 @@ urlpatterns = [
     path('registrar-salida/', views.RegistrarSalidaView.as_view(), name='admin_registrar_salida'),
     path('api/buscar-vehiculo/', views.BuscarVehiculoView.as_view(), name='admin_buscar_vehiculo'),
     path('api/detalle-ocupacion/', views.ObtenerDetalleOcupacionView.as_view(), name='admin_detalle_ocupacion'),
+
+    # Reportes
+    path('reportes/', ReportesView.as_view(), name='admin_reportes'),
+    path('reportes/exportar-pdf/', ExportarPDFReportesView.as_view(), name='admin_reportes_pdf'),
+    path('reportes/exportar-excel/', ExportarExcelReportesView.as_view(), name='admin_reportes_excel'),
 ]
