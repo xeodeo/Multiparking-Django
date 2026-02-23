@@ -961,11 +961,12 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
             reserva_hoy.resEstado = 'COMPLETADA'
             reserva_hoy.save()
 
-        messages.success(
-            request,
-            f'¡Bienvenido! Tu vehículo {vehiculo.vehPlaca} ha sido asignado al espacio {espacio.espNumero} en {espacio.fkIdPiso.pisNombre}.'
-        )
-        return redirect('dashboard')
+        return render(request, 'cliente/entrada_exitosa.html', {
+            'vehiculo': vehiculo,
+            'espacio': espacio,
+            'hora_entrada': timezone.localtime(now).strftime('%I:%M %p'),
+            'es_reserva': reserva_hoy is not None,
+        })
 
 
 # ── Escáner QR (Cliente) ─────────────────────────────────────────────
