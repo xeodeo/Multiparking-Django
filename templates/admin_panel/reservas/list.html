@@ -53,7 +53,7 @@
                     <th class="px-6 py-4 font-medium">Vehículo</th>
                     <th class="px-6 py-4 font-medium">Espacio</th>
                     <th class="px-6 py-4 font-medium">Inicio</th>
-                    <th class="px-6 py-4 font-medium">Fin</th>
+                    <th class="px-6 py-4 font-medium">Confirmación</th>
                     <th class="px-6 py-4 font-medium">Estado</th>
                     <th class="px-6 py-4 font-medium text-right">Acciones</th>
                 </tr>
@@ -68,7 +68,7 @@
                         <span class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded text-xs font-bold">{{ res.fkIdEspacio.espNumero }}</span>
                     </td>
                     <td class="px-6 py-4 text-mp-muted">{{ res.resFechaReserva }}, {{ res.resHoraInicio }}</td>
-                    <td class="px-6 py-4 text-mp-muted">{{ res.resFechaReserva }}, {{ res.resHoraFin }}</td>
+                    <td class="px-6 py-4 text-mp-muted">{% if res.resConfirmada %}<span class="text-green-400">Confirmada</span>{% else %}<span class="text-yellow-400">Sin confirmar</span>{% endif %}</td>
                     <td class="px-6 py-4">
                         {% if res.resEstado == 'CONFIRMADA' or res.resEstado == 'PENDIENTE' %}
                         <span class="bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full text-xs font-bold">Activa</span>

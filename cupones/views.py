@@ -30,6 +30,7 @@ class CuponCreateView(AdminRequiredMixin, View):
 
     def post(self, request):
         nombre = request.POST.get('cupNombre', '').strip()
+        codigo = request.POST.get('cupCodigo', '').strip().upper()
         tipo = request.POST.get('cupTipo', '')
         valor = request.POST.get('cupValor', '')
         descripcion = request.POST.get('cupDescripcion', '').strip()
@@ -42,6 +43,7 @@ class CuponCreateView(AdminRequiredMixin, View):
             'title': 'Nuevo Cupón',
             'cupon': {
                 'cupNombre': nombre,
+                'cupCodigo': codigo,
                 'cupTipo': tipo,
                 'cupValor': valor,
                 'cupDescripcion': descripcion,
@@ -51,12 +53,17 @@ class CuponCreateView(AdminRequiredMixin, View):
             },
         }
 
-        if not all([nombre, tipo, valor, fecha_inicio, fecha_fin]):
+        if not all([nombre, codigo, tipo, valor, fecha_inicio, fecha_fin]):
             messages.error(request, 'Todos los campos obligatorios deben estar llenos.')
+            return render(request, 'admin_panel/cupones/form.html', ctx)
+
+        if Cupon.objects.filter(cupCodigo__iexact=codigo).exists():
+            messages.error(request, f'Ya existe un cupón con el código "{codigo}".')
             return render(request, 'admin_panel/cupones/form.html', ctx)
 
         Cupon.objects.create(
             cupNombre=nombre,
+            cupCodigo=codigo,
             cupTipo=tipo,
             cupValor=valor,
             cupDescripcion=descripcion,
@@ -80,6 +87,7 @@ class CuponUpdateView(AdminRequiredMixin, View):
     def post(self, request, pk):
         cupon = get_object_or_404(Cupon, pk=pk)
         cupon.cupNombre = request.POST.get('cupNombre', '').strip()
+        cupon.cupCodigo = request.POST.get('cupCodigo', '').strip().upper()
         cupon.cupTipo = request.POST.get('cupTipo', '')
         cupon.cupValor = request.POST.get('cupValor', '')
         cupon.cupDescripcion = request.POST.get('cupDescripcion', '').strip()
@@ -87,9 +95,19 @@ class CuponUpdateView(AdminRequiredMixin, View):
         cupon.cupFechaFin = request.POST.get('cupFechaFin', '')
         cupon.cupActivo = 'cupActivo' in request.POST
 
-        if not all([cupon.cupNombre, cupon.cupTipo, cupon.cupValor,
+        if not all([cupon.cupNombre, cupon.cupCodigo, cupon.cupTipo, cupon.cupValor,
                     cupon.cupFechaInicio, cupon.cupFechaFin]):
             messages.error(request, 'Todos los campos obligatorios deben estar llenos.')
+            return render(request, 'admin_panel/cupones/form.html', {
+                'active_page': 'cupones',
+                'title': 'Editar Cupón',
+                'cupon': cupon,
+            })
+
+        # Verificar que el código no exista en otro cupón
+        duplicado = Cupon.objects.filter(cupCodigo__iexact=cupon.cupCodigo).exclude(pk=pk).exists()
+        if duplicado:
+            messages.error(request, f'Ya existe otro cupón con el código "{cupon.cupCodigo}".')
             return render(request, 'admin_panel/cupones/form.html', {
                 'active_page': 'cupones',
                 'title': 'Editar Cupón',

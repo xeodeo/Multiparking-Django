@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Script para limpiar y regenerar la base de datos con datos específicos
-Ejecutar: python reiniciar_base_datos.py
+Script para limpiar y regenerar la base de datos completa.
+Ejecutar: python scripts/reiniciar_base_datos.py
 """
 import os
 import django
@@ -11,6 +11,7 @@ from datetime import date, timedelta, datetime
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
 django.setup()
 
@@ -28,8 +29,8 @@ print("=" * 60)
 print(">> LIMPIANDO Y REGENERANDO BASE DE DATOS")
 print("=" * 60)
 
-# 1. LIMPIAR TODO
-print("\n[1/7] Limpiando base de datos...")
+# ── 1. LIMPIAR TODO ─────────────────────────────────────────
+print("\n[1/9] Limpiando base de datos...")
 CuponAplicado.objects.all().delete()
 Cupon.objects.all().delete()
 Reserva.objects.all().delete()
@@ -41,10 +42,11 @@ TipoEspacio.objects.all().delete()
 Piso.objects.all().delete()
 Vehiculo.objects.all().delete()
 Usuario.objects.all().delete()
-print("[OK] Base de datos limpiada")
+print("  [OK] Base de datos limpiada completamente")
 
-# 2. CREAR USUARIOS
-print("\n[2/7] Creando usuarios...")
+# ── 2. USUARIOS ─────────────────────────────────────────────
+print("\n[2/9] Creando usuarios...")
+
 admin = Usuario.objects.create(
     usuCorreo='admin@multiparking.com',
     usuDocumento='0000000001',
@@ -54,296 +56,331 @@ admin = Usuario.objects.create(
     rolTipoRol='ADMIN',
     usuEstado=True,
 )
-print(f"[OK] Admin: {admin.usuCorreo}")
+print(f"  [OK] Admin: admin@multiparking.com / admin123")
 
-cliente = Usuario.objects.create(
+vigilante = Usuario.objects.create(
+    usuCorreo='vigilante@multiparking.com',
+    usuDocumento='0000000002',
+    usuNombreCompleto='Vigilante Principal',
+    usuTelefono='3001111111',
+    usuClaveHash=make_password('vigil123'),
+    rolTipoRol='VIGILANTE',
+    usuEstado=True,
+)
+print(f"  [OK] Vigilante: vigilante@multiparking.com / vigil123")
+
+cliente1 = Usuario.objects.create(
     usuCorreo='cliente@test.com',
     usuDocumento='1234567890',
-    usuNombreCompleto='Cliente de Prueba',
+    usuNombreCompleto='Carlos Perez',
     usuTelefono='3001234567',
     usuClaveHash=make_password('test123'),
     rolTipoRol='CLIENTE',
     usuEstado=True,
 )
-print(f"[OK] Cliente: {cliente.usuCorreo}")
+print(f"  [OK] Cliente 1: cliente@test.com / test123")
 
-vigilante = Usuario.objects.create(
-    usuCorreo='vigilante@multiparking.com',
+cliente2 = Usuario.objects.create(
+    usuCorreo='maria@test.com',
     usuDocumento='9876543210',
-    usuNombreCompleto='Vigilante Principal',
+    usuNombreCompleto='Maria Lopez',
     usuTelefono='3009876543',
-    usuClaveHash=make_password('vigilante123'),
-    rolTipoRol='VIGILANTE',
+    usuClaveHash=make_password('test123'),
+    rolTipoRol='CLIENTE',
     usuEstado=True,
 )
-print(f"[OK] Vigilante: {vigilante.usuCorreo}")
+print(f"  [OK] Cliente 2: maria@test.com / test123")
 
-# 3. CREAR PISOS (4 pisos, 1 desactivado)
-print("\n[3/7] Creando pisos...")
-pisos = []
-for i in range(1, 5):
-    piso = Piso.objects.create(
-        pisNombre=f'Piso {i}',
-        pisEstado=(i != 4)  # Piso 4 desactivado
-    )
-    pisos.append(piso)
-    estado_txt = "activo" if piso.pisEstado else "DESACTIVADO"
-    print(f"[OK] {piso.pisNombre} ({estado_txt})")
+# ── 3. TIPOS DE ESPACIO (Solo Carro y Moto) ─────────────────
+print("\n[3/9] Creando tipos de espacio...")
 
-# 4. CREAR TIPOS DE ESPACIO
-print("\n[4/7] Creando tipos de espacio...")
-tipo_estandar = TipoEspacio.objects.create(nombre='Estandar')
+tipo_carro = TipoEspacio.objects.create(nombre='Carro')
 tipo_moto = TipoEspacio.objects.create(nombre='Moto')
-tipo_vip = TipoEspacio.objects.create(nombre='VIP')
-print(f"[OK] Tipos: Estandar, Moto, VIP")
+print(f"  [OK] Tipos: Carro, Moto")
 
-# 5. CREAR TARIFAS (2 por tipo, 1 activa y 1 desactivada)
-print("\n[5/7] Creando tarifas...")
+# ── 4. PISOS ────────────────────────────────────────────────
+print("\n[4/9] Creando pisos...")
 
-# Tarifas Estándar
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_estandar,
-    nombre='Tarifa Estandar 2025',
-    precioHora=5000,
-    precioDia=50000,
-    precioMensual=500000,
-    fechaInicio=date.today(),
-    fechaFin=None,
-    activa=True,
-)
-print("[OK] Tarifa Estandar 2025 (ACTIVA)")
-
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_estandar,
-    nombre='Tarifa Estandar 2024 (Antigua)',
-    precioHora=4500,
-    precioDia=45000,
-    precioMensual=450000,
-    fechaInicio=date(2024, 1, 1),
-    fechaFin=date(2024, 12, 31),
-    activa=False,
-)
-print("[OK] Tarifa Estandar 2024 (DESACTIVADA)")
-
-# Tarifas Moto
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_moto,
-    nombre='Tarifa Motos 2025',
-    precioHora=2000,
-    precioDia=20000,
-    precioMensual=200000,
-    fechaInicio=date.today(),
-    fechaFin=None,
-    activa=True,
-)
-print("[OK] Tarifa Motos 2025 (ACTIVA)")
-
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_moto,
-    nombre='Tarifa Motos 2024 (Antigua)',
-    precioHora=1800,
-    precioDia=18000,
-    precioMensual=180000,
-    fechaInicio=date(2024, 1, 1),
-    fechaFin=date(2024, 12, 31),
-    activa=False,
-)
-print("[OK] Tarifa Motos 2024 (DESACTIVADA)")
-
-# Tarifas VIP
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_vip,
-    nombre='Tarifa VIP 2025',
-    precioHora=10000,
-    precioDia=100000,
-    precioMensual=1000000,
-    fechaInicio=date.today(),
-    fechaFin=None,
-    activa=True,
-)
-print("[OK] Tarifa VIP 2025 (ACTIVA)")
-
-Tarifa.objects.create(
-    fkIdTipoEspacio=tipo_vip,
-    nombre='Tarifa VIP 2024 (Antigua)',
-    precioHora=9000,
-    precioDia=90000,
-    precioMensual=900000,
-    fechaInicio=date(2024, 1, 1),
-    fechaFin=date(2024, 12, 31),
-    activa=False,
-)
-print("[OK] Tarifa VIP 2024 (DESACTIVADA)")
-
-# 6. CREAR ESPACIOS
-print("\n[6/7] Creando espacios...")
-espacios_creados = 0
-
-# Piso 1 - Espacios Estándar (15) y Motos (10)
-for i in range(1, 16):
-    Espacio.objects.create(
-        espNumero=f'P1-A{i:02d}',
-        fkIdPiso=pisos[0],
-        fkIdTipoEspacio=tipo_estandar,
-        espEstado='DISPONIBLE',
-    )
-    espacios_creados += 1
-
-for i in range(1, 11):
-    Espacio.objects.create(
-        espNumero=f'P1-M{i:02d}',
-        fkIdPiso=pisos[0],
-        fkIdTipoEspacio=tipo_moto,
-        espEstado='DISPONIBLE',
-    )
-    espacios_creados += 1
-
-# Piso 2 - Espacios Estándar (15) y VIP (5)
-for i in range(1, 16):
-    Espacio.objects.create(
-        espNumero=f'P2-A{i:02d}',
-        fkIdPiso=pisos[1],
-        fkIdTipoEspacio=tipo_estandar,
-        espEstado='DISPONIBLE',
-    )
-    espacios_creados += 1
-
-for i in range(1, 6):
-    Espacio.objects.create(
-        espNumero=f'P2-V{i:02d}',
-        fkIdPiso=pisos[1],
-        fkIdTipoEspacio=tipo_vip,
-        espEstado='DISPONIBLE',
-    )
-    espacios_creados += 1
-
-# Piso 3 - Espacios Estándar (20)
-for i in range(1, 21):
-    Espacio.objects.create(
-        espNumero=f'P3-A{i:02d}',
-        fkIdPiso=pisos[2],
-        fkIdTipoEspacio=tipo_estandar,
-        espEstado='DISPONIBLE',
-    )
-    espacios_creados += 1
-
-print(f"[OK] {espacios_creados} espacios creados")
-
-# 7. CREAR VEHÍCULOS
-print("\n[7/7] Creando vehículos de prueba...")
-vehiculos_data = [
-    ('ABC123', 'CARRO', 'Toyota', 'Corolla', cliente, False),
-    ('DEF456', 'CARRO', 'Mazda', 'CX-5', cliente, False),
-    ('GHI789', 'CARRO', 'Chevrolet', 'Spark', cliente, False),
-    ('JKL012', 'MOTO', 'Yamaha', 'FZ-16', cliente, False),
-    ('MNO345', 'MOTO', 'Suzuki', 'Gixxer', cliente, False),
-    ('PQR678', 'CARRO', 'BMW', 'X5', cliente, False),
+pisos_config = [
+    ('Piso 1 - Subsuelo', True),
+    ('Piso 2 - Nivel Calle', True),
+    ('Piso 3 - Terraza', True),
+    ('Piso 4 - Mantenimiento', False),  # Desactivado
 ]
 
-for placa, tipo, marca, modelo, propietario, es_visitante in vehiculos_data:
-    Vehiculo.objects.create(
+pisos = []
+for nombre, estado in pisos_config:
+    piso = Piso.objects.create(pisNombre=nombre, pisEstado=estado)
+    pisos.append(piso)
+    estado_txt = "activo" if estado else "DESACTIVADO"
+    print(f"  [OK] {nombre} ({estado_txt})")
+
+# ── 5. ESPACIOS ─────────────────────────────────────────────
+print("\n[5/9] Creando espacios...")
+
+espacios_config = [
+    # (piso_index, prefijo, tipo, cantidad)
+    (0, 'C1', tipo_carro, 15),   # Piso 1: 15 carros
+    (0, 'M1', tipo_moto, 10),    # Piso 1: 10 motos
+    (1, 'C2', tipo_carro, 20),   # Piso 2: 20 carros
+    (1, 'M2', tipo_moto, 8),     # Piso 2: 8 motos
+    (2, 'C3', tipo_carro, 12),   # Piso 3: 12 carros
+    (2, 'M3', tipo_moto, 6),     # Piso 3: 6 motos
+]
+
+total_espacios = 0
+for piso_idx, prefijo, tipo, cantidad in espacios_config:
+    for i in range(1, cantidad + 1):
+        Espacio.objects.create(
+            espNumero=f'{prefijo}-{i:02d}',
+            fkIdPiso=pisos[piso_idx],
+            fkIdTipoEspacio=tipo,
+            espEstado='DISPONIBLE',
+        )
+        total_espacios += 1
+
+carros = Espacio.objects.filter(fkIdTipoEspacio=tipo_carro).count()
+motos = Espacio.objects.filter(fkIdTipoEspacio=tipo_moto).count()
+print(f"  [OK] {total_espacios} espacios creados (Carros: {carros}, Motos: {motos})")
+
+# ── 6. TARIFAS ──────────────────────────────────────────────
+print("\n[6/9] Creando tarifas...")
+
+# Tarifa activa Carros
+Tarifa.objects.create(
+    nombre='Tarifa Carros 2026',
+    fkIdTipoEspacio=tipo_carro,
+    precioHora=5000,
+    precioHoraVisitante=7000,
+    precioDia=40000,
+    precioMensual=450000,
+    fechaInicio=date.today(),
+    activa=True,
+)
+print("  [OK] Tarifa Carros 2026: $5,000/h | Visitante $7,000/h (ACTIVA)")
+
+# Tarifa inactiva Carros (antigua)
+Tarifa.objects.create(
+    nombre='Tarifa Carros 2025 (Antigua)',
+    fkIdTipoEspacio=tipo_carro,
+    precioHora=4500,
+    precioHoraVisitante=6000,
+    precioDia=35000,
+    precioMensual=400000,
+    fechaInicio=date(2025, 1, 1),
+    fechaFin=date(2025, 12, 31),
+    activa=False,
+)
+print("  [OK] Tarifa Carros 2025 (DESACTIVADA)")
+
+# Tarifa activa Motos
+Tarifa.objects.create(
+    nombre='Tarifa Motos 2026',
+    fkIdTipoEspacio=tipo_moto,
+    precioHora=2000,
+    precioHoraVisitante=3000,
+    precioDia=18000,
+    precioMensual=180000,
+    fechaInicio=date.today(),
+    activa=True,
+)
+print("  [OK] Tarifa Motos 2026: $2,000/h | Visitante $3,000/h (ACTIVA)")
+
+# Tarifa inactiva Motos (antigua)
+Tarifa.objects.create(
+    nombre='Tarifa Motos 2025 (Antigua)',
+    fkIdTipoEspacio=tipo_moto,
+    precioHora=1800,
+    precioHoraVisitante=2500,
+    precioDia=15000,
+    precioMensual=150000,
+    fechaInicio=date(2025, 1, 1),
+    fechaFin=date(2025, 12, 31),
+    activa=False,
+)
+print("  [OK] Tarifa Motos 2025 (DESACTIVADA)")
+
+# ── 7. VEHICULOS ────────────────────────────────────────────
+print("\n[7/9] Creando vehiculos de prueba...")
+
+vehiculos_demo = [
+    # (placa, tipo, color, marca, modelo, propietario)
+    ('ABC123', 'CARRO', 'Rojo', 'Toyota', 'Corolla', cliente1),
+    ('DEF456', 'CARRO', 'Blanco', 'Mazda', '3', cliente1),
+    ('GHI789', 'MOTO', 'Negro', 'Yamaha', 'FZ250', cliente1),
+    ('JKL012', 'CARRO', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('MNO345', 'MOTO', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('PQR678', 'CARRO', 'Negro', 'Renault', 'Logan', cliente2),
+]
+
+vehiculos = []
+for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
+    v = Vehiculo.objects.create(
         vehPlaca=placa,
         vehTipo=tipo,
+        vehColor=color,
         vehMarca=marca,
         vehModelo=modelo,
         fkIdUsuario=propietario,
-        es_visitante=es_visitante,
+        es_visitante=False,
     )
+    vehiculos.append(v)
+    print(f"  [OK] {placa} - {color} {marca} {modelo} ({tipo})")
 
-print(f"[OK] {len(vehiculos_data)} vehículos registrados")
-
-# 8. CREAR CUPONES DE DESCUENTO
+# ── 8. CUPONES ──────────────────────────────────────────────
 print("\n[8/9] Creando cupones de descuento...")
 
-from cupones.models import Cupon
-
-cupones_data = [
+hoy = date.today()
+cupones_demo = [
     # Cupones activos
-    ('Bienvenida 2025', 'PORCENTAJE', 20, 'Descuento de bienvenida para nuevos clientes', date.today(), date.today() + timedelta(days=90), True),
-    ('Descuento 10%', 'PORCENTAJE', 10, 'Descuento general del 10%', date.today(), date.today() + timedelta(days=60), True),
-    ('Descuento Fijo $5000', 'VALOR_FIJO', 5000, 'Descuento fijo de $5000 en tu próximo pago', date.today(), date.today() + timedelta(days=30), True),
-    ('VIP Premium 2025', 'PORCENTAJE', 25, 'Descuento exclusivo para clientes VIP', date.today(), date.today() + timedelta(days=365), True),
+    {
+        'cupNombre': 'Descuento Bienvenida',
+        'cupCodigo': 'BIENVENIDO20',
+        'cupTipo': 'PORCENTAJE',
+        'cupValor': 20,
+        'cupDescripcion': '20% de descuento para nuevos usuarios',
+        'cupFechaInicio': hoy,
+        'cupFechaFin': hoy + timedelta(days=90),
+        'cupActivo': True,
+    },
+    {
+        'cupNombre': 'Descuento Fijo $5,000',
+        'cupCodigo': 'DESCUENTO5K',
+        'cupTipo': 'VALOR_FIJO',
+        'cupValor': 5000,
+        'cupDescripcion': '$5,000 de descuento directo en tu pago',
+        'cupFechaInicio': hoy,
+        'cupFechaFin': hoy + timedelta(days=60),
+        'cupActivo': True,
+    },
+    {
+        'cupNombre': 'Promo Fin de Semana',
+        'cupCodigo': 'FINDE50',
+        'cupTipo': 'PORCENTAJE',
+        'cupValor': 50,
+        'cupDescripcion': '50% de descuento los fines de semana',
+        'cupFechaInicio': hoy,
+        'cupFechaFin': hoy + timedelta(days=30),
+        'cupActivo': True,
+    },
+    {
+        'cupNombre': 'VIP Premium',
+        'cupCodigo': 'VIPPREMIUM',
+        'cupTipo': 'PORCENTAJE',
+        'cupValor': 30,
+        'cupDescripcion': 'Descuento exclusivo para clientes VIP',
+        'cupFechaInicio': hoy,
+        'cupFechaFin': hoy + timedelta(days=365),
+        'cupActivo': True,
+    },
     # Cupones desactivados
-    ('Navidad 2024', 'PORCENTAJE', 30, 'Promoción especial de Navidad 2024', date(2024, 12, 1), date(2024, 12, 31), False),
-    ('Verano 2024', 'PORCENTAJE', 15, 'Descuento de temporada de verano', date(2024, 6, 1), date(2024, 8, 31), False),
+    {
+        'cupNombre': 'Navidad 2025',
+        'cupCodigo': 'NAVIDAD2025',
+        'cupTipo': 'PORCENTAJE',
+        'cupValor': 30,
+        'cupDescripcion': 'Promocion especial de Navidad 2025',
+        'cupFechaInicio': date(2025, 12, 1),
+        'cupFechaFin': date(2025, 12, 31),
+        'cupActivo': False,
+    },
+    {
+        'cupNombre': 'Black Friday 2025',
+        'cupCodigo': 'BLACKFRIDAY',
+        'cupTipo': 'PORCENTAJE',
+        'cupValor': 40,
+        'cupDescripcion': 'Descuento Black Friday',
+        'cupFechaInicio': date(2025, 11, 25),
+        'cupFechaFin': date(2025, 11, 30),
+        'cupActivo': False,
+    },
 ]
 
-for nombre, tipo, valor, descripcion, inicio, fin, activo in cupones_data:
-    Cupon.objects.create(
-        cupNombre=nombre,
-        cupTipo=tipo,
-        cupValor=valor,
-        cupDescripcion=descripcion,
-        cupFechaInicio=inicio,
-        cupFechaFin=fin,
-        cupActivo=activo,
-    )
-    estado = "ACTIVO" if activo else "DESACTIVADO"
-    print(f"[OK] Cupón '{nombre}' ({estado})")
+for cupon_data in cupones_demo:
+    Cupon.objects.create(**cupon_data)
+    estado = "ACTIVO" if cupon_data['cupActivo'] else "DESACTIVADO"
+    print(f"  [OK] {cupon_data['cupNombre']} -> {cupon_data['cupCodigo']} ({estado})")
 
-# 9. MARCAR ALGUNOS ESPACIOS COMO OCUPADOS/INACTIVOS
-print("\n[9/9] Configurando estados de espacios...")
+# ── 9. SIMULAR VEHICULOS ESTACIONADOS ───────────────────────
+print("\n[9/9] Simulando vehiculos estacionados...")
 
-# Marcar algunos espacios como OCUPADOS (simulando vehículos estacionados actualmente)
-espacios_ocupar = Espacio.objects.filter(espEstado='DISPONIBLE')[:8]
-vehiculos_list = list(Vehiculo.objects.all())
-tarifa_std = Tarifa.objects.get(nombre='Tarifa Estandar 2025')
+# Estacionar algunos vehiculos (crear entradas activas)
+espacios_disponibles = list(Espacio.objects.filter(espEstado='DISPONIBLE')[:6])
+vehiculos_a_parquear = vehiculos[:6]
 
-for idx, espacio in enumerate(espacios_ocupar):
-    vehiculo = vehiculos_list[idx % len(vehiculos_list)]
+parqueados = 0
+for idx in range(min(len(espacios_disponibles), len(vehiculos_a_parquear))):
+    espacio = espacios_disponibles[idx]
+    vehiculo = vehiculos_a_parquear[idx]
 
-    # Crear entrada sin salida (actualmente estacionado)
     hora_entrada = timezone.now() - timedelta(hours=(idx + 1))
     registro = InventarioParqueo.objects.create(
         fkIdVehiculo=vehiculo,
         fkIdEspacio=espacio,
-        parHoraSalida=None,  # Sin salida = actualmente ocupado
+        parHoraSalida=None,
     )
     InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada)
 
-    # Actualizar estado del espacio
     espacio.espEstado = 'OCUPADO'
     espacio.save()
+    parqueados += 1
 
-print(f"[OK] {len(espacios_ocupar)} espacios marcados como OCUPADOS")
+print(f"  [OK] {parqueados} vehiculos estacionados actualmente")
 
 # Marcar algunos espacios como INACTIVOS (mantenimiento)
-espacios_inactivar = Espacio.objects.filter(espEstado='DISPONIBLE')[5:10]
+espacios_inactivar = list(Espacio.objects.filter(espEstado='DISPONIBLE')[10:15])
 for espacio in espacios_inactivar:
     espacio.espEstado = 'INACTIVO'
     espacio.save()
 
-print(f"[OK] {len(espacios_inactivar)} espacios marcados como INACTIVOS (mantenimiento)")
+print(f"  [OK] {len(espacios_inactivar)} espacios en mantenimiento (INACTIVO)")
 
-# RESUMEN FINAL
+# ── RESUMEN FINAL ───────────────────────────────────────────
 print("\n" + "=" * 60)
 print(">> BASE DE DATOS REGENERADA EXITOSAMENTE")
 print("=" * 60)
-print(f"Usuarios: {Usuario.objects.count()} (Admin, Cliente, Vigilante)")
-print(f"Pisos: {Piso.objects.count()} (3 activos, 1 desactivado)")
-print(f"Tipos de Espacio: {TipoEspacio.objects.count()}")
-print(f"Espacios: {Espacio.objects.count()}")
-print(f"  - Disponibles: {Espacio.objects.filter(espEstado='DISPONIBLE').count()}")
-print(f"  - Ocupados: {Espacio.objects.filter(espEstado='OCUPADO').count()}")
-print(f"  - Inactivos: {Espacio.objects.filter(espEstado='INACTIVO').count()}")
-print(f"Tarifas: {Tarifa.objects.count()} (3 activas, 3 desactivadas)")
-print(f"Vehiculos: {Vehiculo.objects.count()}")
-print(f"Cupones: {Cupon.objects.count()} (4 activos, 2 desactivados)")
+print(f"""
+  Usuarios:    {Usuario.objects.count()}
+  Pisos:       {Piso.objects.filter(pisEstado=True).count()} activos + {Piso.objects.filter(pisEstado=False).count()} desactivado
+  Tipos:       Carro, Moto
+  Espacios:    {Espacio.objects.count()} total
+    Disponible:  {Espacio.objects.filter(espEstado='DISPONIBLE').count()}
+    Ocupado:     {Espacio.objects.filter(espEstado='OCUPADO').count()}
+    Inactivo:    {Espacio.objects.filter(espEstado='INACTIVO').count()}
+  Tarifas:     {Tarifa.objects.filter(activa=True).count()} activas + {Tarifa.objects.filter(activa=False).count()} desactivadas
+  Vehiculos:   {Vehiculo.objects.count()}
+  Cupones:     {Cupon.objects.filter(cupActivo=True).count()} activos + {Cupon.objects.filter(cupActivo=False).count()} desactivados
+""")
 
-print("\n" + "=" * 60)
+print("=" * 60)
 print(">> CREDENCIALES DE ACCESO")
 print("=" * 60)
-print("Admin:")
-print("  Email: admin@multiparking.com")
-print("  Password: admin123")
-print("")
-print("Cliente:")
-print("  Email: cliente@test.com")
-print("  Password: test123")
-print("")
-print("Vigilante:")
-print("  Email: vigilante@multiparking.com")
-print("  Password: vigilante123")
+print("""
+  Admin:
+    Email:    admin@multiparking.com
+    Password: admin123
 
-print("\n[INFO] Ahora ejecuta: python mantener_datos_demo.py")
-print("[INFO] Para generar pagos de demostracion")
+  Vigilante:
+    Email:    vigilante@multiparking.com
+    Password: vigil123
+
+  Cliente 1 (Carlos Perez):
+    Email:    cliente@test.com
+    Password: test123
+
+  Cliente 2 (Maria Lopez):
+    Email:    maria@test.com
+    Password: test123
+""")
+
+print("=" * 60)
+print(">> CUPONES DE DESCUENTO")
+print("=" * 60)
+print("""
+  BIENVENIDO20  -> 20% descuento
+  DESCUENTO5K   -> $5,000 de descuento fijo
+  FINDE50       -> 50% descuento
+  VIPPREMIUM    -> 30% descuento
+""")
+
+print("[INFO] Para generar pagos demo: python scripts/mantener_datos_demo.py")

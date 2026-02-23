@@ -42,12 +42,8 @@
                     <p class="text-sm text-mp-muted">{{ reserva.fkIdEspacio.fkIdPiso.pisNombre }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-mp-muted mb-1">Hora de Entrada</p>
+                    <p class="text-xs text-mp-muted mb-1">Hora de Llegada</p>
                     <p class="text-white font-medium">{{ reserva.resHoraInicio|time:"H:i" }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-mp-muted mb-1">Hora de Salida Estimada</p>
-                    <p class="text-white font-medium">{{ reserva.resHoraFin|time:"H:i" }}</p>
                 </div>
             </div>
         </div>

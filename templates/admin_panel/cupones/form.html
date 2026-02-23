@@ -17,14 +17,27 @@
             {% csrf_token %}
 
             <div class="space-y-6">
-                <!-- Nombre y Tipo -->
+                <!-- Nombre de la promocion -->
+                <div>
+                    <label for="cupNombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre de la Promocion</label>
+                    <input type="text" id="cupNombre" name="cupNombre" value="{{ cupon.cupNombre }}"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                        placeholder="Ej: Descuento Bienvenida" required>
+                </div>
+
+                <!-- Codigo y Tipo -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="cupNombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre /
-                            Código</label>
-                        <input type="text" id="cupNombre" name="cupNombre" value="{{ cupon.cupNombre }}"
-                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: DESC50" required>
+                        <label for="cupCodigo" class="block text-sm font-medium text-mp-muted mb-2">
+                            <span class="flex items-center gap-2">
+                                Codigo del Cupon
+                                <span class="text-xs text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">Unico</span>
+                            </span>
+                        </label>
+                        <input type="text" id="cupCodigo" name="cupCodigo" value="{{ cupon.cupCodigo }}"
+                            class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition uppercase font-mono"
+                            placeholder="Ej: BIENVENIDO20" required>
+                        <p class="text-xs text-mp-muted mt-1">Este es el codigo que el cliente ingresa para aplicar el descuento</p>
                     </div>
 
                     <div>

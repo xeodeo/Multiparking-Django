@@ -58,15 +58,19 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
 
         monto_total = Decimal('0')
         tarifa_info = None
+        es_visitante = registro.fkIdVehiculo.es_visitante
 
         if tarifa:
             horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
             if horas_totales == 0 and dias == 0:
                 horas_totales = 1
-            monto_total = tarifa.precioHora * horas_totales
+            # Usar tarifa visitante si aplica
+            precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
+            monto_total = precio_hora * horas_totales
             tarifa_info = {
-                'precio_hora': tarifa.precioHora,
-                'horas_totales': horas_totales
+                'precio_hora': precio_hora,
+                'horas_totales': horas_totales,
+                'es_visitante': es_visitante,
             }
 
         # Obtener cupones activos
@@ -121,12 +125,14 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         ).first()
 
         monto_total = Decimal('0')
+        es_visitante = registro.fkIdVehiculo.es_visitante
 
         if tarifa:
             horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
             if horas_totales == 0 and dias == 0:
                 horas_totales = 1
-            monto_total = tarifa.precioHora * horas_totales
+            precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
+            monto_total = precio_hora * horas_totales
 
         # Aplicar cupón si existe
         cupon = None
@@ -136,7 +142,7 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
             try:
                 hoy = timezone.now().date()
                 cupon = Cupon.objects.get(
-                    cupNombre__iexact=codigo_cupon,
+                    cupCodigo__iexact=codigo_cupon,
                     cupActivo=True,
                     cupFechaInicio__lte=hoy,
                     cupFechaFin__gte=hoy
@@ -153,17 +159,11 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         # Calcular monto final
         monto_final = max(monto_total - monto_descuento, Decimal('0'))
 
-        # Marcar salida
-        registro.parHoraSalida = ahora
-        registro.save()
-
         # Crear registro de pago
         if metodo_pago == 'EFECTIVO':
             estado_pago = 'PENDIENTE'
-            mensaje = f'Pago registrado: ${monto_final:,.0f} COP en efectivo (PENDIENTE). Dirígete a caja para completar el pago.'
         else:  # PSE
             estado_pago = 'PAGADO'
-            mensaje = f'Pago procesado exitosamente: ${monto_final:,.0f} COP vía PSE. ¡Gracias por tu preferencia!'
 
         pago = Pago.objects.create(
             pagMonto=monto_final,
@@ -180,13 +180,25 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
                 montoDescontado=monto_descuento
             )
 
-        # Liberar espacio
-        espacio = registro.fkIdEspacio
-        espacio.espEstado = 'DISPONIBLE'
-        espacio.save()
+        if metodo_pago == 'EFECTIVO':
+            # EFECTIVO: NO liberar espacio aún, se marca salida desde Vista General
+            # Solo registrar el pago pendiente
+            return render(request, 'cliente/salida_efectivo.html', {
+                'registro': registro,
+                'monto_final': monto_final,
+                'pago': pago,
+            })
+        else:
+            # PSE: Marcar salida y liberar espacio inmediatamente
+            registro.parHoraSalida = ahora
+            registro.save()
 
-        # Agregar mensaje de tiempo límite
-        messages.success(request, mensaje)
-        messages.info(request, '⚠️ IMPORTANTE: Tienes 10 minutos para salir del parqueadero y evitar sanciones.')
+            espacio = registro.fkIdEspacio
+            espacio.espEstado = 'DISPONIBLE'
+            espacio.save()
 
-        return redirect('dashboard')
+            return render(request, 'cliente/salida_exitosa.html', {
+                'registro': registro,
+                'monto_final': monto_final,
+                'metodo': 'PSE',
+            })

@@ -369,6 +369,26 @@ Gestión de cupones:
 - **Email:** `admin@multiparking.com`
 - **Password:** `admin123`
 
+**👮 Vigilante:**
+- **Email:** `vigilante@multiparking.com`
+- **Password:** `vigil123`
+
+**🚗 Cliente 1 (Carlos Perez):**
+- **Email:** `cliente@test.com`
+- **Password:** `test123`
+
+**🚗 Cliente 2 (Maria Lopez):**
+- **Email:** `maria@test.com`
+- **Password:** `test123`
+
+**🎟️ Cupones de Descuento:**
+| Codigo | Descuento |
+|--------|-----------|
+| `BIENVENIDO20` | 20% |
+| `DESCUENTO5K` | $5,000 fijo |
+| `FINDE50` | 50% |
+| `VIPPREMIUM` | 30% |
+
 **🎯 Funcionalidades disponibles en la demo:**
 - ✅ Panel de administración completo
 - ✅ Gestión de pisos, espacios, vehículos

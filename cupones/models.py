@@ -7,7 +7,8 @@ class Cupon(models.Model):
         PORCENTAJE = 'PORCENTAJE', 'Porcentaje'
         VALOR_FIJO = 'VALOR_FIJO', 'Valor Fijo'
 
-    cupNombre = models.CharField(max_length=100)
+    cupNombre = models.CharField(max_length=100)  # Nombre descriptivo: "Descuento Primer Uso"
+    cupCodigo = models.CharField(max_length=30, unique=True, default='')  # Código real: "PRIMERO10"
     cupTipo = models.CharField(
         max_length=10,
         choices=TipoChoices.choices,

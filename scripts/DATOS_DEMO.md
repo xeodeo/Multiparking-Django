@@ -22,12 +22,13 @@ python cargar_datos_iniciales.py
 ```
 
 **Crea:**
-- 2 usuarios: admin@multiparking.com y cliente@test.com
-- 3 pisos
-- 3 tipos de espacios (Estándar, Moto, VIP)
-- 30 espacios de parqueo
-- 2 tarifas activas
-- 5 vehículos de prueba
+- 4 usuarios: admin, vigilante, 2 clientes
+- 3 pisos activos + 1 desactivado
+- 2 tipos de espacios (Carro, Moto)
+- 71 espacios de parqueo
+- 2 tarifas activas (con precio visitante)
+- 6 vehiculos de prueba
+- 4 cupones activos con codigo
 
 ### 2. `mantener_datos_demo.py`
 **Propósito:** Mantener pagos siempre actualizados en los últimos 7 días
@@ -211,10 +212,27 @@ Pago.objects.filter(pagFechaPago__lt=hace_30_dias, pagMetodo='EFECTIVO').delete(
 
 ```
 Admin:
-Email: admin@multiparking.com
-Contraseña: admin123
+  Email:    admin@multiparking.com
+  Password: admin123
 
-Cliente:
-Email: cliente@test.com
-Contraseña: test123
+Vigilante:
+  Email:    vigilante@multiparking.com
+  Password: vigil123
+
+Cliente 1 (Carlos Perez):
+  Email:    cliente@test.com
+  Password: test123
+
+Cliente 2 (Maria Lopez):
+  Email:    maria@test.com
+  Password: test123
+```
+
+## Cupones de Descuento
+
+```
+BIENVENIDO20  -> 20% descuento
+DESCUENTO5K   -> $5,000 de descuento fijo
+FINDE50       -> 50% descuento
+VIPPREMIUM    -> 30% descuento
 ```

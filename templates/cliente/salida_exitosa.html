@@ -1,0 +1,63 @@
+{% extends "cliente/base.html" %}
+{% block title %}Salida Exitosa{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center py-8">
+
+    <!-- Ícono de éxito -->
+    <div class="w-28 h-28 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center border-2 border-green-500/40 animate-success">
+        <svg class="w-14 h-14 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+    </div>
+
+    <h1 class="text-3xl font-bold text-white mb-2">¡Pago Exitoso!</h1>
+    <p class="text-green-400 text-lg font-medium mb-6">Tu salida ha sido registrada</p>
+
+    <!-- Resumen -->
+    <div class="bg-mp-card border border-green-500/30 rounded-2xl p-6 mb-6">
+        <div class="flex items-center justify-center gap-6 mb-4">
+            <div>
+                <p class="text-xs text-mp-muted">Vehículo</p>
+                <p class="text-white font-bold font-mono text-lg">{{ registro.fkIdVehiculo.vehPlaca }}</p>
+            </div>
+            <div class="w-px h-8 bg-mp-border"></div>
+            <div>
+                <p class="text-xs text-mp-muted">Monto pagado</p>
+                <p class="text-green-400 font-bold text-lg">${{ monto_final|floatformat:0 }} COP</p>
+            </div>
+        </div>
+        <div class="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+            <p class="text-green-300 text-sm font-medium flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Pagado vía {{ metodo }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Advertencia de salida -->
+    <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-4 mb-6">
+        <p class="text-yellow-300 text-sm font-bold flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Tienes 10 minutos para salir del parqueadero
+        </p>
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="inline-block bg-mp-purple hover:bg-mp-purple-dark text-white px-8 py-3 rounded-xl font-bold transition">
+        Volver al Dashboard
+    </a>
+</div>
+
+<style>
+@keyframes success {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.animate-success { animation: success 0.6s ease-out; }
+</style>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "cliente/base.html" %}
+{% block title %}Dirígete a Caja{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center py-8">
+
+    <!-- Ícono palpitante -->
+    <div class="relative mb-8">
+        <div class="w-32 h-32 mx-auto rounded-full bg-green-500/10 flex items-center justify-center border-2 border-green-500/30 animate-pulse-ring">
+            <div class="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center animate-pulse">
+                <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+        </div>
+        <!-- Ondas de animación -->
+        <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-32 h-32 rounded-full border-2 border-green-400/30 animate-ping-slow"></div>
+        </div>
+    </div>
+
+    <h1 class="text-3xl font-bold text-white mb-3">¡Pago Registrado!</h1>
+    <p class="text-green-400 text-lg font-bold mb-6 animate-pulse">Dirígete a caja para pagar</p>
+
+    <!-- Monto a pagar -->
+    <div class="bg-mp-card border-2 border-green-500/40 rounded-2xl p-6 mb-6 animate-glow">
+        <p class="text-mp-muted text-sm mb-1">Total a pagar en caja</p>
+        <p class="text-green-400 font-bold text-5xl mb-2">${{ monto_final|floatformat:0 }}</p>
+        <p class="text-mp-muted text-sm">COP - Pago en Efectivo</p>
+    </div>
+
+    <!-- Info del vehículo -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-center gap-6">
+            <div>
+                <p class="text-xs text-mp-muted">Vehículo</p>
+                <p class="text-white font-bold font-mono text-lg">{{ registro.fkIdVehiculo.vehPlaca }}</p>
+            </div>
+            <div class="w-px h-8 bg-mp-border"></div>
+            <div>
+                <p class="text-xs text-mp-muted">Espacio</p>
+                <p class="text-white font-bold">#{{ registro.fkIdEspacio.espNumero }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pasos -->
+    <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-5 mb-6 text-left">
+        <h3 class="text-yellow-300 font-bold mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Pasos a seguir:
+        </h3>
+        <ol class="space-y-2 text-sm">
+            <li class="flex items-start gap-2">
+                <span class="bg-yellow-500/30 text-yellow-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+                <span class="text-mp-muted">Dirígete al punto de caja del parqueadero</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="bg-yellow-500/30 text-yellow-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+                <span class="text-mp-muted">Indica tu placa <strong class="text-white">{{ registro.fkIdVehiculo.vehPlaca }}</strong> y paga <strong class="text-green-400">${{ monto_final|floatformat:0 }}</strong></span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="bg-yellow-500/30 text-yellow-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+                <span class="text-mp-muted">El vigilante confirmará tu salida y se abrirá la barrera</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- Advertencia de tiempo -->
+    <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-4 mb-6">
+        <p class="text-red-300 text-sm font-bold flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Tienes 10 minutos para dirigirte a caja
+        </p>
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="inline-block bg-mp-purple hover:bg-mp-purple-dark text-white px-8 py-3 rounded-xl font-bold transition">
+        Volver al Dashboard
+    </a>
+</div>
+
+<style>
+@keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+@keyframes ping-slow {
+    0% { transform: scale(1); opacity: 0.5; }
+    75%, 100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); }
+}
+.animate-pulse-ring { animation: pulse-ring 2s infinite; }
+.animate-ping-slow { animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+</style>
+{% endblock %}
