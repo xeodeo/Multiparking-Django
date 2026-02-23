@@ -1,4 +1,5 @@
 {% extends "cliente/base.html" %}
+{% load l10n %}
 {% block title %}Procesar Salida{% endblock %}
 
 {% block content %}
@@ -70,9 +71,11 @@
                     <span class="text-mp-muted">Horas totales:</span>
                     <span class="text-white font-medium">{{ tarifa_info.horas_totales }}</span>
                 </div>
-                <div class="border-t border-mp-border pt-3 flex justify-between items-center" id="subtotal-row">
-                    <span class="text-white font-bold text-lg">Subtotal:</span>
-                    <span class="text-white font-bold text-xl" id="subtotal-monto">${{ monto_total|floatformat:0 }}</span>
+                <div class="border-t border-mp-border pt-3" id="subtotal-row">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white font-bold text-lg" id="subtotal-label">Total a pagar:</span>
+                        <span class="text-white font-bold text-2xl" id="subtotal-monto">${{ monto_total|floatformat:0 }}</span>
+                    </div>
                 </div>
             </div>
             {% else %}
@@ -87,11 +90,11 @@
                     </svg>
                     ¿Tienes un cupón de descuento?
                 </label>
-                <div class="flex items-stretch gap-2">
+                <div class="flex items-stretch gap-2" id="cupon-input-row">
                     <input type="text" name="codigo_cupon" id="codigo_cupon"
                            class="flex-1 bg-black/20 border border-mp-border rounded-lg px-4 py-3 text-white placeholder-mp-muted focus:outline-none focus:border-mp-purple uppercase text-sm"
                            placeholder="Ej: BIENVENIDO20">
-                    <button type="button" onclick="aplicarCupon()"
+                    <button type="button" id="btn-aplicar" onclick="aplicarCupon()"
                             class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-3 rounded-lg font-bold transition flex items-center gap-2 whitespace-nowrap text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -102,9 +105,9 @@
             </div>
 
             <!-- Cupón aplicado (inicialmente oculto) -->
-            <div id="total-con-descuento" class="hidden mt-4 pt-4 border-t-2 border-green-500/30">
-                <!-- Nombre y código del cupón -->
-                <div class="bg-green-900/30 border-2 border-green-500/50 rounded-xl p-5 mb-4">
+            <div id="cupon-aplicado" class="hidden mt-4 pt-4 border-t-2 border-green-500/30">
+                <!-- Card del cupón -->
+                <div class="bg-green-900/30 border-2 border-green-500/50 rounded-xl p-5 mb-4 animate-slideDown">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
                             <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,31 +115,34 @@
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <p class="text-green-300 font-bold text-lg" id="cupon-nombre-display">¡Cupón aplicado!</p>
+                            <p class="text-green-300 font-bold text-lg" id="cupon-nombre-display">Cupón</p>
                             <p class="text-green-400/70 text-sm" id="cupon-codigo-display">Código: ---</p>
                         </div>
-                        <button type="button" onclick="quitarCupon()" class="text-red-400 hover:text-red-300 text-xs underline">Quitar</button>
+                        <button type="button" onclick="quitarCupon()" class="bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Quitar
+                        </button>
                     </div>
                     <div class="flex items-center justify-between bg-black/20 rounded-lg p-3">
-                        <span class="text-green-400 text-sm">Tu descuento:</span>
-                        <span class="text-green-400 font-bold text-2xl" id="monto-descuento">-$0</span>
+                        <span class="text-green-400 text-sm font-medium">Ahorras:</span>
+                        <span class="text-green-400 font-bold text-2xl" id="monto-ahorro">-$0</span>
                     </div>
                 </div>
 
-                <!-- Desglose claro -->
+                <!-- Desglose -->
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between items-center">
                         <span class="text-mp-muted text-sm">Subtotal original:</span>
-                        <span class="text-mp-muted line-through">${{ monto_total|floatformat:0 }}</span>
+                        <span class="text-mp-muted line-through" id="subtotal-original">${{ monto_total|floatformat:0 }}</span>
                     </div>
                     <div class="flex justify-between items-center text-green-400">
-                        <span class="font-medium text-sm">Descuento:</span>
+                        <span class="font-medium text-sm" id="descuento-label">Descuento:</span>
                         <span class="font-bold" id="monto-descuento-detalle">-$0</span>
                     </div>
                 </div>
 
-                <!-- Total final -->
-                <div class="bg-purple-900/30 border-2 border-purple-500/50 rounded-xl p-4">
+                <!-- Total final destacado -->
+                <div class="bg-purple-900/30 border-2 border-purple-500/50 rounded-xl p-5 animate-glow">
                     <div class="flex justify-between items-center">
                         <span class="text-white font-bold text-lg">TOTAL A PAGAR:</span>
                         <span class="text-purple-300 font-bold text-3xl" id="monto-final">${{ monto_total|floatformat:0 }}</span>
@@ -250,30 +256,29 @@
 
 {% block extra_js %}
 <script>
-const montoTotal = {{ monto_total }};
+const montoTotal = {{ monto_total|unlocalize }};
 
 // Cupones con nombre + código
 const cuponesData = [
     {% for cupon in cupones %}
     {
-        nombre: '{{ cupon.cupNombre }}',
-        codigo: '{{ cupon.cupCodigo|upper }}',
+        nombre: '{{ cupon.cupNombre|escapejs }}',
+        codigo: '{{ cupon.cupCodigo|upper|escapejs }}',
         tipo: '{{ cupon.cupTipo }}',
-        valor: {{ cupon.cupValor }}
+        valor: {{ cupon.cupValor|unlocalize }}
     },
     {% endfor %}
 ];
+
+function formatCOP(n) {
+    return '$' + Math.round(n).toLocaleString('es-CO');
+}
 
 function aplicarCupon() {
     const codigoCupon = document.getElementById('codigo_cupon').value.trim().toUpperCase();
 
     if (!codigoCupon) {
-        // Mostrar popup de cupón inválido
-        const popup = document.getElementById('cupon-popup');
-        popup.querySelector('h3').textContent = 'Ingresa un código';
-        popup.querySelector('p').textContent = 'Por favor escribe el código de tu cupón de descuento.';
-        popup.classList.remove('hidden');
-        popup.classList.add('flex');
+        mostrarPopup('Ingresa un código', 'Por favor escribe el código de tu cupón de descuento.');
         return;
     }
 
@@ -281,57 +286,74 @@ function aplicarCupon() {
     const cupon = cuponesData.find(c => c.codigo === codigoCupon);
 
     if (!cupon) {
-        // Mostrar popup de cupón inválido
-        const popup = document.getElementById('cupon-popup');
-        popup.querySelector('h3').textContent = 'Cupón no válido';
-        popup.querySelector('p').textContent = 'El código ingresado no existe, ya expiró o no está activo.';
-        popup.classList.remove('hidden');
-        popup.classList.add('flex');
-        document.getElementById('total-con-descuento').classList.add('hidden');
+        mostrarPopup('Cupón no válido', 'El código ingresado no existe, ya expiró o no está activo.');
         return;
     }
 
     // Calcular descuento
     let descuento = 0;
+    let descLabel = '';
     if (cupon.tipo === 'PORCENTAJE') {
         descuento = (montoTotal * cupon.valor) / 100;
-    } else { // VALOR_FIJO
+        descLabel = cupon.valor + '% de descuento';
+    } else {
         descuento = Math.min(cupon.valor, montoTotal);
+        descLabel = formatCOP(cupon.valor) + ' de descuento';
     }
 
     const montoFinal = Math.max(montoTotal - descuento, 0);
 
-    // Mostrar nombre y código del cupón
+    // --- Actualizar el subtotal principal ---
+    document.getElementById('subtotal-label').textContent = 'Subtotal:';
+    document.getElementById('subtotal-monto').textContent = formatCOP(montoTotal);
+    document.getElementById('subtotal-monto').classList.add('line-through', 'text-mp-muted', 'text-lg');
+    document.getElementById('subtotal-monto').classList.remove('text-white', 'text-2xl');
+
+    // --- Mostrar card de cupón aplicado ---
     document.getElementById('cupon-nombre-display').textContent = cupon.nombre;
-    document.getElementById('cupon-codigo-display').textContent = `Código: ${cupon.codigo}` + (cupon.tipo === 'PORCENTAJE' ? ` (${cupon.valor}% off)` : ` (-$${cupon.valor.toLocaleString()})`);
+    document.getElementById('cupon-codigo-display').textContent = 'Código: ' + cupon.codigo + ' — ' + descLabel;
 
-    // Actualizar montos
-    const descuentoFormateado = '-$' + Math.round(descuento).toLocaleString();
-    document.getElementById('monto-descuento').textContent = descuentoFormateado;
-    document.getElementById('monto-descuento-detalle').textContent = descuentoFormateado;
-    document.getElementById('monto-final').textContent = '$' + Math.round(montoFinal).toLocaleString();
+    document.getElementById('monto-ahorro').textContent = '-' + formatCOP(descuento);
+    document.getElementById('monto-descuento-detalle').textContent = '-' + formatCOP(descuento);
+    document.getElementById('descuento-label').textContent = cupon.tipo === 'PORCENTAJE'
+        ? 'Descuento (' + cupon.valor + '%):'
+        : 'Descuento fijo:';
+    document.getElementById('monto-final').textContent = formatCOP(montoFinal);
 
-    // Mostrar sección con animación
-    const totalDiv = document.getElementById('total-con-descuento');
-    totalDiv.classList.remove('hidden');
-    totalDiv.style.animation = 'slideDown 0.3s ease-out';
+    const cuponDiv = document.getElementById('cupon-aplicado');
+    cuponDiv.classList.remove('hidden');
 
-    // Deshabilitar input y botón (cupón ya aplicado)
-    document.getElementById('codigo_cupon').disabled = true;
-    document.getElementById('codigo_cupon').classList.add('opacity-50');
+    // Ocultar input de cupón y mostrar badge en su lugar
+    document.getElementById('cupon-input-row').classList.add('hidden');
 
     // Scroll suave hacia el total
     setTimeout(() => {
-        totalDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
+        cuponDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 150);
 }
 
 function quitarCupon() {
-    document.getElementById('total-con-descuento').classList.add('hidden');
+    // Ocultar cupón
+    document.getElementById('cupon-aplicado').classList.add('hidden');
+
+    // Restaurar subtotal
+    document.getElementById('subtotal-label').textContent = 'Total a pagar:';
+    document.getElementById('subtotal-monto').textContent = formatCOP(montoTotal);
+    document.getElementById('subtotal-monto').classList.remove('line-through', 'text-mp-muted', 'text-lg');
+    document.getElementById('subtotal-monto').classList.add('text-white', 'text-2xl');
+
+    // Restaurar input
+    document.getElementById('cupon-input-row').classList.remove('hidden');
     document.getElementById('codigo_cupon').value = '';
-    document.getElementById('codigo_cupon').disabled = false;
-    document.getElementById('codigo_cupon').classList.remove('opacity-50');
     document.getElementById('codigo_cupon').focus();
+}
+
+function mostrarPopup(titulo, mensaje) {
+    const popup = document.getElementById('cupon-popup');
+    popup.querySelector('h3').textContent = titulo;
+    popup.querySelector('p').textContent = mensaje;
+    popup.classList.remove('hidden');
+    popup.classList.add('flex');
 }
 
 function cerrarPopupCupon() {
@@ -341,21 +363,24 @@ function cerrarPopupCupon() {
     document.getElementById('codigo_cupon').value = '';
     document.getElementById('codigo_cupon').focus();
 }
-
-// Animaciones CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes popup {
-        0% { opacity: 0; transform: scale(0.8); }
-        50% { transform: scale(1.05); }
-        100% { opacity: 1; transform: scale(1); }
-    }
-    .animate-popup { animation: popup 0.3s ease-out; }
-`;
-document.head.appendChild(style);
 </script>
+
+<style>
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes popup {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(124, 58, 237, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(124, 58, 237, 0.3); }
+}
+.animate-slideDown { animation: slideDown 0.3s ease-out; }
+.animate-popup { animation: popup 0.3s ease-out; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+</style>
 {% endblock %}
