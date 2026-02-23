@@ -10,6 +10,7 @@ class Tarifa(models.Model):
         db_column='fkIdTipoEspacio',
     )
     precioHora = models.DecimalField(max_digits=10, decimal_places=2)
+    precioHoraVisitante = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Tarifa visitante
     precioDia = models.DecimalField(max_digits=10, decimal_places=2)
     precioMensual = models.DecimalField(max_digits=12, decimal_places=2)
     activa = models.BooleanField(default=True)

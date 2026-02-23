@@ -171,6 +171,21 @@ def dashboard_view(request):
     # Reservas del usuario (activas y futuras)
     from datetime import datetime, timedelta
 
+    now = timezone.now()
+
+    # Auto-cancelar reservas PENDIENTES no confirmadas que faltan 15 min o menos
+    reservas_pendientes = Reserva.objects.filter(
+        resEstado='PENDIENTE',
+        resConfirmada=False
+    )
+    for res in reservas_pendientes:
+        fecha_hora_res = datetime.combine(res.resFechaReserva, res.resHoraInicio)
+        fecha_hora_res = timezone.make_aware(fecha_hora_res)
+        tiempo_restante = fecha_hora_res - now
+        if tiempo_restante <= timedelta(minutes=15):
+            res.resEstado = 'CANCELADA'
+            res.save()
+
     reservas_raw = Reserva.objects.filter(
         fkIdVehiculo__fkIdUsuario=usuario,
         resEstado__in=['PENDIENTE', 'CONFIRMADA']
@@ -181,7 +196,6 @@ def dashboard_view(request):
     ).order_by('-resFechaReserva', '-resHoraInicio')[:5]
 
     # Calcular si falta menos de 1h para cada reserva
-    now = timezone.now()
     reservas = []
     for reserva in reservas_raw:
         fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
@@ -189,13 +203,17 @@ def dashboard_view(request):
 
         tiempo_restante = fecha_hora_reserva - now
         necesita_confirmacion = timedelta(0) <= tiempo_restante <= timedelta(hours=1)
-        puede_editar = tiempo_restante >= timedelta(hours=1)
+        puede_editar = tiempo_restante > timedelta(hours=1)
+
+        # Calcular minutos restantes para mostrar cuenta regresiva
+        minutos_restantes = int(tiempo_restante.total_seconds() / 60) if tiempo_restante.total_seconds() > 0 else 0
 
         reservas.append({
             'reserva': reserva,
             'necesita_confirmacion': necesita_confirmacion and not reserva.resConfirmada,
             'puede_editar': puede_editar,
-            'confirmada': reserva.resConfirmada
+            'confirmada': reserva.resConfirmada,
+            'minutos_restantes': minutos_restantes,
         })
 
     # Historial de pagos del usuario

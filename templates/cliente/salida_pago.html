@@ -81,65 +81,64 @@
 
             <!-- Campo de Cupón -->
             <div class="mt-4 pt-4 border-t border-mp-border">
-                <label class="block text-sm font-medium text-white mb-2 flex items-center gap-2">
+                <label class="block text-sm font-medium text-white mb-3 flex items-center gap-2">
                     <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
                     </svg>
                     ¿Tienes un cupón de descuento?
                 </label>
-                <div class="flex gap-2">
+                <div class="flex items-stretch gap-2">
                     <input type="text" name="codigo_cupon" id="codigo_cupon"
-                           class="flex-1 bg-black/20 border border-mp-border rounded-lg px-4 py-2 text-white placeholder-mp-muted focus:outline-none focus:border-mp-purple uppercase"
-                           placeholder="Ingresa tu código">
+                           class="flex-1 bg-black/20 border border-mp-border rounded-lg px-4 py-3 text-white placeholder-mp-muted focus:outline-none focus:border-mp-purple uppercase text-sm"
+                           placeholder="Ej: BIENVENIDO20">
                     <button type="button" onclick="aplicarCupon()"
-                            class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-3 rounded-lg font-bold transition flex items-center gap-2 whitespace-nowrap text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                         Aplicar
                     </button>
                 </div>
-                <div id="cupon-result" class="mt-2 text-sm"></div>
             </div>
 
-            <!-- Total con descuento (inicialmente oculto) -->
+            <!-- Cupón aplicado (inicialmente oculto) -->
             <div id="total-con-descuento" class="hidden mt-4 pt-4 border-t-2 border-green-500/30">
-                <!-- Descuento aplicado - MUY VISIBLE -->
-                <div class="bg-green-900/30 border-2 border-green-500/50 rounded-lg p-4 mb-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-green-300 font-bold text-lg">¡Cupón aplicado!</p>
-                                <p class="text-green-400 text-sm">Ahorraste</p>
-                            </div>
+                <!-- Nombre y código del cupón -->
+                <div class="bg-green-900/30 border-2 border-green-500/50 rounded-xl p-5 mb-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                            <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
-                        <div class="text-right">
-                            <p class="text-green-400 font-bold text-2xl" id="monto-descuento">-$0</p>
+                        <div class="flex-1">
+                            <p class="text-green-300 font-bold text-lg" id="cupon-nombre-display">¡Cupón aplicado!</p>
+                            <p class="text-green-400/70 text-sm" id="cupon-codigo-display">Código: ---</p>
                         </div>
+                        <button type="button" onclick="quitarCupon()" class="text-red-400 hover:text-red-300 text-xs underline">Quitar</button>
+                    </div>
+                    <div class="flex items-center justify-between bg-black/20 rounded-lg p-3">
+                        <span class="text-green-400 text-sm">Tu descuento:</span>
+                        <span class="text-green-400 font-bold text-2xl" id="monto-descuento">-$0</span>
                     </div>
                 </div>
 
-                <!-- Desglose -->
+                <!-- Desglose claro -->
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between items-center">
-                        <span class="text-mp-muted">Subtotal original:</span>
+                        <span class="text-mp-muted text-sm">Subtotal original:</span>
                         <span class="text-mp-muted line-through">${{ monto_total|floatformat:0 }}</span>
                     </div>
                     <div class="flex justify-between items-center text-green-400">
-                        <span class="font-medium">Descuento aplicado:</span>
+                        <span class="font-medium text-sm">Descuento:</span>
                         <span class="font-bold" id="monto-descuento-detalle">-$0</span>
                     </div>
                 </div>
 
-                <!-- Total final - MUY VISIBLE -->
-                <div class="bg-purple-900/30 border-2 border-purple-500/50 rounded-lg p-4">
+                <!-- Total final -->
+                <div class="bg-purple-900/30 border-2 border-purple-500/50 rounded-xl p-4">
                     <div class="flex justify-between items-center">
-                        <span class="text-white font-bold text-xl">TOTAL A PAGAR:</span>
+                        <span class="text-white font-bold text-lg">TOTAL A PAGAR:</span>
                         <span class="text-purple-300 font-bold text-3xl" id="monto-final">${{ monto_total|floatformat:0 }}</span>
                     </div>
                 </div>
@@ -228,39 +227,66 @@
         </div>
     </form>
 </div>
+
+<!-- POPUP: Cupón Inválido -->
+<div id="cupon-popup" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 backdrop-blur-sm" onclick="if(event.target===this) cerrarPopupCupon()">
+    <div class="bg-mp-card border border-red-500/50 rounded-2xl w-full max-w-sm shadow-2xl shadow-black/50 mx-4 overflow-hidden animate-popup">
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center border-2 border-red-500/30">
+                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Cupón no válido</h3>
+            <p class="text-mp-muted text-sm mb-1">El código ingresado no existe, ya expiró o no está activo.</p>
+            <p class="text-mp-muted text-xs mb-4">Verifica el código e inténtalo de nuevo.</p>
+            <button type="button" onclick="cerrarPopupCupon()" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 rounded-lg font-bold transition">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const montoTotal = {{ monto_total }};
-const cupones = {{ cupones|safe }};
+
+// Cupones con nombre + código
+const cuponesData = [
+    {% for cupon in cupones %}
+    {
+        nombre: '{{ cupon.cupNombre }}',
+        codigo: '{{ cupon.cupCodigo|upper }}',
+        tipo: '{{ cupon.cupTipo }}',
+        valor: {{ cupon.cupValor }}
+    },
+    {% endfor %}
+];
 
 function aplicarCupon() {
     const codigoCupon = document.getElementById('codigo_cupon').value.trim().toUpperCase();
-    const resultDiv = document.getElementById('cupon-result');
 
     if (!codigoCupon) {
-        resultDiv.className = 'mt-2 text-sm text-red-400';
-        resultDiv.textContent = 'Por favor ingresa un código de cupón';
+        // Mostrar popup de cupón inválido
+        const popup = document.getElementById('cupon-popup');
+        popup.querySelector('h3').textContent = 'Ingresa un código';
+        popup.querySelector('p').textContent = 'Por favor escribe el código de tu cupón de descuento.';
+        popup.classList.remove('hidden');
+        popup.classList.add('flex');
         return;
     }
 
-    // Buscar cupón en la lista
-    const cuponesData = [
-        {% for cupon in cupones %}
-        {
-            nombre: '{{ cupon.cupNombre|upper }}',
-            tipo: '{{ cupon.cupTipo }}',
-            valor: {{ cupon.cupValor }}
-        },
-        {% endfor %}
-    ];
-
-    const cupon = cuponesData.find(c => c.nombre === codigoCupon);
+    // Buscar cupón por código
+    const cupon = cuponesData.find(c => c.codigo === codigoCupon);
 
     if (!cupon) {
-        resultDiv.className = 'mt-2 text-sm text-red-400';
-        resultDiv.textContent = '❌ Cupón no válido o expirado';
+        // Mostrar popup de cupón inválido
+        const popup = document.getElementById('cupon-popup');
+        popup.querySelector('h3').textContent = 'Cupón no válido';
+        popup.querySelector('p').textContent = 'El código ingresado no existe, ya expiró o no está activo.';
+        popup.classList.remove('hidden');
+        popup.classList.add('flex');
         document.getElementById('total-con-descuento').classList.add('hidden');
         return;
     }
@@ -275,16 +301,11 @@ function aplicarCupon() {
 
     const montoFinal = Math.max(montoTotal - descuento, 0);
 
-    // Mostrar resultado con animación
-    resultDiv.className = 'mt-2 text-sm text-green-400 font-bold flex items-center gap-2';
-    resultDiv.innerHTML = `
-        <svg class="w-5 h-5 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        ✓ Cupón "${cupon.nombre}" aplicado: ${cupon.tipo === 'PORCENTAJE' ? cupon.valor + '%' : '$' + cupon.valor.toLocaleString()} de descuento
-    `;
+    // Mostrar nombre y código del cupón
+    document.getElementById('cupon-nombre-display').textContent = cupon.nombre;
+    document.getElementById('cupon-codigo-display').textContent = `Código: ${cupon.codigo}` + (cupon.tipo === 'PORCENTAJE' ? ` (${cupon.valor}% off)` : ` (-$${cupon.valor.toLocaleString()})`);
 
-    // Actualizar todos los elementos de descuento
+    // Actualizar montos
     const descuentoFormateado = '-$' + Math.round(descuento).toLocaleString();
     document.getElementById('monto-descuento').textContent = descuentoFormateado;
     document.getElementById('monto-descuento-detalle').textContent = descuentoFormateado;
@@ -295,33 +316,45 @@ function aplicarCupon() {
     totalDiv.classList.remove('hidden');
     totalDiv.style.animation = 'slideDown 0.3s ease-out';
 
+    // Deshabilitar input y botón (cupón ya aplicado)
+    document.getElementById('codigo_cupon').disabled = true;
+    document.getElementById('codigo_cupon').classList.add('opacity-50');
+
     // Scroll suave hacia el total
     setTimeout(() => {
         totalDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
 }
 
-// Limpiar cupón al cambiar el código
-document.getElementById('codigo_cupon').addEventListener('input', function() {
-    const resultDiv = document.getElementById('cupon-result');
-    resultDiv.textContent = '';
-    resultDiv.className = 'mt-2 text-sm';
+function quitarCupon() {
     document.getElementById('total-con-descuento').classList.add('hidden');
-});
+    document.getElementById('codigo_cupon').value = '';
+    document.getElementById('codigo_cupon').disabled = false;
+    document.getElementById('codigo_cupon').classList.remove('opacity-50');
+    document.getElementById('codigo_cupon').focus();
+}
 
-// Animación CSS
+function cerrarPopupCupon() {
+    const popup = document.getElementById('cupon-popup');
+    popup.classList.add('hidden');
+    popup.classList.remove('flex');
+    document.getElementById('codigo_cupon').value = '';
+    document.getElementById('codigo_cupon').focus();
+}
+
+// Animaciones CSS
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes popup {
+        0% { opacity: 0; transform: scale(0.8); }
+        50% { transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    .animate-popup { animation: popup 0.3s ease-out; }
 `;
 document.head.appendChild(style);
 </script>

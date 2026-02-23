@@ -166,11 +166,28 @@
 
                 {% if item.necesita_confirmacion %}
                 <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 mb-3">
-                    <p class="text-yellow-300 text-sm font-bold flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2 mb-1">
+                        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
-                        ¡Tu reserva está cerca! Por favor confirma tu asistencia.
+                        <p class="text-yellow-300 text-sm font-bold">¡Confirma tu reserva!</p>
+                    </div>
+                    <p class="text-yellow-400/80 text-xs">
+                        Faltan <strong>{{ item.minutos_restantes }} min</strong> para tu hora de llegada.
+                        {% if item.minutos_restantes <= 30 %}
+                        Si no confirmas antes de los 15 min restantes, se cancelará automáticamente.
+                        {% else %}
+                        Debes confirmar antes de que falten 15 minutos o se cancelará automáticamente.
+                        {% endif %}
+                    </p>
+                </div>
+                {% elif item.confirmada %}
+                <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-3 mb-3">
+                    <p class="text-green-300 text-sm font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Reserva confirmada - Te esperamos
                     </p>
                 </div>
                 {% endif %}
@@ -186,7 +203,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        {{ item.reserva.resHoraInicio|time:"H:i" }} - {{ item.reserva.resHoraFin|time:"H:i" }}
+                        Llegada: {{ item.reserva.resHoraInicio|time:"H:i" }}
                     </div>
                     <div class="flex items-center gap-2 text-mp-muted">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

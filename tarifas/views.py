@@ -35,6 +35,7 @@ class TarifaCreateView(AdminRequiredMixin, View):
         nombre = request.POST.get('nombre', '').strip()
         tipo_id = request.POST.get('fkIdTipoEspacio', '')
         precio_hora = request.POST.get('precioHora', '')
+        precio_hora_visitante = request.POST.get('precioHoraVisitante', '') or 0
         precio_dia = request.POST.get('precioDia', '')
         precio_mensual = request.POST.get('precioMensual', '')
         activa = 'activa' in request.POST
@@ -49,6 +50,7 @@ class TarifaCreateView(AdminRequiredMixin, View):
                 'nombre': nombre,
                 'fkIdTipoEspacio_id': tipo_id,
                 'precioHora': precio_hora,
+                'precioHoraVisitante': precio_hora_visitante,
                 'precioDia': precio_dia,
                 'precioMensual': precio_mensual,
                 'activa': activa,
@@ -65,6 +67,7 @@ class TarifaCreateView(AdminRequiredMixin, View):
             nombre=nombre,
             fkIdTipoEspacio_id=tipo_id,
             precioHora=precio_hora,
+            precioHoraVisitante=precio_hora_visitante,
             precioDia=precio_dia,
             precioMensual=precio_mensual,
             activa=activa,
@@ -90,6 +93,7 @@ class TarifaUpdateView(AdminRequiredMixin, View):
         tarifa.nombre = request.POST.get('nombre', '').strip()
         tarifa.fkIdTipoEspacio_id = request.POST.get('fkIdTipoEspacio', '')
         tarifa.precioHora = request.POST.get('precioHora', '')
+        tarifa.precioHoraVisitante = request.POST.get('precioHoraVisitante', '') or 0
         tarifa.precioDia = request.POST.get('precioDia', '')
         tarifa.precioMensual = request.POST.get('precioMensual', '')
         tarifa.activa = 'activa' in request.POST

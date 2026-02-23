@@ -48,10 +48,13 @@ class AdminDashboardView(AdminRequiredMixin, View):
             piso.total_espacios = total_piso
             piso.ocupados_espacios = ocupados_piso
 
-            # Agregar información de reservas próximas a cada espacio
+            # Agregar información de reservas próximas y pagos pendientes a cada espacio
+            from pagos.models import Pago
             espacios_list = []
             for espacio in piso.espacios.all():
                 reserva_proxima = None
+                pago_pendiente = False
+
                 # Buscar reserva activa (PENDIENTE o CONFIRMADA) en las próximas 2h
                 for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
                     fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
@@ -61,7 +64,17 @@ class AdminDashboardView(AdminRequiredMixin, View):
                         reserva_proxima = reserva
                         break
 
+                # Verificar si tiene pago pendiente (cliente pagó en efectivo desde la app)
+                if espacio.espEstado == 'OCUPADO':
+                    pago_pendiente = Pago.objects.filter(
+                        fkIdParqueo__fkIdEspacio=espacio,
+                        fkIdParqueo__parHoraSalida__isnull=True,
+                        pagEstado='PENDIENTE',
+                        pagMetodo='EFECTIVO'
+                    ).exists()
+
                 espacio.reserva_proxima = reserva_proxima
+                espacio.pago_pendiente = pago_pendiente
                 espacios_list.append(espacio)
 
             piso.espacios_list = espacios_list
@@ -640,10 +653,15 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
                 if horas_totales == 0 and dias == 0:
                     horas_totales = 1
-                total_pagar = float(tarifa.precioHora) * horas_totales
-                tarifa_info = f"${tarifa.precioHora:,.0f} / Hora"
+                # Usar tarifa visitante si aplica
+                vehiculo = registro.fkIdVehiculo
+                es_visitante = vehiculo.es_visitante
+                precio_hora = float(tarifa.precioHoraVisitante) if es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
+                total_pagar = precio_hora * horas_totales
+                tarifa_info = f"${precio_hora:,.0f} / Hora" + (" (Visitante)" if es_visitante else "")
+            else:
+                vehiculo = registro.fkIdVehiculo
 
-            vehiculo = registro.fkIdVehiculo
             usuario = vehiculo.fkIdUsuario
 
             return JsonResponse({
