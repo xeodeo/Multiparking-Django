@@ -1,3 +1,5 @@
+import math
+
 from django.contrib import messages
 from datetime import timedelta
 from django.db.models import Count, Q, Sum
@@ -699,10 +701,11 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
             duracion = ahora - entrada
 
             # Cálculo de Duración
-            dias = duracion.days
-            segundos = duracion.seconds
-            horas = segundos // 3600
-            minutos = (segundos % 3600) // 60
+            total_seconds = int(duracion.total_seconds())
+            total_minutos = max((total_seconds + 59) // 60, 1)  # redondear al minuto superior, mínimo 1
+            dias = total_minutos // 1440
+            horas = (total_minutos % 1440) // 60
+            minutos = total_minutos % 60
 
             duracion_str = ""
             if dias > 0:
@@ -711,7 +714,7 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 duracion_str += f"{horas}h "
             duracion_str += f"{minutos}m"
             if not duracion_str:
-                duracion_str = "Menos de 1m"
+                duracion_str = "1m"
 
             # Verificar si ya existe un pago PENDIENTE (cliente pagó con EFECTIVO)
             pago_pendiente = Pago.objects.filter(
@@ -733,7 +736,7 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                         'descuento': f"${float(cupon_aplicado.montoDescontado):,.0f}",
                     }
 
-            # Cálculo de Costo (Tarifa por Hora)
+            # Cálculo de Costo proporcional por minuto
             tarifa = Tarifa.objects.filter(
                 fkIdTipoEspacio=espacio.fkIdTipoEspacio,
                 activa=True
@@ -743,14 +746,11 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
             tarifa_info = "Sin tarifa configurada"
 
             if tarifa:
-                horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-                if horas_totales == 0 and dias == 0:
-                    horas_totales = 1
                 # Usar tarifa visitante si aplica
                 vehiculo = registro.fkIdVehiculo
                 es_visitante = vehiculo.es_visitante
                 precio_hora = float(tarifa.precioHoraVisitante) if es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
-                subtotal = precio_hora * horas_totales
+                subtotal = math.ceil((precio_hora / 60) * total_minutos)
                 tarifa_info = f"${precio_hora:,.0f} / Hora" + (" (Visitante)" if es_visitante else "")
             else:
                 vehiculo = registro.fkIdVehiculo
@@ -858,19 +858,13 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
 
             if tarifa:
                 duracion = ahora - registro.parHoraEntrada
-                dias = duracion.days
-                segundos = duracion.seconds
-                horas = segundos // 3600
-                minutos = (segundos % 3600) // 60
-
-                horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-                if horas_totales == 0 and dias == 0:
-                    horas_totales = 1
+                total_seconds = int(duracion.total_seconds())
+                total_minutos = max((total_seconds + 59) // 60, 1)
 
                 vehiculo = registro.fkIdVehiculo
                 es_visitante = vehiculo.es_visitante
                 precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
-                monto_pagado = precio_hora * horas_totales
+                monto_pagado = math.ceil((float(precio_hora) / 60) * total_minutos)
 
                 Pago.objects.create(
                     pagMonto=monto_pagado,

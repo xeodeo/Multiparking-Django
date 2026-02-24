@@ -1,3 +1,4 @@
+import math
 from decimal import Decimal
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -36,10 +37,11 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         entrada = registro.parHoraEntrada
         duracion = ahora - entrada
 
-        dias = duracion.days
-        segundos = duracion.seconds
-        horas = segundos // 3600
-        minutos = (segundos % 3600) // 60
+        total_seconds = int(duracion.total_seconds())
+        total_minutos = max((total_seconds + 59) // 60, 1)
+        dias = total_minutos // 1440
+        horas = (total_minutos % 1440) // 60
+        minutos = total_minutos % 60
 
         duracion_str = ""
         if dias > 0:
@@ -48,7 +50,7 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
             duracion_str += f"{horas}h "
         duracion_str += f"{minutos}m"
         if not duracion_str:
-            duracion_str = "Menos de 1m"
+            duracion_str = "1m"
 
         # Obtener tarifa
         tarifa = Tarifa.objects.filter(
@@ -61,15 +63,12 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         es_visitante = registro.fkIdVehiculo.es_visitante
 
         if tarifa:
-            horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-            if horas_totales == 0 and dias == 0:
-                horas_totales = 1
             # Usar tarifa visitante si aplica
             precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
-            monto_total = precio_hora * horas_totales
+            monto_total = math.ceil((float(precio_hora) / 60) * total_minutos)
             tarifa_info = {
                 'precio_hora': precio_hora,
-                'horas_totales': horas_totales,
+                'minutos_totales': total_minutos,
                 'es_visitante': es_visitante,
             }
 
@@ -113,10 +112,8 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         ahora = timezone.now()
         duracion = ahora - registro.parHoraEntrada
 
-        dias = duracion.days
-        segundos = duracion.seconds
-        horas = segundos // 3600
-        minutos = (segundos % 3600) // 60
+        total_seconds = int(duracion.total_seconds())
+        total_minutos = max((total_seconds + 59) // 60, 1)
 
         # Obtener tarifa
         tarifa = Tarifa.objects.filter(
@@ -128,11 +125,8 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         es_visitante = registro.fkIdVehiculo.es_visitante
 
         if tarifa:
-            horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-            if horas_totales == 0 and dias == 0:
-                horas_totales = 1
             precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
-            monto_total = precio_hora * horas_totales
+            monto_total = math.ceil((float(precio_hora) / 60) * total_minutos)
 
         # Aplicar cupón si existe
         cupon = None
