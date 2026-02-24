@@ -83,8 +83,8 @@ class ReservaDetallesAPIView(View):
                 'placa': reserva.fkIdVehiculo.vehPlaca,
                 'cliente': reserva.fkIdVehiculo.fkIdUsuario.usuNombreCompleto if reserva.fkIdVehiculo.fkIdUsuario else 'Visitante',
                 'fecha': reserva.resFechaReserva.strftime('%Y-%m-%d'),
-                'hora_inicio': reserva.resHoraInicio.strftime('%H:%M'),
-                'hora_fin': reserva.resHoraFin.strftime('%H:%M') if reserva.resHoraFin else None,
+                'hora_inicio': reserva.resHoraInicio.strftime('%I:%M %p'),
+                'hora_fin': reserva.resHoraFin.strftime('%I:%M %p') if reserva.resHoraFin else None,
                 'estado': reserva.get_resEstado_display(),
                 'confirmada': reserva.resConfirmada,
             }
