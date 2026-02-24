@@ -111,12 +111,12 @@
                     </td>
                     <td class="px-6 py-4 text-white">
                         {{ registro.parHoraEntrada|date:"d/m/Y" }}<br>
-                        <span class="text-xs text-mp-muted">{{ registro.parHoraEntrada|date:"H:i" }}</span>
+                        <span class="text-xs text-mp-muted">{{ registro.parHoraEntrada|date:"h:i A" }}</span>
                     </td>
                     <td class="px-6 py-4 text-white">
                         {% if registro.parHoraSalida %}
                             {{ registro.parHoraSalida|date:"d/m/Y" }}<br>
-                            <span class="text-xs text-mp-muted">{{ registro.parHoraSalida|date:"H:i" }}</span>
+                            <span class="text-xs text-mp-muted">{{ registro.parHoraSalida|date:"h:i A" }}</span>
                         {% else %}
                             <span class="text-mp-muted text-xs">—</span>
                         {% endif %}

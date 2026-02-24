@@ -760,12 +760,16 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
 
             usuario = vehiculo.fkIdUsuario
 
+            # Datos crudos para cálculo dinámico en JS
+            precio_hora_num = precio_hora if tarifa else 0
+            entrada_iso = timezone.localtime(entrada).isoformat()
+
             response_data = {
                 'found': True,
                 'placa': vehiculo.vehPlaca,
                 'tipo_vehiculo': vehiculo.vehTipo,
                 'tipo_espacio': espacio.fkIdTipoEspacio.nombre,
-                'hora_entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
+                'hora_entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %I:%M %p'),
                 'tiempo_estadia': duracion_str,
                 'usuario_nombre': usuario.usuNombreCompleto if usuario else None,
                 'usuario_correo': usuario.usuCorreo if usuario else None,
@@ -774,13 +778,16 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 'tarifa_info': tarifa_info,
                 'monto_estimado': f"{total_pagar:,.0f}",
                 # Campos para dashboard
-                'entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
+                'entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %I:%M %p'),
                 'duracion': duracion_str,
                 'cliente': usuario.usuNombreCompleto if usuario else (vehiculo.nombre_contacto or "Visitante"),
                 'tipo_cliente': 'USUARIO' if usuario else 'VISITANTE',
                 'telefono': usuario.usuTelefono if usuario else (vehiculo.telefono_contacto or "Sin teléfono"),
                 'total_pagar': f"${total_pagar:,.0f}",
                 'tiene_pago_pendiente': pago_pendiente is not None,
+                # Datos para cálculo dinámico en tiempo real
+                'entrada_iso': entrada_iso,
+                'precio_hora': precio_hora_num,
             }
 
             if cupon_info:

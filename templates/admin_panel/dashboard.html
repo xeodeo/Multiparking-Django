@@ -189,7 +189,7 @@
                         </td>
                         <td class="py-3">{{ res.fkIdVehiculo.fkIdUsuario.usuNombreCompleto }}</td>
                         <td class="py-3">{{ res.fkIdVehiculo.vehPlaca }}</td>
-                        <td class="py-3">{{ res.resHoraInicio|date:"H:i" }}</td>
+                        <td class="py-3">{{ res.resHoraInicio|date:"h:i A" }}</td>
                         <td class="py-3">
                             <span class="px-2 py-0.5 rounded text-xs font-medium">{{ res.resEstado }}</span>
                         </td>
@@ -704,8 +704,54 @@
             });
     }
 
-    // ── Exit Modal ──
+    // ── Exit Modal (con cálculo dinámico en tiempo real) ──
+    let exitTimerInterval = null;
+    let exitEntradaDate = null;
+    let exitPrecioHora = 0;
+    let exitTienePagoPendiente = false;
+    let exitMontoPendiente = 0;
+
+    function calcularDuracionYCosto() {
+        if (!exitEntradaDate || exitTienePagoPendiente) return;
+
+        const ahora = new Date();
+        const diff = ahora - exitEntradaDate;
+        const totalSegundos = Math.floor(diff / 1000);
+        const dias = Math.floor(totalSegundos / 86400);
+        const horas = Math.floor((totalSegundos % 86400) / 3600);
+        const minutos = Math.floor((totalSegundos % 3600) / 60);
+        const segundos = totalSegundos % 60;
+
+        // Duración legible
+        let durStr = '';
+        if (dias > 0) durStr += `${dias}d `;
+        if (horas > 0) durStr += `${horas}h `;
+        durStr += `${minutos}m ${segundos}s`;
+        document.getElementById('exitDuracion').textContent = durStr;
+
+        // Cálculo: horas redondeadas hacia arriba
+        let horasFacturadas = dias * 24 + horas + (minutos > 0 || segundos > 0 ? 1 : 0);
+        if (horasFacturadas === 0) horasFacturadas = 1;
+        const total = exitPrecioHora * horasFacturadas;
+
+        document.getElementById('exitTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    function startExitTimer() {
+        stopExitTimer();
+        calcularDuracionYCosto();
+        exitTimerInterval = setInterval(calcularDuracionYCosto, 1000);
+    }
+
+    function stopExitTimer() {
+        if (exitTimerInterval) {
+            clearInterval(exitTimerInterval);
+            exitTimerInterval = null;
+        }
+    }
+
     function openExitModal(id, num) {
+        stopExitTimer();
         document.getElementById('exitModalEspacioId').value = id;
         document.getElementById('exitModalEspacioNum').textContent = num;
         document.getElementById('exitDetails').classList.add('hidden');
@@ -765,6 +811,15 @@
 
                     document.getElementById('exitDetails').classList.remove('hidden');
                     document.getElementById('exitFooter').classList.remove('hidden');
+
+                    // Iniciar cálculo dinámico en tiempo real
+                    exitTienePagoPendiente = data.tiene_pago_pendiente;
+                    exitPrecioHora = data.precio_hora || 0;
+                    exitEntradaDate = data.entrada_iso ? new Date(data.entrada_iso) : null;
+
+                    if (!exitTienePagoPendiente && exitEntradaDate && exitPrecioHora > 0) {
+                        startExitTimer();
+                    }
                 } else {
                     document.getElementById('exitLoading').innerHTML = '<p class="text-red-400 text-sm">No se encontró registro activo para este espacio.</p>';
                 }
@@ -776,6 +831,7 @@
     }
 
     function closeExitModal() {
+        stopExitTimer();
         document.getElementById('exitModal').classList.add('hidden');
         document.getElementById('exitModal').classList.remove('flex');
     }
