@@ -10,7 +10,7 @@ from usuarios.views import (
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioDeleteView, UsuarioToggleView,
 )
 from parqueadero.views import (
-    AdminDashboardView,
+    AdminDashboardView, AdminDashboardDataView,
     PisoListView, PisoCreateView, PisoUpdateView, PisoDeleteView,
     TipoEspacioListView, TipoEspacioCreateView, TipoEspacioUpdateView, TipoEspacioDeleteView,
     EspacioListView, EspacioCreateView, EspacioUpdateView, EspacioDeleteView, EspacioRangeCreateView,
@@ -57,6 +57,7 @@ urlpatterns = [
 
     # Dashboard
     path('admin-panel/', AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('admin-panel/api/dashboard-data/', AdminDashboardDataView.as_view(), name='admin_dashboard_data'),
 
     # Pisos
     path('admin-panel/pisos/', PisoListView.as_view(), name='admin_pisos'),
