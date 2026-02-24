@@ -216,6 +216,57 @@ def dashboard_view(request):
             'minutos_restantes': minutos_restantes,
         })
 
+    # Estado de parqueo actual (vehículo estacionado)
+    import math
+    from tarifas.models import Tarifa
+    registro_activo = InventarioParqueo.objects.filter(
+        fkIdVehiculo__fkIdUsuario=usuario,
+        parHoraSalida__isnull=True
+    ).select_related(
+        'fkIdVehiculo',
+        'fkIdEspacio',
+        'fkIdEspacio__fkIdPiso',
+        'fkIdEspacio__fkIdTipoEspacio'
+    ).first()
+
+    parqueo_activo = None
+    if registro_activo:
+        entrada = registro_activo.parHoraEntrada
+        duracion = now - entrada
+        total_seconds = int(duracion.total_seconds())
+        total_minutos = max((total_seconds + 59) // 60, 1)
+        d = total_minutos // 1440
+        h = (total_minutos % 1440) // 60
+        m = total_minutos % 60
+        dur_str = ""
+        if d > 0:
+            dur_str += f"{d}d "
+        if h > 0:
+            dur_str += f"{h}h "
+        dur_str += f"{m}m"
+
+        tarifa_activa = Tarifa.objects.filter(
+            fkIdTipoEspacio=registro_activo.fkIdEspacio.fkIdTipoEspacio,
+            activa=True
+        ).first()
+
+        precio_hora = 0
+        valor_acumulado = 0
+        if tarifa_activa:
+            es_vis = registro_activo.fkIdVehiculo.es_visitante
+            precio_hora = float(tarifa_activa.precioHoraVisitante) if es_vis and tarifa_activa.precioHoraVisitante > 0 else float(tarifa_activa.precioHora)
+            valor_acumulado = math.ceil((precio_hora / 60) * total_minutos)
+
+        parqueo_activo = {
+            'vehiculo': registro_activo.fkIdVehiculo,
+            'espacio': registro_activo.fkIdEspacio,
+            'entrada': timezone.localtime(entrada),
+            'entrada_iso': timezone.localtime(entrada).isoformat(),
+            'duracion': dur_str,
+            'precio_hora': precio_hora,
+            'valor_acumulado': valor_acumulado,
+        }
+
     # Historial de pagos del usuario
     pagos_historial = Pago.objects.filter(
         fkIdParqueo__fkIdVehiculo__fkIdUsuario=usuario
@@ -246,6 +297,7 @@ def dashboard_view(request):
         'vehiculos': vehiculos,
         'reservas': reservas,
         'pagos': pagos_con_duracion,
+        'parqueo_activo': parqueo_activo,
     })
 
 
