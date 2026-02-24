@@ -9,19 +9,19 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="bg-mp-card border border-mp-border rounded-xl p-5">
         <p class="text-mp-muted text-sm">Espacios Totales</p>
-        <p class="text-3xl font-bold mt-1">{{ total_espacios }}</p>
+        <p class="text-3xl font-bold mt-1" id="kpi-total">{{ total_espacios }}</p>
     </div>
     <div class="bg-mp-card border border-mp-border rounded-xl p-5">
         <p class="text-mp-muted text-sm">Espacios Disponibles</p>
-        <p class="text-3xl font-bold mt-1 text-green-400">{{ disponibles }}</p>
+        <p class="text-3xl font-bold mt-1 text-green-400" id="kpi-disponibles">{{ disponibles }}</p>
     </div>
     <div class="bg-mp-card border border-mp-border rounded-xl p-5">
         <p class="text-mp-muted text-sm">Espacios Ocupados</p>
-        <p class="text-3xl font-bold mt-1 text-red-400">{{ ocupados }}</p>
+        <p class="text-3xl font-bold mt-1 text-red-400" id="kpi-ocupados">{{ ocupados }}</p>
     </div>
     <div class="bg-mp-card border border-mp-border rounded-xl p-5">
         <p class="text-mp-muted text-sm">Reservas Activas</p>
-        <p class="text-3xl font-bold mt-1 text-yellow-400">{{ reservas_activas }}</p>
+        <p class="text-3xl font-bold mt-1 text-yellow-400" id="kpi-reservas">{{ reservas_activas }}</p>
     </div>
 </div>
 
@@ -57,15 +57,16 @@
         {% for piso in pisos %}
         <div id="piso-{{ piso.pk }}" class="piso-content hidden">
             <div class="flex justify-between items-center mb-4">
-                <p class="text-sm text-mp-muted">
-                    {{ piso.ocupados_espacios }} espacios ocupados de {{ piso.total_espacios }} <span class="text-xs">({{ piso.ocupacion_pct }}% ocupación)</span>
+                <p class="text-sm text-mp-muted piso-stats">
+                    {{ piso.ocupados_espacios }} espacios ocupados de {{ piso.total_espacios }} ({{ piso.ocupacion_pct }}% ocupación)
                 </p>
             </div>
             {% if piso.espacios_list %}
-            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 espacios-grid">
                 {% for espacio in piso.espacios_list %}
                 <div class="relative group">
-                    <div onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {% if espacio.reserva_proxima %}'{{ espacio.reserva_proxima.pk }}'{% else %}null{% endif %}, {{ espacio.pago_pendiente|yesno:'true,false' }})"
+                    <div data-espacio-id="{{ espacio.pk }}"
+                        onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {% if espacio.reserva_proxima %}'{{ espacio.reserva_proxima.pk }}'{% else %}null{% endif %}, {{ espacio.pago_pendiente|yesno:'true,false' }})"
                         class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.pago_pendiente %}bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space{% elif espacio.reserva_proxima %}bg-orange-500 border-orange-600 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20{% elif espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
                         title="Espacio {{ espacio.espNumero }}{% if espacio.pago_pendiente %} - SALIDA PENDIENTE (Pago en caja){% elif espacio.reserva_proxima %} - Reservado{% endif %}">
                         {{ espacio.espNumero }}
@@ -779,6 +780,107 @@
         document.getElementById('exitModal').classList.remove('flex');
     }
 
+    // ── Auto-refresh ──
+    let autoRefreshInterval = null;
+    let activeTabPisoId = null;
+
+    function startAutoRefresh() {
+        autoRefreshInterval = setInterval(refreshDashboard, 10000);
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    }
+
+    function refreshDashboard() {
+        // No refrescar si hay un modal abierto
+        if (!document.getElementById('entryModal').classList.contains('hidden') ||
+            !document.getElementById('exitModal').classList.contains('hidden') ||
+            !document.getElementById('reservaModal').classList.contains('hidden')) {
+            return;
+        }
+
+        fetch('{% url "admin_dashboard_data" %}')
+            .then(r => r.json())
+            .then(data => {
+                // Actualizar KPIs
+                const kpiCards = document.querySelectorAll('#kpi-total, #kpi-disponibles, #kpi-ocupados, #kpi-reservas');
+                document.getElementById('kpi-total').textContent = data.total_espacios;
+                document.getElementById('kpi-disponibles').textContent = data.disponibles;
+                document.getElementById('kpi-ocupados').textContent = data.ocupados;
+                document.getElementById('kpi-reservas').textContent = data.reservas_activas;
+
+                // Actualizar pisos
+                data.pisos.forEach(piso => {
+                    // Actualizar tab badge
+                    const tabBtn = document.getElementById('btn-piso-' + piso.pk);
+                    if (tabBtn) {
+                        const badge = tabBtn.querySelector('span');
+                        if (badge) badge.textContent = piso.ocupados_espacios;
+                    }
+
+                    // Actualizar stats del piso
+                    const pisoDiv = document.getElementById('piso-' + piso.pk);
+                    if (!pisoDiv) return;
+
+                    const statsP = pisoDiv.querySelector('.piso-stats');
+                    if (statsP) {
+                        statsP.textContent = `${piso.ocupados_espacios} espacios ocupados de ${piso.total_espacios} (${piso.ocupacion_pct}% ocupación)`;
+                    }
+
+                    // Actualizar grid de espacios
+                    const grid = pisoDiv.querySelector('.espacios-grid');
+                    if (!grid) return;
+
+                    piso.espacios.forEach(esp => {
+                        const spaceEl = grid.querySelector(`[data-espacio-id="${esp.pk}"]`);
+                        if (!spaceEl) return;
+
+                        const wrapper = spaceEl.closest('.relative');
+                        const pingDot = wrapper ? wrapper.querySelector('.animate-ping') : null;
+
+                        // Determinar clase
+                        let cls, title;
+                        if (esp.pago_pendiente) {
+                            cls = 'bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space';
+                            title = `Espacio ${esp.espNumero} - SALIDA PENDIENTE (Pago en caja)`;
+                            if (!pingDot && wrapper) {
+                                const dot = document.createElement('div');
+                                dot.className = 'absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping';
+                                wrapper.appendChild(dot);
+                            }
+                        } else if (esp.reserva_pk) {
+                            cls = 'bg-orange-500 border-orange-600 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20';
+                            title = `Espacio ${esp.espNumero} - Reservado`;
+                            if (pingDot) pingDot.remove();
+                        } else if (esp.espEstado === 'DISPONIBLE') {
+                            cls = 'bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20';
+                            title = `Espacio ${esp.espNumero}`;
+                            if (pingDot) pingDot.remove();
+                        } else if (esp.espEstado === 'OCUPADO') {
+                            cls = 'bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20';
+                            title = `Espacio ${esp.espNumero}`;
+                            if (pingDot) pingDot.remove();
+                        } else {
+                            cls = 'bg-gray-700 border-gray-600 text-gray-400';
+                            title = `Espacio ${esp.espNumero}`;
+                            if (pingDot) pingDot.remove();
+                        }
+
+                        // Actualizar atributos del onclick
+                        spaceEl.setAttribute('onclick',
+                            `handleSpaceClick('${esp.pk}', '${esp.espNumero}', '${esp.espEstado}', '${piso.pisNombre}', ${esp.reserva_pk ? "'" + esp.reserva_pk + "'" : 'null'}, ${esp.pago_pendiente})`
+                        );
+
+                        // Actualizar clases
+                        spaceEl.className = `aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer ${cls}`;
+                        spaceEl.title = title;
+                    });
+                });
+            })
+            .catch(err => console.warn('Auto-refresh error:', err));
+    }
+
     // ── Init ──
     document.addEventListener('DOMContentLoaded', () => {
         // Buscar con Enter en el modal de ingreso
@@ -795,6 +897,19 @@
         // Activar primer tab
         const firstBtn = document.querySelector('.tab-btn');
         if(firstBtn) firstBtn.click();
+
+        // Iniciar auto-refresh
+        startAutoRefresh();
+
+        // Pausar si la pestaña no está visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                refreshDashboard();
+                startAutoRefresh();
+            }
+        });
 
         // Charts
         const ctxOcc = document.getElementById('occupancyChart');

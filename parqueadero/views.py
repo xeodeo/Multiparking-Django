@@ -162,6 +162,78 @@ class AdminDashboardView(AdminRequiredMixin, View):
         })
 
 
+# ── Dashboard API (auto-refresh) ──────────────────────────────────
+class AdminDashboardDataView(AdminRequiredMixin, View):
+    """Devuelve el estado actual del dashboard en JSON para auto-refresh."""
+    def get(self, request):
+        from datetime import datetime
+
+        total = Espacio.objects.count()
+        ocupados = Espacio.objects.filter(espEstado='OCUPADO').count()
+        disponibles = Espacio.objects.filter(espEstado='DISPONIBLE').count()
+        reservas_activas = Reserva.objects.filter(
+            resEstado__in=['PENDIENTE', 'CONFIRMADA']
+        ).count()
+
+        now = timezone.now()
+        limite_2h = now + timedelta(hours=2)
+
+        pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
+            'espacios', 'espacios__reservas'
+        ).order_by('pisNombre')
+
+        pisos_data = []
+        for piso in pisos:
+            total_piso = piso.espacios.count()
+            ocupados_piso = piso.espacios.filter(espEstado='OCUPADO').count()
+            ocupacion_pct = int((ocupados_piso / total_piso) * 100) if total_piso > 0 else 0
+
+            espacios_data = []
+            for espacio in piso.espacios.all():
+                reserva_proxima = None
+                pago_pendiente = False
+
+                for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
+                    fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
+                    fecha_hora_reserva = timezone.make_aware(fecha_hora_reserva)
+                    if now <= fecha_hora_reserva <= limite_2h:
+                        reserva_proxima = reserva
+                        break
+
+                if espacio.espEstado == 'OCUPADO':
+                    pago_pendiente = Pago.objects.filter(
+                        fkIdParqueo__fkIdEspacio=espacio,
+                        fkIdParqueo__parHoraSalida__isnull=True,
+                        pagEstado='PENDIENTE',
+                        pagMetodo='EFECTIVO'
+                    ).exists()
+
+                espacios_data.append({
+                    'pk': espacio.pk,
+                    'espNumero': espacio.espNumero,
+                    'espEstado': espacio.espEstado,
+                    'pago_pendiente': pago_pendiente,
+                    'reserva_pk': reserva_proxima.pk if reserva_proxima else None,
+                })
+
+            pisos_data.append({
+                'pk': piso.pk,
+                'pisNombre': piso.pisNombre,
+                'total_espacios': total_piso,
+                'ocupados_espacios': ocupados_piso,
+                'ocupacion_pct': ocupacion_pct,
+                'espacios': espacios_data,
+            })
+
+        return JsonResponse({
+            'total_espacios': total,
+            'disponibles': disponibles,
+            'ocupados': ocupados,
+            'reservas_activas': reservas_activas,
+            'pisos': pisos_data,
+        })
+
+
 # ── Pisos CRUD ───────────────────────────────────────────────────
 class PisoListView(AdminRequiredMixin, View):
     def get(self, request):
