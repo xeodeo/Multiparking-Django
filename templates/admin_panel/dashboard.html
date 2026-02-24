@@ -716,23 +716,21 @@
 
         const ahora = new Date();
         const diff = ahora - exitEntradaDate;
-        const totalSegundos = Math.floor(diff / 1000);
-        const dias = Math.floor(totalSegundos / 86400);
-        const horas = Math.floor((totalSegundos % 86400) / 3600);
-        const minutos = Math.floor((totalSegundos % 3600) / 60);
-        const segundos = totalSegundos % 60;
+        const totalMinutos = Math.ceil(diff / 60000);  // redondear al minuto superior
+        const dias = Math.floor(totalMinutos / 1440);
+        const horas = Math.floor((totalMinutos % 1440) / 60);
+        const minutos = totalMinutos % 60;
 
-        // Duración legible
+        // Duración legible (sin segundos)
         let durStr = '';
         if (dias > 0) durStr += `${dias}d `;
         if (horas > 0) durStr += `${horas}h `;
-        durStr += `${minutos}m ${segundos}s`;
+        durStr += `${minutos}m`;
         document.getElementById('exitDuracion').textContent = durStr;
 
-        // Cálculo: horas redondeadas hacia arriba
-        let horasFacturadas = dias * 24 + horas + (minutos > 0 || segundos > 0 ? 1 : 0);
-        if (horasFacturadas === 0) horasFacturadas = 1;
-        const total = exitPrecioHora * horasFacturadas;
+        // Cálculo proporcional por minuto
+        const minFacturados = Math.max(totalMinutos, 1);
+        const total = Math.ceil((exitPrecioHora / 60) * minFacturados);
 
         document.getElementById('exitTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     }
