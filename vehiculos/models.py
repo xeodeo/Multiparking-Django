@@ -4,8 +4,8 @@ from django.db import models
 class Vehiculo(models.Model):
 
     class TipoChoices(models.TextChoices):
-        CARRO = 'CARRO', 'Carro'
-        MOTO = 'MOTO', 'Moto'
+        CARRO = 'Carro', 'Carro'
+        MOTO = 'Moto', 'Moto'
 
     vehPlaca = models.CharField(max_length=10, unique=True)
     vehTipo = models.CharField(

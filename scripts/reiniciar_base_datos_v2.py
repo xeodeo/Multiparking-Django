@@ -291,18 +291,18 @@ print(f"[OK] {espacios_creados} espacios creados")
 print("\n[7/10] Creando vehículos...")
 vehiculos_data = [
     # Vehículos de clientes registrados
-    ('XYZ789', 'CARRO', 'Honda', 'Civic', clientes[0], False),
-    ('ABC123', 'CARRO', 'Renault', 'Logan', clientes[0], False),
-    ('DEF456', 'CARRO', 'Mazda', '3', clientes[1], False),
-    ('GHI789', 'CARRO', 'Chevrolet', 'Onix', clientes[2], False),
-    ('JKL012', 'MOTO', 'Yamaha', 'MT-03', clientes[2], False),
-    ('MNO345', 'MOTO', 'Suzuki', 'GSX-R150', clientes[3], False),
-    ('PQR678', 'CARRO', 'Kia', 'Sportage', clientes[3], False),
-    ('STU901', 'CARRO', 'Nissan', 'Sentra', clientes[1], False),
+    ('XYZ789', 'Carro', 'Honda', 'Civic', clientes[0], False),
+    ('ABC123', 'Carro', 'Renault', 'Logan', clientes[0], False),
+    ('DEF456', 'Carro', 'Mazda', '3', clientes[1], False),
+    ('GHI789', 'Carro', 'Chevrolet', 'Onix', clientes[2], False),
+    ('JKL012', 'Moto', 'Yamaha', 'MT-03', clientes[2], False),
+    ('MNO345', 'Moto', 'Suzuki', 'GSX-R150', clientes[3], False),
+    ('PQR678', 'Carro', 'Kia', 'Sportage', clientes[3], False),
+    ('STU901', 'Carro', 'Nissan', 'Sentra', clientes[1], False),
     # Vehículos de visitantes
-    ('VIS001', 'CARRO', 'Toyota', 'Corolla', None, True),
-    ('VIS002', 'CARRO', 'Hyundai', 'Accent', None, True),
-    ('VIS003', 'MOTO', 'Honda', 'CB190R', None, True),
+    ('VIS001', 'Carro', 'Toyota', 'Corolla', None, True),
+    ('VIS002', 'Carro', 'Hyundai', 'Accent', None, True),
+    ('VIS003', 'Moto', 'Honda', 'CB190R', None, True),
 ]
 
 vehiculos_list = []
