@@ -91,7 +91,7 @@ for placa in placas:
     vehiculo, created = Vehiculo.objects.get_or_create(
         vehPlaca=placa,
         defaults={
-            'vehTipo': 'CARRO',
+            'vehTipo': 'Carro',
             'vehMarca': 'Toyota',
             'fkIdUsuario': usuario,
             'es_visitante': False,

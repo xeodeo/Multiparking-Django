@@ -31,7 +31,7 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
         usuario = Usuario.objects.get(pk=usuario_id)
 
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        tipo = request.POST.get('vehTipo', 'CARRO')
+        tipo = request.POST.get('vehTipo', 'Carro')
         marca = request.POST.get('vehMarca', '').strip()
         modelo = request.POST.get('vehModelo', '').strip()
         color = request.POST.get('vehColor', '').strip()
@@ -116,7 +116,7 @@ class ClienteEditarVehiculoView(ClienteRequiredMixin, View):
         vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, es_visitante=False)
 
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        tipo = request.POST.get('vehTipo', 'CARRO')
+        tipo = request.POST.get('vehTipo', 'Carro')
         marca = request.POST.get('vehMarca', '').strip()
         modelo = request.POST.get('vehModelo', '').strip()
         color = request.POST.get('vehColor', '').strip()

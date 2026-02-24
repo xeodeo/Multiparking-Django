@@ -45,7 +45,7 @@ class VehiculoCreateView(AdminRequiredMixin, View):
 
     def post(self, request):
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        tipo = request.POST.get('vehTipo', 'CARRO')
+        tipo = request.POST.get('vehTipo', 'Carro')
         color = request.POST.get('vehColor', '').strip()
         marca = request.POST.get('vehMarca', '').strip()
         modelo = request.POST.get('vehModelo', '').strip()
@@ -105,7 +105,7 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
     def post(self, request, pk):
         vehiculo = get_object_or_404(Vehiculo, pk=pk)
         placa = request.POST.get('vehPlaca', '').strip().upper()
-        vehiculo.vehTipo = request.POST.get('vehTipo', 'CARRO')
+        vehiculo.vehTipo = request.POST.get('vehTipo', 'Carro')
         vehiculo.vehColor = request.POST.get('vehColor', '').strip()
         vehiculo.vehMarca = request.POST.get('vehMarca', '').strip()
         vehiculo.vehModelo = request.POST.get('vehModelo', '').strip()

@@ -203,12 +203,12 @@ print("  [OK] Tarifa Motos 2025 (DESACTIVADA)")
 print("\n[7/11] Creando vehiculos...")
 
 vehiculos_demo = [
-    ('ABC123', 'CARRO', 'Rojo', 'Toyota', 'Corolla', cliente1),
-    ('DEF456', 'CARRO', 'Blanco', 'Mazda', '3', cliente1),
-    ('GHI789', 'MOTO', 'Negro', 'Yamaha', 'FZ250', cliente1),
-    ('JKL012', 'CARRO', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('MNO345', 'MOTO', 'Azul', 'Suzuki', 'GN125', cliente2),
-    ('PQR678', 'CARRO', 'Negro', 'Renault', 'Logan', cliente2),
+    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
+    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
+    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
+    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('PQR678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
 ]
 
 vehiculos = []
@@ -223,8 +223,8 @@ for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
 # Vehiculos visitante
 vehiculos_visitante = []
 for placa, tipo, color, marca, modelo in [
-    ('VIS001', 'CARRO', 'Plata', 'Hyundai', 'Accent'),
-    ('VIS002', 'MOTO', 'Rojo', 'Honda', 'CB190R'),
+    ('VIS001', 'Carro', 'Plata', 'Hyundai', 'Accent'),
+    ('VIS002', 'Moto', 'Rojo', 'Honda', 'CB190R'),
 ]:
     v = Vehiculo.objects.create(
         vehPlaca=placa, vehTipo=tipo, vehColor=color,

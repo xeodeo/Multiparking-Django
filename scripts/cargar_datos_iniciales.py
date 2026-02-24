@@ -193,11 +193,11 @@ print(f"  [OK] Tarifa Motos: $2,000/h usuario | $3,000/h visitante {'(creado)' i
 print("\n[6/8] Creando vehiculos de prueba...")
 
 vehiculos_demo = [
-    ('ABC123', 'CARRO', 'Rojo', 'Toyota', 'Corolla', cliente),
-    ('DEF456', 'CARRO', 'Blanco', 'Mazda', '3', cliente),
-    ('JKL012', 'MOTO', 'Negro', 'Yamaha', 'FZ250', cliente),
-    ('MNO345', 'CARRO', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('PQR678', 'MOTO', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente),
+    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente),
+    ('JKL012', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente),
+    ('MNO345', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('PQR678', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
 ]
 
 for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:

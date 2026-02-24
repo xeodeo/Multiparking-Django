@@ -198,14 +198,8 @@ function filtrarEspaciosPorTipoVehiculo() {
     // Mostrar leyenda
     document.querySelectorAll('.espacios-leyenda').forEach(p => p.style.display = 'block');
 
-    // Mapear tipo de vehículo a tipo de espacio
-    // CARRO → Carro, MOTO → Moto (capitalizado)
+    // Tipo de vehículo ya viene como Carro/Moto
     let tipoEspacioBuscado = tipoVehiculo.trim();
-    if (tipoEspacioBuscado === 'CARRO') {
-        tipoEspacioBuscado = 'Carro';
-    } else if (tipoEspacioBuscado === 'MOTO') {
-        tipoEspacioBuscado = 'Moto';
-    }
 
     console.log('Tipo de espacio a buscar:', tipoEspacioBuscado);
 
@@ -243,7 +237,7 @@ function filtrarEspaciosPorTipoVehiculo() {
 
         if (espaciosEnEstePiso === 0 && sinEspaciosDiv) {
             sinEspaciosDiv.classList.remove('hidden');
-            const tipoMostrar = tipoVehiculo === 'CARRO' ? 'carros' : 'motos';
+            const tipoMostrar = tipoVehiculo === 'Carro' ? 'carros' : 'motos';
             sinEspaciosDiv.innerHTML = `<p class="text-yellow-300 text-sm">No hay espacios disponibles para ${tipoMostrar} en este piso.</p>`;
         }
     });

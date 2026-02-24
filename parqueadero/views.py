@@ -12,6 +12,7 @@ from usuarios.mixins import AdminRequiredMixin
 from usuarios.models import Usuario
 from pagos.models import Pago
 from tarifas.models import Tarifa
+from cupones.models import CuponAplicado
 
 from .models import Espacio, Piso, TipoEspacio, InventarioParqueo
 from vehiculos.models import Vehiculo
@@ -533,7 +534,7 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
             # Crear como visitante
             vehiculo = Vehiculo.objects.create(
                 vehPlaca=placa,
-                vehTipo='Vehículo', # Tipo por defecto
+                vehTipo='Carro',  # Tipo por defecto
                 es_visitante=True,
                 nombre_contacto=nombre,
                 telefono_contacto=telefono
@@ -640,13 +641,33 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
             if not duracion_str:
                 duracion_str = "Menos de 1m"
 
+            # Verificar si ya existe un pago PENDIENTE (cliente pagó con EFECTIVO)
+            pago_pendiente = Pago.objects.filter(
+                fkIdParqueo=registro,
+                pagEstado='PENDIENTE'
+            ).first()
+
+            cupon_info = None
+            if pago_pendiente:
+                # Buscar si tiene cupón aplicado
+                cupon_aplicado = CuponAplicado.objects.select_related('fkIdCupon').filter(
+                    fkIdPago=pago_pendiente
+                ).first()
+                if cupon_aplicado:
+                    cupon = cupon_aplicado.fkIdCupon
+                    cupon_info = {
+                        'nombre': cupon.cupNombre,
+                        'codigo': cupon.cupCodigo,
+                        'descuento': f"${float(cupon_aplicado.montoDescontado):,.0f}",
+                    }
+
             # Cálculo de Costo (Tarifa por Hora)
             tarifa = Tarifa.objects.filter(
                 fkIdTipoEspacio=espacio.fkIdTipoEspacio,
                 activa=True
             ).first()
 
-            total_pagar = 0
+            subtotal = 0
             tarifa_info = "Sin tarifa configurada"
 
             if tarifa:
@@ -657,14 +678,17 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 vehiculo = registro.fkIdVehiculo
                 es_visitante = vehiculo.es_visitante
                 precio_hora = float(tarifa.precioHoraVisitante) if es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
-                total_pagar = precio_hora * horas_totales
+                subtotal = precio_hora * horas_totales
                 tarifa_info = f"${precio_hora:,.0f} / Hora" + (" (Visitante)" if es_visitante else "")
             else:
                 vehiculo = registro.fkIdVehiculo
 
+            # Si hay pago pendiente, usar ese monto (ya tiene cupón aplicado)
+            total_pagar = float(pago_pendiente.pagMonto) if pago_pendiente else subtotal
+
             usuario = vehiculo.fkIdUsuario
 
-            return JsonResponse({
+            response_data = {
                 'found': True,
                 'placa': vehiculo.vehPlaca,
                 'tipo_vehiculo': vehiculo.vehTipo,
@@ -677,14 +701,21 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 'contacto_telefono': vehiculo.telefono_contacto if not usuario else None,
                 'tarifa_info': tarifa_info,
                 'monto_estimado': f"{total_pagar:,.0f}",
-                # Campos legacy para compatibilidad con dashboard
+                # Campos para dashboard
                 'entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %H:%M'),
                 'duracion': duracion_str,
                 'cliente': usuario.usuNombreCompleto if usuario else (vehiculo.nombre_contacto or "Visitante"),
                 'tipo_cliente': 'USUARIO' if usuario else 'VISITANTE',
                 'telefono': usuario.usuTelefono if usuario else (vehiculo.telefono_contacto or "Sin teléfono"),
-                'total_pagar': f"${total_pagar:,.0f}"
-            })
+                'total_pagar': f"${total_pagar:,.0f}",
+                'tiene_pago_pendiente': pago_pendiente is not None,
+            }
+
+            if cupon_info:
+                response_data['cupon'] = cupon_info
+                response_data['subtotal_sin_descuento'] = f"${subtotal:,.0f}"
+
+            return JsonResponse(response_data)
         except Exception as e:
             return JsonResponse({'found': False, 'error': str(e)}, status=500)
 
@@ -721,40 +752,55 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
             messages.error(request, 'Datos inválidos.')
             return redirect('admin_dashboard')
 
-        # 3. Calcular Costo Final y Registrar Pago
+        # 3. Registrar salida
         ahora = timezone.now()
         registro.parHoraSalida = ahora
         registro.save()
-        
-        # Lógica de Pago
-        tarifa = Tarifa.objects.filter(
-            fkIdTipoEspacio=espacio.fkIdTipoEspacio,
-            activa=True
+
+        # 4. Lógica de Pago — verificar si el cliente ya generó un pago PENDIENTE
+        pago_existente = Pago.objects.filter(
+            fkIdParqueo=registro,
+            pagEstado='PENDIENTE'
         ).first()
-        
-        monto_pagado = 0
-        
-        if tarifa:
-            duracion = ahora - registro.parHoraEntrada
-            dias = duracion.days
-            segundos = duracion.seconds
-            horas = segundos // 3600
-            minutos = (segundos % 3600) // 60
-            
-            horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
-            if horas_totales == 0 and dias == 0: horas_totales = 1
-            
-            monto_pagado = tarifa.precioHora * horas_totales
 
-            # Crear registro de Pago
-            Pago.objects.create(
-                pagMonto=monto_pagado,
-                pagMetodo='EFECTIVO', # Default por ahora
-                pagEstado='PAGADO',
-                fkIdParqueo=registro
-            )
+        if pago_existente:
+            # Ya hay pago del cliente (con cupón aplicado si lo usó) → confirmar
+            pago_existente.pagEstado = 'PAGADO'
+            pago_existente.save()
+            monto_pagado = pago_existente.pagMonto
+        else:
+            # No hay pago previo → calcular y crear uno nuevo
+            tarifa = Tarifa.objects.filter(
+                fkIdTipoEspacio=espacio.fkIdTipoEspacio,
+                activa=True
+            ).first()
 
-        # 4. Actualizar Espacio
+            monto_pagado = 0
+
+            if tarifa:
+                duracion = ahora - registro.parHoraEntrada
+                dias = duracion.days
+                segundos = duracion.seconds
+                horas = segundos // 3600
+                minutos = (segundos % 3600) // 60
+
+                horas_totales = dias * 24 + horas + (1 if minutos > 0 else 0)
+                if horas_totales == 0 and dias == 0:
+                    horas_totales = 1
+
+                vehiculo = registro.fkIdVehiculo
+                es_visitante = vehiculo.es_visitante
+                precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
+                monto_pagado = precio_hora * horas_totales
+
+                Pago.objects.create(
+                    pagMonto=monto_pagado,
+                    pagMetodo='EFECTIVO',
+                    pagEstado='PAGADO',
+                    fkIdParqueo=registro
+                )
+
+        # 5. Actualizar Espacio
         espacio.espEstado = 'DISPONIBLE'
         espacio.save()
 
@@ -928,10 +974,10 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
                 return redirect('entrada_parqueadero')
 
             # Buscar espacio disponible según el tipo de vehículo
-            if vehiculo.vehTipo == 'MOTO':
-                tipo_nombre = 'MOTO'
-            else:  # CARRO
-                tipo_nombre = 'CARRO'
+            if vehiculo.vehTipo == 'Moto':
+                tipo_nombre = 'Moto'
+            else:  # Carro
+                tipo_nombre = 'Carro'
 
             espacio = Espacio.objects.filter(
                 espEstado='DISPONIBLE',

@@ -205,12 +205,12 @@ print("\n[7/9] Creando vehiculos de prueba...")
 
 vehiculos_demo = [
     # (placa, tipo, color, marca, modelo, propietario)
-    ('ABC123', 'CARRO', 'Rojo', 'Toyota', 'Corolla', cliente1),
-    ('DEF456', 'CARRO', 'Blanco', 'Mazda', '3', cliente1),
-    ('GHI789', 'MOTO', 'Negro', 'Yamaha', 'FZ250', cliente1),
-    ('JKL012', 'CARRO', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('MNO345', 'MOTO', 'Azul', 'Suzuki', 'GN125', cliente2),
-    ('PQR678', 'CARRO', 'Negro', 'Renault', 'Logan', cliente2),
+    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
+    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
+    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
+    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('PQR678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
 ]
 
 vehiculos = []

@@ -216,8 +216,8 @@ class Command(BaseCommand):
         # =============================================
         self.stdout.write('Creando tipos de espacio...')
 
-        tipo_carro = TipoEspacio.objects.create(nombre='CARRO')
-        tipo_moto = TipoEspacio.objects.create(nombre='MOTO')
+        tipo_carro = TipoEspacio.objects.create(nombre='Carro')
+        tipo_moto = TipoEspacio.objects.create(nombre='Moto')
         tipo_discap = TipoEspacio.objects.create(nombre='DISCAPACITADOS')
         tipo_visit = TipoEspacio.objects.create(nombre='VISITANTE')
 
