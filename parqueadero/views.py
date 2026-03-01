@@ -1,4 +1,5 @@
 import math
+import re
 
 from django.contrib import messages
 from datetime import timedelta
@@ -596,6 +597,18 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
             messages.error(request, 'Placa y Espacio son obligatorios.')
             return redirect('admin_dashboard')
 
+        if not re.match(r'^[A-Za-z0-9-]+$', placa):
+            messages.error(request, 'La placa solo acepta letras, números y guiones.')
+            return redirect('admin_dashboard')
+
+        if nombre and not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
+            messages.error(request, 'El nombre solo debe contener letras.')
+            return redirect('admin_dashboard')
+
+        if telefono and not re.match(r'^[0-9]+$', telefono):
+            messages.error(request, 'El teléfono solo debe contener números.')
+            return redirect('admin_dashboard')
+
         # 1. Validar Espacio
         espacio = get_object_or_404(Espacio, pk=espacio_id)
         if espacio.espEstado != 'DISPONIBLE':
@@ -609,7 +622,6 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
             vehiculo = Vehiculo.objects.create(
                 vehPlaca=placa,
                 vehTipo='Carro',  # Tipo por defecto
-                es_visitante=True,
                 nombre_contacto=nombre,
                 telefono_contacto=telefono
             )
@@ -937,7 +949,7 @@ class ClienteRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.session.get('usuario_id'):
             messages.error(request, 'Debes iniciar sesión.')
-            return redirect('login')
+            return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -991,7 +1003,7 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
         # Obtener vehículos activos del usuario
         vehiculos = Vehiculo.objects.filter(
             fkIdUsuario=usuario,
-            es_visitante=False,
+            fkIdUsuario__isnull=False,
             vehEstado=True
         )
 
@@ -1039,7 +1051,7 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
                 vehiculo = Vehiculo.objects.get(
                     pk=vehiculo_id,
                     fkIdUsuario=usuario,
-                    es_visitante=False,
+                    fkIdUsuario__isnull=False,
                     vehEstado=True
                 )
             except Vehiculo.DoesNotExist:

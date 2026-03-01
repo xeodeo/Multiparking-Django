@@ -55,7 +55,7 @@ print("\n[2/11] Creando usuarios...")
 admin = Usuario.objects.create(
     usuCorreo='admin@multiparking.com',
     usuDocumento='0000000001',
-    usuNombreCompleto='Administrador Principal',
+    usuNombre='Administrador', usuApellido='Principal',
     usuTelefono='3000000000',
     usuClaveHash=make_password('admin123'),
     rolTipoRol='ADMIN',
@@ -66,7 +66,7 @@ print(f"  [OK] Admin: admin@multiparking.com / admin123")
 vigilante = Usuario.objects.create(
     usuCorreo='vigilante@multiparking.com',
     usuDocumento='0000000002',
-    usuNombreCompleto='Vigilante Principal',
+    usuNombre='Vigilante', usuApellido='Principal',
     usuTelefono='3001111111',
     usuClaveHash=make_password('vigil123'),
     rolTipoRol='VIGILANTE',
@@ -77,7 +77,7 @@ print(f"  [OK] Vigilante: vigilante@multiparking.com / vigil123")
 cliente1 = Usuario.objects.create(
     usuCorreo='cliente@test.com',
     usuDocumento='1234567890',
-    usuNombreCompleto='Carlos Perez',
+    usuNombre='Carlos', usuApellido='Perez',
     usuTelefono='3001234567',
     usuClaveHash=make_password('test123'),
     rolTipoRol='CLIENTE',
@@ -88,7 +88,7 @@ print(f"  [OK] Cliente 1: cliente@test.com / test123")
 cliente2 = Usuario.objects.create(
     usuCorreo='maria@test.com',
     usuDocumento='9876543210',
-    usuNombreCompleto='Maria Lopez',
+    usuNombre='Maria', usuApellido='Lopez',
     usuTelefono='3009876543',
     usuClaveHash=make_password('test123'),
     rolTipoRol='CLIENTE',
@@ -216,24 +216,11 @@ for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
     v = Vehiculo.objects.create(
         vehPlaca=placa, vehTipo=tipo, vehColor=color,
         vehMarca=marca, vehModelo=modelo,
-        fkIdUsuario=propietario, es_visitante=False,
+        fkIdUsuario=propietario,
     )
     vehiculos.append(v)
 
-# Vehiculos visitante
-vehiculos_visitante = []
-for placa, tipo, color, marca, modelo in [
-    ('VIS001', 'Carro', 'Plata', 'Hyundai', 'Accent'),
-    ('VIS002', 'Moto', 'Rojo', 'Honda', 'CB190R'),
-]:
-    v = Vehiculo.objects.create(
-        vehPlaca=placa, vehTipo=tipo, vehColor=color,
-        vehMarca=marca, vehModelo=modelo,
-        fkIdUsuario=None, es_visitante=True,
-    )
-    vehiculos_visitante.append(v)
-
-print(f"  [OK] {len(vehiculos)} vehiculos de clientes + {len(vehiculos_visitante)} visitantes")
+print(f"  [OK] {len(vehiculos)} vehiculos de clientes")
 
 # ── 8. CUPONES ──────────────────────────────────────────────
 print("\n[8/11] Creando cupones...")
@@ -428,7 +415,7 @@ print(f"""
     Ocupado:     {Espacio.objects.filter(espEstado='OCUPADO').count()}
     Inactivo:    {Espacio.objects.filter(espEstado='INACTIVO').count()}
   Tarifas:     {Tarifa.objects.filter(activa=True).count()} activas + {Tarifa.objects.filter(activa=False).count()} desactivadas
-  Vehiculos:   {Vehiculo.objects.count()} ({len(vehiculos)} clientes, {len(vehiculos_visitante)} visitantes)
+  Vehiculos:   {Vehiculo.objects.count()}
   Cupones:     {Cupon.objects.filter(cupActivo=True).count()} activos + {Cupon.objects.filter(cupActivo=False).count()} desactivados
   Reservas:    {Reserva.objects.count()}
   Pagos:       {Pago.objects.count()}

@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.db.models import Q
@@ -7,6 +9,10 @@ from django.views import View
 
 from .mixins import AdminRequiredMixin
 from .models import Usuario
+
+RE_SOLO_NUMEROS = re.compile(r'^[0-9]+$')
+RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
+RE_CORREO = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$')
 
 
 def _is_ajax(request):
@@ -86,9 +92,6 @@ def register_view(request):
         clave = request.POST.get('clave', '')
         clave_confirm = request.POST.get('clave_confirm', '')
 
-        # Si viene apellido separado (modal home), concatenar. Sino usar nombre directamente
-        nombre_completo = f"{nombre} {apellido}".strip() if apellido else nombre
-
         def _err(msg):
             if _is_ajax(request):
                 return JsonResponse({'ok': False, 'error': msg})
@@ -97,12 +100,13 @@ def register_view(request):
                 'form_data': {
                     'documento': documento,
                     'nombre': nombre,
+                    'apellido': apellido,
                     'correo': correo,
                     'telefono': telefono
                 }
             })
 
-        if not all([documento, nombre, correo, clave]):
+        if not all([documento, nombre, apellido, correo, clave]):
             return _err('Todos los campos obligatorios deben estar llenos.')
 
         if len(documento) < 6:
@@ -114,6 +118,18 @@ def register_view(request):
         if len(clave) < 6:
             return _err('La contraseña debe tener al menos 6 caracteres.')
 
+        # Validar formato de campos
+        if not RE_SOLO_NUMEROS.match(documento):
+            return _err('El documento solo debe contener números.')
+        if not RE_SOLO_LETRAS.match(nombre):
+            return _err('El nombre solo debe contener letras.')
+        if not RE_SOLO_LETRAS.match(apellido):
+            return _err('El apellido solo debe contener letras.')
+        if telefono and not RE_SOLO_NUMEROS.match(telefono):
+            return _err('El teléfono solo debe contener números.')
+        if not RE_CORREO.match(correo):
+            return _err('Ingresa un correo válido (ej: usuario@dominio.com).')
+
         # Validar documento duplicado
         if Usuario.objects.filter(usuDocumento=documento).exists():
             return _err('Ya existe un usuario registrado con ese número de documento.')
@@ -124,7 +140,8 @@ def register_view(request):
 
         Usuario.objects.create(
             usuDocumento=documento,
-            usuNombreCompleto=nombre_completo,
+            usuNombre=nombre,
+            usuApellido=apellido,
             usuCorreo=correo,
             usuTelefono=telefono,
             usuClaveHash=make_password(clave),
@@ -142,7 +159,6 @@ def register_view(request):
 
 def logout_view(request):
     request.session.flush()
-    messages.success(request, 'Sesión cerrada correctamente.')
     return redirect('home')
 
 
@@ -151,7 +167,7 @@ def dashboard_view(request):
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:
         messages.error(request, 'Debes iniciar sesión para acceder.')
-        return redirect('login')
+        return redirect('home')
 
     from vehiculos.models import Vehiculo
     from reservas.models import Reserva
@@ -162,10 +178,9 @@ def dashboard_view(request):
     # Obtener usuario actual
     usuario = Usuario.objects.get(pk=usuario_id)
 
-    # Vehículos del usuario (solo no visitantes)
+    # Vehículos del usuario (registrados)
     vehiculos = Vehiculo.objects.filter(
-        fkIdUsuario=usuario,
-        es_visitante=False
+        fkIdUsuario=usuario
     ).order_by('-pk')
 
     # Reservas del usuario (activas y futuras)
@@ -175,8 +190,7 @@ def dashboard_view(request):
 
     # Auto-cancelar reservas PENDIENTES no confirmadas que faltan 15 min o menos
     reservas_pendientes = Reserva.objects.filter(
-        resEstado='PENDIENTE',
-        resConfirmada=False
+        resEstado='PENDIENTE'
     )
     for res in reservas_pendientes:
         fecha_hora_res = datetime.combine(res.resFechaReserva, res.resHoraInicio)
@@ -306,11 +320,12 @@ def dashboard_view(request):
 class UsuarioListView(AdminRequiredMixin, View):
     def get(self, request):
         q = request.GET.get('q', '').strip()
-        usuarios = Usuario.objects.order_by('-usuEstado', 'usuNombreCompleto')
+        usuarios = Usuario.objects.order_by('-usuEstado', 'usuNombre', 'usuApellido')
 
         if q:
             usuarios = usuarios.filter(
-                Q(usuNombreCompleto__icontains=q)
+                Q(usuNombre__icontains=q)
+                | Q(usuApellido__icontains=q)
                 | Q(usuDocumento__icontains=q)
                 | Q(usuCorreo__icontains=q)
             )
@@ -344,7 +359,8 @@ class UsuarioCreateView(AdminRequiredMixin, View):
 
     def post(self, request):
         documento = request.POST.get('usuDocumento', '').strip()
-        nombre = request.POST.get('usuNombreCompleto', '').strip()
+        nombre = request.POST.get('usuNombre', '').strip()
+        apellido = request.POST.get('usuApellido', '').strip()
         correo = request.POST.get('usuCorreo', '').strip()
         telefono = request.POST.get('usuTelefono', '').strip()
         rol = request.POST.get('rolTipoRol', 'CLIENTE')
@@ -357,7 +373,8 @@ class UsuarioCreateView(AdminRequiredMixin, View):
             'roles': Usuario.RolChoices.choices,
             'usuario': {
                 'usuDocumento': documento,
-                'usuNombreCompleto': nombre,
+                'usuNombre': nombre,
+                'usuApellido': apellido,
                 'usuCorreo': correo,
                 'usuTelefono': telefono,
                 'rolTipoRol': rol,
@@ -365,12 +382,32 @@ class UsuarioCreateView(AdminRequiredMixin, View):
             },
         }
 
-        if not all([documento, nombre, correo, clave]):
-            messages.error(request, 'Documento, nombre, correo y contraseña son obligatorios.')
+        if not all([documento, nombre, apellido, correo, clave]):
+            messages.error(request, 'Documento, nombre, apellido, correo y contraseña son obligatorios.')
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         if len(documento) < 6:
             messages.error(request, 'El documento debe tener al menos 6 caracteres.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_NUMEROS.match(documento):
+            messages.error(request, 'El documento solo debe contener números.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_LETRAS.match(nombre):
+            messages.error(request, 'El nombre solo debe contener letras.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_LETRAS.match(apellido):
+            messages.error(request, 'El apellido solo debe contener letras.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if telefono and not RE_SOLO_NUMEROS.match(telefono):
+            messages.error(request, 'El teléfono solo debe contener números.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_CORREO.match(correo):
+            messages.error(request, 'Ingresa un correo válido (ej: usuario@dominio.com).')
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         if len(clave) < 6:
@@ -387,14 +424,15 @@ class UsuarioCreateView(AdminRequiredMixin, View):
 
         Usuario.objects.create(
             usuDocumento=documento,
-            usuNombreCompleto=nombre,
+            usuNombre=nombre,
+            usuApellido=apellido,
             usuCorreo=correo,
             usuTelefono=telefono,
             rolTipoRol=rol,
             usuClaveHash=make_password(clave),
             usuEstado=activo,
         )
-        messages.success(request, f'Usuario {nombre} creado exitosamente.')
+        messages.success(request, f'Usuario {nombre} {apellido} creado exitosamente.')
         return redirect('admin_usuarios')
 
 
@@ -412,7 +450,8 @@ class UsuarioUpdateView(AdminRequiredMixin, View):
     def post(self, request, pk):
         usuario = get_object_or_404(Usuario, pk=pk)
         documento = request.POST.get('usuDocumento', '').strip()
-        nombre = request.POST.get('usuNombreCompleto', '').strip()
+        nombre = request.POST.get('usuNombre', '').strip()
+        apellido = request.POST.get('usuApellido', '').strip()
         correo = request.POST.get('usuCorreo', '').strip()
         telefono = request.POST.get('usuTelefono', '').strip()
         rol = request.POST.get('rolTipoRol', 'CLIENTE')
@@ -427,12 +466,32 @@ class UsuarioUpdateView(AdminRequiredMixin, View):
             'editing': True,
         }
 
-        if not all([documento, nombre, correo]):
-            messages.error(request, 'Documento, nombre y correo son obligatorios.')
+        if not all([documento, nombre, apellido, correo]):
+            messages.error(request, 'Documento, nombre, apellido y correo son obligatorios.')
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         if len(documento) < 6:
             messages.error(request, 'El documento debe tener al menos 6 caracteres.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_NUMEROS.match(documento):
+            messages.error(request, 'El documento solo debe contener números.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_LETRAS.match(nombre):
+            messages.error(request, 'El nombre solo debe contener letras.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_SOLO_LETRAS.match(apellido):
+            messages.error(request, 'El apellido solo debe contener letras.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if telefono and not RE_SOLO_NUMEROS.match(telefono):
+            messages.error(request, 'El teléfono solo debe contener números.')
+            return render(request, 'admin_panel/usuarios/form.html', ctx)
+
+        if not RE_CORREO.match(correo):
+            messages.error(request, 'Ingresa un correo válido (ej: usuario@dominio.com).')
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         # Validar duplicados excluyendo el usuario actual
@@ -445,7 +504,8 @@ class UsuarioUpdateView(AdminRequiredMixin, View):
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         usuario.usuDocumento = documento
-        usuario.usuNombreCompleto = nombre
+        usuario.usuNombre = nombre
+        usuario.usuApellido = apellido
         usuario.usuCorreo = correo
         usuario.usuTelefono = telefono
         usuario.rolTipoRol = rol
@@ -459,7 +519,7 @@ class UsuarioUpdateView(AdminRequiredMixin, View):
             usuario.usuClaveHash = make_password(clave)
 
         usuario.save()
-        messages.success(request, f'Usuario {nombre} actualizado.')
+        messages.success(request, f'Usuario {nombre} {apellido} actualizado.')
         return redirect('admin_usuarios')
 
 

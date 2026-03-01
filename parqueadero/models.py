@@ -1,8 +1,12 @@
+from django.core.validators import RegexValidator
 from django.db import models
 
 
 class Piso(models.Model):
-    pisNombre = models.CharField(max_length=50)
+    pisNombre = models.CharField(
+        max_length=30,
+        validators=[RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', 'El nombre solo acepta letras, números y guiones')],
+    )
     pisEstado = models.BooleanField(default=True)
 
     class Meta:
@@ -15,7 +19,7 @@ class Piso(models.Model):
 
 
 class TipoEspacio(models.Model):
-    nombre = models.CharField(max_length=50, unique=True)
+    nombre = models.CharField(max_length=20, unique=True)
 
     class Meta:
         db_table = 'tipos_espacio'
@@ -33,7 +37,7 @@ class Espacio(models.Model):
         OCUPADO = 'OCUPADO', 'Ocupado'
         INACTIVO = 'INACTIVO', 'Inactivo'
 
-    espNumero = models.CharField(max_length=20)
+    espNumero = models.CharField(max_length=10)
     fkIdPiso = models.ForeignKey(
         Piso,
         on_delete=models.CASCADE,
@@ -47,7 +51,7 @@ class Espacio(models.Model):
         db_column='fkIdTipoEspacio',
     )
     espEstado = models.CharField(
-        max_length=11,
+        max_length=10,
         choices=EstadoChoices.choices,
         default=EstadoChoices.DISPONIBLE,
     )
@@ -56,6 +60,7 @@ class Espacio(models.Model):
         db_table = 'espacios'
         verbose_name = 'Espacio'
         verbose_name_plural = 'Espacios'
+        unique_together = [('fkIdPiso', 'espNumero')]
         indexes = [
             models.Index(fields=['espNumero'], name='idx_espacio_numero'),
         ]

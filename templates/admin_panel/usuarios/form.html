@@ -16,26 +16,43 @@
             {% csrf_token %}
 
             <div class="space-y-6">
-                <!-- Documento y Nombre -->
+                <!-- Documento -->
+                <div>
+                    <label for="usuDocumento" class="block text-sm font-medium text-mp-muted mb-2">
+                        N&uacute;mero de Documento <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text" id="usuDocumento" name="usuDocumento"
+                        value="{{ usuario.usuDocumento }}"
+                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                        placeholder="Ej: 1234567890" required
+                        pattern="[0-9]+" maxlength="15" minlength="6"
+                        title="Solo números, mínimo 6 dígitos">
+                </div>
+
+                <!-- Nombre y Apellido -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="usuDocumento" class="block text-sm font-medium text-mp-muted mb-2">
-                            N&uacute;mero de Documento <span class="text-red-400">*</span>
+                        <label for="usuNombre" class="block text-sm font-medium text-mp-muted mb-2">
+                            Nombre <span class="text-red-400">*</span>
                         </label>
-                        <input type="text" id="usuDocumento" name="usuDocumento"
-                            value="{{ usuario.usuDocumento }}"
+                        <input type="text" id="usuNombre" name="usuNombre"
+                            value="{{ usuario.usuNombre }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: 1234567890" required>
+                            placeholder="Ej: Juan" required
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                            title="Solo letras y espacios">
                     </div>
 
                     <div>
-                        <label for="usuNombreCompleto" class="block text-sm font-medium text-mp-muted mb-2">
-                            Nombre Completo <span class="text-red-400">*</span>
+                        <label for="usuApellido" class="block text-sm font-medium text-mp-muted mb-2">
+                            Apellido <span class="text-red-400">*</span>
                         </label>
-                        <input type="text" id="usuNombreCompleto" name="usuNombreCompleto"
-                            value="{{ usuario.usuNombreCompleto }}"
+                        <input type="text" id="usuApellido" name="usuApellido"
+                            value="{{ usuario.usuApellido }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: Juan P&eacute;rez" required>
+                            placeholder="Ej: P&eacute;rez" required
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                            title="Solo letras y espacios">
                     </div>
                 </div>
 
@@ -55,10 +72,12 @@
                         <label for="usuTelefono" class="block text-sm font-medium text-mp-muted mb-2">
                             Tel&eacute;fono
                         </label>
-                        <input type="text" id="usuTelefono" name="usuTelefono"
+                        <input type="tel" id="usuTelefono" name="usuTelefono"
                             value="{{ usuario.usuTelefono }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: 3001234567">
+                            placeholder="Ej: 3001234567"
+                            pattern="[0-9]+" maxlength="10"
+                            title="Solo números, máximo 10 dígitos">
                     </div>
                 </div>
 
@@ -129,4 +148,64 @@
         </form>
     </div>
 </div>
+
+<script>
+(function(){
+    const rules = {
+        usuDocumento: { re: /^[0-9]+$/, msg: 'Solo números' },
+        usuNombre:    { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+        usuApellido:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+        usuTelefono:  { re: /^[0-9]*$/, msg: 'Solo números' },
+    };
+    Object.keys(rules).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        el.addEventListener('input', function(){
+            const v = this.value;
+            if (v && !rules[id].re.test(v)) {
+                hint.textContent = rules[id].msg;
+                hint.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hint.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    });
+    document.getElementById('usuDocumento').addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+    const tel = document.getElementById('usuTelefono');
+    if (tel) tel.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+
+    // Validación de correo electrónico
+    const correo = document.getElementById('usuCorreo');
+    if (correo) {
+        const hintCorreo = document.createElement('p');
+        hintCorreo.className = 'text-xs text-red-400 mt-1 hidden';
+        correo.parentNode.appendChild(hintCorreo);
+        const reCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        correo.addEventListener('input', function(){
+            const v = this.value;
+            if (v && !reCorreo.test(v)) {
+                hintCorreo.textContent = 'Ingresa un correo válido (ej: usuario@dominio.com)';
+                hintCorreo.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hintCorreo.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}

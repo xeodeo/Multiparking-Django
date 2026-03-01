@@ -17,12 +17,12 @@ class Pago(models.Model):
     pagFechaPago = models.DateTimeField(auto_now_add=True)
     pagMonto = models.DecimalField(max_digits=12, decimal_places=2)
     pagMetodo = models.CharField(
-        max_length=15,
+        max_length=13,
         choices=MetodoChoices.choices,
         default=MetodoChoices.EFECTIVO,
     )
     pagEstado = models.CharField(
-        max_length=10,
+        max_length=9,
         choices=EstadoChoices.choices,
         default=EstadoChoices.PENDIENTE,
     )

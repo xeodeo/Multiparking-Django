@@ -26,9 +26,12 @@
             <input
                 type="text"
                 name="vehPlaca"
+                id="vehPlaca"
                 value="{% if vehiculo %}{{ vehiculo.vehPlaca }}{% else %}{{ placa }}{% endif %}"
                 required
-                maxlength="10"
+                maxlength="8"
+                pattern="[A-Za-z0-9\-]+"
+                title="Solo letras, números y guiones"
                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                 placeholder="ABC-123">
             <p class="text-xs text-mp-muted mt-1">Formato: ABC-123 o ABC123</p>
@@ -83,8 +86,11 @@
             <input
                 type="text"
                 name="vehMarca"
+                id="vehMarca"
                 value="{% if vehiculo %}{{ vehiculo.vehMarca }}{% else %}{{ marca }}{% endif %}"
-                maxlength="50"
+                maxlength="30"
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+"
+                title="Solo letras y números"
                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                 placeholder="Toyota, Yamaha, etc.">
         </div>
@@ -95,8 +101,11 @@
             <input
                 type="text"
                 name="vehModelo"
+                id="vehModelo"
                 value="{% if vehiculo %}{{ vehiculo.vehModelo }}{% else %}{{ modelo }}{% endif %}"
-                maxlength="50"
+                maxlength="30"
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+"
+                title="Solo letras, números y puntos"
                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                 placeholder="Corolla 2020, MT-07, etc.">
         </div>
@@ -107,8 +116,11 @@
             <input
                 type="text"
                 name="vehColor"
+                id="vehColor"
                 value="{% if vehiculo %}{{ vehiculo.vehColor }}{% else %}{{ color }}{% endif %}"
-                maxlength="30"
+                maxlength="20"
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                title="Solo letras"
                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                 placeholder="Blanco, Negro, Rojo, etc.">
         </div>
@@ -150,4 +162,35 @@
         </div>
     </form>
 </div>
+
+<script>
+(function(){
+    const rules = {
+        vehPlaca:  { re: /^[A-Za-z0-9\-]+$/, msg: 'Solo letras, números y guiones' },
+        vehMarca:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/, msg: 'Solo letras y números' },
+        vehModelo: { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$/, msg: 'Solo letras, números y puntos' },
+        vehColor:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+    };
+    Object.keys(rules).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        el.addEventListener('input', function(){
+            const v = this.value;
+            if (v && !rules[id].re.test(v)) {
+                hint.textContent = rules[id].msg;
+                hint.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hint.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}

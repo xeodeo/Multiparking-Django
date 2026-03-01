@@ -13,11 +13,10 @@ class Reserva(models.Model):
     resHoraInicio = models.TimeField()
     resHoraFin = models.TimeField(null=True, blank=True)  # Ahora es opcional
     resEstado = models.CharField(
-        max_length=11,
+        max_length=10,
         choices=EstadoChoices.choices,
         default=EstadoChoices.PENDIENTE,
     )
-    resConfirmada = models.BooleanField(default=False)
     fkIdEspacio = models.ForeignKey(
         'parqueadero.Espacio',
         on_delete=models.CASCADE,
@@ -30,6 +29,10 @@ class Reserva(models.Model):
         related_name='reservas',
         db_column='fkIdVehiculo',
     )
+
+    @property
+    def resConfirmada(self):
+        return self.resEstado == self.EstadoChoices.CONFIRMADA
 
     class Meta:
         db_table = 'reservas'

@@ -174,12 +174,12 @@ class ReportesView(AdminRequiredMixin, View):
 
         # Residentes (vehículos registrados no visitantes)
         residentes_count = inventario_qs.filter(
-            fkIdVehiculo__es_visitante=False
+            fkIdVehiculo__fkIdUsuario__isnull=False
         ).count()
 
         # Visitantes
         visitantes_count = inventario_qs.filter(
-            fkIdVehiculo__es_visitante=True
+            fkIdVehiculo__fkIdUsuario__isnull=True
         ).count()
 
         # Reservas

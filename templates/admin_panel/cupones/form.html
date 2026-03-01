@@ -19,10 +19,10 @@
             <div class="space-y-6">
                 <!-- Nombre de la promocion -->
                 <div>
-                    <label for="cupNombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre de la Promocion</label>
+                    <label for="cupNombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre de la Promocion <span class="text-red-400">*</span></label>
                     <input type="text" id="cupNombre" name="cupNombre" value="{{ cupon.cupNombre }}"
                         class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                        placeholder="Ej: Descuento Bienvenida" required>
+                        placeholder="Ej: Descuento Bienvenida" required maxlength="50">
                 </div>
 
                 <!-- Codigo y Tipo -->
@@ -30,19 +30,21 @@
                     <div>
                         <label for="cupCodigo" class="block text-sm font-medium text-mp-muted mb-2">
                             <span class="flex items-center gap-2">
-                                Codigo del Cupon
+                                Codigo del Cupon <span class="text-red-400">*</span>
                                 <span class="text-xs text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">Unico</span>
                             </span>
                         </label>
                         <input type="text" id="cupCodigo" name="cupCodigo" value="{{ cupon.cupCodigo }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition uppercase font-mono"
-                            placeholder="Ej: BIENVENIDO20" required>
+                            placeholder="Ej: BIENVENIDO20" required maxlength="20"
+                            pattern="[A-Za-z0-9]+"
+                            title="Solo letras y números, sin espacios ni caracteres especiales">
                         <p class="text-xs text-mp-muted mt-1">Este es el codigo que el cliente ingresa para aplicar el descuento</p>
                     </div>
 
                     <div>
                         <label for="cupTipo" class="block text-sm font-medium text-mp-muted mb-2">Tipo de
-                            Descuento</label>
+                            Descuento <span class="text-red-400">*</span></label>
                         <select id="cupTipo" name="cupTipo" required
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
                             <option value="PORCENTAJE" {% if cupon.cupTipo == 'PORCENTAJE' %}selected{% endif %}>Porcentaje (%)</option>
@@ -54,8 +56,8 @@
                 <!-- Valor -->
                 <div>
                     <label for="cupValor" class="block text-sm font-medium text-mp-muted mb-2">Valor del
-                        Descuento</label>
-                    <input type="number" id="cupValor" name="cupValor" value="{{ cupon.cupValor|unlocalize }}" step="0.01"
+                        Descuento <span class="text-red-400">*</span></label>
+                    <input type="number" id="cupValor" name="cupValor" value="{{ cupon.cupValor|unlocalize }}" step="0.01" min="0"
                         class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                         placeholder="Ej: 10 para 10% o 5000 para $5000" required>
                 </div>
@@ -76,7 +78,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                Fecha Inicio
+                                Fecha Inicio <span class="text-red-400">*</span>
                             </span>
                         </label>
                         <input type="date" id="cupFechaInicio" name="cupFechaInicio"
@@ -90,7 +92,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                Fecha Fin
+                                Fecha Fin <span class="text-red-400">*</span>
                             </span>
                         </label>
                         <input type="date" id="cupFechaFin" name="cupFechaFin"
@@ -127,4 +129,68 @@
         </form>
     </div>
 </div>
+
+<script>
+(function(){
+    const codigo = document.getElementById('cupCodigo');
+    const valor = document.getElementById('cupValor');
+    const fechaInicio = document.getElementById('cupFechaInicio');
+    const fechaFin = document.getElementById('cupFechaFin');
+
+    function addHint(el){
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        return hint;
+    }
+
+    // Codigo: solo letras y numeros
+    const hintCodigo = addHint(codigo);
+    codigo.addEventListener('input', function(){
+        this.value = this.value.toUpperCase();
+        const v = this.value;
+        if (v && !/^[A-Z0-9]+$/.test(v)) {
+            hintCodigo.textContent = 'Solo letras y números, sin espacios';
+            hintCodigo.classList.remove('hidden');
+            this.classList.add('border-red-500');
+            this.classList.remove('border-mp-border');
+        } else {
+            hintCodigo.classList.add('hidden');
+            this.classList.remove('border-red-500');
+            this.classList.add('border-mp-border');
+        }
+    });
+
+    // Valor: no negativo
+    const hintValor = addHint(valor);
+    valor.addEventListener('input', function(){
+        const v = parseFloat(this.value);
+        if (this.value !== '' && v < 0) {
+            hintValor.textContent = 'El valor no puede ser negativo';
+            hintValor.classList.remove('hidden');
+            this.classList.add('border-red-500');
+            this.classList.remove('border-mp-border');
+        } else {
+            hintValor.classList.add('hidden');
+            this.classList.remove('border-red-500');
+            this.classList.add('border-mp-border');
+        }
+    });
+
+    // Fecha fin >= fecha inicio
+    const hintFecha = addHint(fechaFin);
+    fechaFin.addEventListener('change', function(){
+        if (fechaInicio.value && this.value && this.value < fechaInicio.value) {
+            hintFecha.textContent = 'La fecha fin debe ser posterior a la fecha inicio';
+            hintFecha.classList.remove('hidden');
+            this.classList.add('border-red-500');
+            this.classList.remove('border-mp-border');
+        } else {
+            hintFecha.classList.add('hidden');
+            this.classList.remove('border-red-500');
+            this.classList.add('border-mp-border');
+        }
+    });
+})();
+</script>
 {% endblock %}

@@ -1,3 +1,5 @@
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
@@ -6,6 +8,12 @@ from django.db.models import Q
 from usuarios.mixins import AdminRequiredMixin
 from .models import Vehiculo
 from usuarios.models import Usuario
+
+RE_PLACA = re.compile(r'^[A-Za-z0-9-]+$')
+RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
+RE_LETRAS_NUMEROS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$')
+RE_MODELO = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$')
+RE_SOLO_NUMEROS = re.compile(r'^[0-9]+$')
 
 
 class VehiculoListView(AdminRequiredMixin, View):
@@ -17,13 +25,14 @@ class VehiculoListView(AdminRequiredMixin, View):
             qs = qs.filter(
                 Q(vehPlaca__icontains=q) |
                 Q(vehMarca__icontains=q) |
-                Q(fkIdUsuario__usuNombreCompleto__icontains=q) |
+                Q(fkIdUsuario__usuNombre__icontains=q) |
+                Q(fkIdUsuario__usuApellido__icontains=q) |
                 Q(nombre_contacto__icontains=q)
             )
 
         total = Vehiculo.objects.count()
-        registrados = Vehiculo.objects.filter(es_visitante=False).count()
-        visitantes = Vehiculo.objects.filter(es_visitante=True).count()
+        registrados = Vehiculo.objects.filter(fkIdUsuario__isnull=False).count()
+        visitantes = Vehiculo.objects.filter(fkIdUsuario__isnull=True).count()
 
         return render(request, 'admin_panel/vehiculos/list.html', {
             'active_page': 'vehiculos',
@@ -40,7 +49,7 @@ class VehiculoCreateView(AdminRequiredMixin, View):
         return render(request, 'admin_panel/vehiculos/form.html', {
             'active_page': 'vehiculos',
             'title': 'Nuevo Vehículo',
-            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombreCompleto'),
+            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombre', 'usuApellido'),
         })
 
     def post(self, request):
@@ -51,18 +60,16 @@ class VehiculoCreateView(AdminRequiredMixin, View):
         modelo = request.POST.get('vehModelo', '').strip()
         estado = request.POST.get('vehEstado') == 'on'
         usuario_id = request.POST.get('fkIdUsuario', '')
-        es_visitante = request.POST.get('es_visitante') == 'on'
         nombre_contacto = request.POST.get('nombre_contacto', '').strip()
         telefono_contacto = request.POST.get('telefono_contacto', '').strip()
 
         ctx = {
             'active_page': 'vehiculos',
             'title': 'Nuevo Vehículo',
-            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombreCompleto'),
+            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombre', 'usuApellido'),
             'vehiculo': {
                 'vehPlaca': placa, 'vehTipo': tipo, 'vehColor': color,
                 'vehMarca': marca, 'vehModelo': modelo, 'vehEstado': estado,
-                'es_visitante': es_visitante,
                 'nombre_contacto': nombre_contacto,
                 'telefono_contacto': telefono_contacto,
             },
@@ -70,6 +77,30 @@ class VehiculoCreateView(AdminRequiredMixin, View):
 
         if not all([placa, tipo]):
             messages.error(request, 'Placa y tipo son obligatorios.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if not RE_PLACA.match(placa):
+            messages.error(request, 'La placa solo acepta letras, números y guiones.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if color and not RE_SOLO_LETRAS.match(color):
+            messages.error(request, 'El color solo debe contener letras.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if marca and not RE_LETRAS_NUMEROS.match(marca):
+            messages.error(request, 'La marca solo acepta letras y números.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if modelo and not RE_MODELO.match(modelo):
+            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if nombre_contacto and not RE_SOLO_LETRAS.match(nombre_contacto):
+            messages.error(request, 'El nombre de contacto solo debe contener letras.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if telefono_contacto and not RE_SOLO_NUMEROS.match(telefono_contacto):
+            messages.error(request, 'El teléfono de contacto solo debe contener números.')
             return render(request, 'admin_panel/vehiculos/form.html', ctx)
 
         if Vehiculo.objects.filter(vehPlaca=placa).exists():
@@ -84,7 +115,6 @@ class VehiculoCreateView(AdminRequiredMixin, View):
             vehModelo=modelo,
             vehEstado=estado if estado else True,
             fkIdUsuario_id=usuario_id if usuario_id else None,
-            es_visitante=es_visitante or not usuario_id,
             nombre_contacto=nombre_contacto,
             telefono_contacto=telefono_contacto,
         )
@@ -99,7 +129,7 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
             'active_page': 'vehiculos',
             'title': 'Editar Vehículo',
             'vehiculo': vehiculo,
-            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombreCompleto'),
+            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombre', 'usuApellido'),
         })
 
     def post(self, request, pk):
@@ -111,7 +141,6 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
         vehiculo.vehModelo = request.POST.get('vehModelo', '').strip()
         vehiculo.vehEstado = request.POST.get('vehEstado') == 'on'
         usuario_id = request.POST.get('fkIdUsuario', '')
-        vehiculo.es_visitante = request.POST.get('es_visitante') == 'on' or not usuario_id
         vehiculo.nombre_contacto = request.POST.get('nombre_contacto', '').strip()
         vehiculo.telefono_contacto = request.POST.get('telefono_contacto', '').strip()
 
@@ -119,11 +148,35 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
             'active_page': 'vehiculos',
             'title': 'Editar Vehículo',
             'vehiculo': vehiculo,
-            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombreCompleto'),
+            'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombre', 'usuApellido'),
         }
 
         if not all([placa, vehiculo.vehTipo]):
             messages.error(request, 'Placa y tipo son obligatorios.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if not RE_PLACA.match(placa):
+            messages.error(request, 'La placa solo acepta letras, números y guiones.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if vehiculo.vehColor and not RE_SOLO_LETRAS.match(vehiculo.vehColor):
+            messages.error(request, 'El color solo debe contener letras.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if vehiculo.vehMarca and not RE_LETRAS_NUMEROS.match(vehiculo.vehMarca):
+            messages.error(request, 'La marca solo acepta letras y números.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if vehiculo.vehModelo and not RE_MODELO.match(vehiculo.vehModelo):
+            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if vehiculo.nombre_contacto and not RE_SOLO_LETRAS.match(vehiculo.nombre_contacto):
+            messages.error(request, 'El nombre de contacto solo debe contener letras.')
+            return render(request, 'admin_panel/vehiculos/form.html', ctx)
+
+        if vehiculo.telefono_contacto and not RE_SOLO_NUMEROS.match(vehiculo.telefono_contacto):
+            messages.error(request, 'El teléfono de contacto solo debe contener números.')
             return render(request, 'admin_panel/vehiculos/form.html', ctx)
 
         if Vehiculo.objects.filter(vehPlaca=placa).exclude(pk=pk).exists():
