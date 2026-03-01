@@ -36,7 +36,7 @@ admin, created = Usuario.objects.get_or_create(
     usuCorreo='admin@multiparking.com',
     defaults={
         'usuDocumento': '0000000001',
-        'usuNombreCompleto': 'Administrador',
+        'usuNombre': 'Administrador', 'usuApellido': '',
         'usuTelefono': '3000000000',
         'usuClaveHash': make_password('admin123'),
         'rolTipoRol': 'ADMIN',
@@ -49,7 +49,7 @@ vigilante, created = Usuario.objects.get_or_create(
     usuCorreo='vigilante@multiparking.com',
     defaults={
         'usuDocumento': '0000000002',
-        'usuNombreCompleto': 'Vigilante Principal',
+        'usuNombre': 'Vigilante', 'usuApellido': 'Principal',
         'usuTelefono': '3001111111',
         'usuClaveHash': make_password('vigil123'),
         'rolTipoRol': 'VIGILANTE',
@@ -62,7 +62,7 @@ cliente, created = Usuario.objects.get_or_create(
     usuCorreo='cliente@test.com',
     defaults={
         'usuDocumento': '1234567890',
-        'usuNombreCompleto': 'Carlos Perez',
+        'usuNombre': 'Carlos', 'usuApellido': 'Perez',
         'usuTelefono': '3001234567',
         'usuClaveHash': make_password('test123'),
         'rolTipoRol': 'CLIENTE',
@@ -75,7 +75,7 @@ cliente2, created = Usuario.objects.get_or_create(
     usuCorreo='maria@test.com',
     defaults={
         'usuDocumento': '9876543210',
-        'usuNombreCompleto': 'Maria Lopez',
+        'usuNombre': 'Maria', 'usuApellido': 'Lopez',
         'usuTelefono': '3009876543',
         'usuClaveHash': make_password('test123'),
         'rolTipoRol': 'CLIENTE',
@@ -209,7 +209,6 @@ for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
             'vehMarca': marca,
             'vehModelo': modelo,
             'fkIdUsuario': propietario,
-            'es_visitante': False,
         }
     )
     if created:

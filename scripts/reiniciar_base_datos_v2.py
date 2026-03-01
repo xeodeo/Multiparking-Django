@@ -52,7 +52,7 @@ print("\n[2/10] Creando usuarios...")
 admin = Usuario.objects.create(
     usuCorreo='admin@multiparking.com',
     usuDocumento='1000000001',
-    usuNombreCompleto='Carlos Administrador',
+    usuNombre='Carlos', usuApellido='Administrador',
     usuTelefono='3101234567',
     usuClaveHash=make_password('admin123'),
     rolTipoRol='ADMIN',
@@ -64,7 +64,7 @@ print(f"[OK] Admin: {admin.usuCorreo}")
 vigilante = Usuario.objects.create(
     usuCorreo='vigilante@multiparking.com',
     usuDocumento='1000000002',
-    usuNombreCompleto='Jorge Vigilante Principal',
+    usuNombre='Jorge', usuApellido='Vigilante Principal',
     usuTelefono='3109876543',
     usuClaveHash=make_password('vigilante123'),
     rolTipoRol='VIGILANTE',
@@ -74,19 +74,20 @@ print(f"[OK] Vigilante: {vigilante.usuCorreo}")
 
 # Clientes
 clientes_data = [
-    ('cliente@test.com', '1234567890', 'María González', '3201234567', True),
-    ('juan.perez@email.com', '1234567891', 'Juan Pérez', '3202345678', True),
-    ('ana.rodriguez@email.com', '1234567892', 'Ana Rodríguez', '3203456789', True),
-    ('carlos.martinez@email.com', '1234567893', 'Carlos Martínez', '3204567890', True),
-    ('laura.lopez@email.com', '1234567894', 'Laura López', '3205678901', False),  # Desactivado
+    ('cliente@test.com', '1234567890', 'María', 'González', '3201234567', True),
+    ('juan.perez@email.com', '1234567891', 'Juan', 'Pérez', '3202345678', True),
+    ('ana.rodriguez@email.com', '1234567892', 'Ana', 'Rodríguez', '3203456789', True),
+    ('carlos.martinez@email.com', '1234567893', 'Carlos', 'Martínez', '3204567890', True),
+    ('laura.lopez@email.com', '1234567894', 'Laura', 'López', '3205678901', False),  # Desactivado
 ]
 
 clientes = []
-for correo, doc, nombre, tel, estado in clientes_data:
+for correo, doc, nombre, apellido, tel, estado in clientes_data:
     cliente = Usuario.objects.create(
         usuCorreo=correo,
         usuDocumento=doc,
-        usuNombreCompleto=nombre,
+        usuNombre=nombre,
+        usuApellido=apellido,
         usuTelefono=tel,
         usuClaveHash=make_password('test123'),
         rolTipoRol='CLIENTE',
@@ -94,7 +95,7 @@ for correo, doc, nombre, tel, estado in clientes_data:
     )
     clientes.append(cliente)
     estado_txt = "activo" if estado else "DESACTIVADO"
-    print(f"[OK] Cliente: {nombre} ({estado_txt})")
+    print(f"[OK] Cliente: {nombre} {apellido} ({estado_txt})")
 
 # 3. CREAR PISOS (4 pisos, 1 desactivado)
 print("\n[3/10] Creando pisos...")
@@ -290,34 +291,28 @@ print(f"[OK] {espacios_creados} espacios creados")
 # 7. CREAR VEHÍCULOS (más variedad)
 print("\n[7/10] Creando vehículos...")
 vehiculos_data = [
-    # Vehículos de clientes registrados
-    ('XYZ789', 'Carro', 'Honda', 'Civic', clientes[0], False),
-    ('ABC123', 'Carro', 'Renault', 'Logan', clientes[0], False),
-    ('DEF456', 'Carro', 'Mazda', '3', clientes[1], False),
-    ('GHI789', 'Carro', 'Chevrolet', 'Onix', clientes[2], False),
-    ('JKL012', 'Moto', 'Yamaha', 'MT-03', clientes[2], False),
-    ('MNO345', 'Moto', 'Suzuki', 'GSX-R150', clientes[3], False),
-    ('PQR678', 'Carro', 'Kia', 'Sportage', clientes[3], False),
-    ('STU901', 'Carro', 'Nissan', 'Sentra', clientes[1], False),
-    # Vehículos de visitantes
-    ('VIS001', 'Carro', 'Toyota', 'Corolla', None, True),
-    ('VIS002', 'Carro', 'Hyundai', 'Accent', None, True),
-    ('VIS003', 'Moto', 'Honda', 'CB190R', None, True),
+    ('XYZ789', 'Carro', 'Honda', 'Civic', clientes[0]),
+    ('ABC123', 'Carro', 'Renault', 'Logan', clientes[0]),
+    ('DEF456', 'Carro', 'Mazda', '3', clientes[1]),
+    ('GHI789', 'Carro', 'Chevrolet', 'Onix', clientes[2]),
+    ('JKL012', 'Moto', 'Yamaha', 'MT-03', clientes[2]),
+    ('MNO345', 'Moto', 'Suzuki', 'GSX-R150', clientes[3]),
+    ('PQR678', 'Carro', 'Kia', 'Sportage', clientes[3]),
+    ('STU901', 'Carro', 'Nissan', 'Sentra', clientes[1]),
 ]
 
 vehiculos_list = []
-for placa, tipo, marca, modelo, propietario, es_visitante in vehiculos_data:
+for placa, tipo, marca, modelo, propietario in vehiculos_data:
     vehiculo = Vehiculo.objects.create(
         vehPlaca=placa,
         vehTipo=tipo,
         vehMarca=marca,
         vehModelo=modelo,
         fkIdUsuario=propietario,
-        es_visitante=es_visitante,
     )
     vehiculos_list.append(vehiculo)
 
-print(f"[OK] {len(vehiculos_data)} vehículos registrados (8 clientes, 3 visitantes)")
+print(f"[OK] {len(vehiculos_data)} vehículos registrados")
 
 # 8. CREAR CUPONES DE DESCUENTO
 print("\n[8/10] Creando cupones de descuento...")
@@ -435,7 +430,7 @@ print(f"  - Disponibles: {Espacio.objects.filter(espEstado='DISPONIBLE').count()
 print(f"  - Ocupados: {Espacio.objects.filter(espEstado='OCUPADO').count()}")
 print(f"  - Inactivos: {Espacio.objects.filter(espEstado='INACTIVO').count()}")
 print(f"Tarifas: {Tarifa.objects.count()} (4 activas, 4 desactivadas)")
-print(f"Vehiculos: {Vehiculo.objects.count()} (8 clientes, 3 visitantes)")
+print(f"Vehiculos: {Vehiculo.objects.count()}")
 print(f"Cupones: {Cupon.objects.count()} (5 activos, 2 desactivados)")
 print(f"Reservas: {Reserva.objects.count()}")
 print(f"  - Confirmadas: {Reserva.objects.filter(resEstado='CONFIRMADA').count()}")

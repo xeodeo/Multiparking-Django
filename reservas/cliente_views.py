@@ -18,7 +18,7 @@ class ClienteRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.session.get('usuario_id'):
             messages.error(request, 'Debes iniciar sesión.')
-            return redirect('login')
+            return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -32,7 +32,7 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         # Obtener vehículos activos del usuario
         vehiculos = Vehiculo.objects.filter(
             fkIdUsuario=usuario,
-            es_visitante=False,
+            fkIdUsuario__isnull=False,
             vehEstado=True
         )
 
@@ -64,7 +64,7 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             vehiculo = Vehiculo.objects.get(
                 pk=vehiculo_id,
                 fkIdUsuario=usuario,
-                es_visitante=False,
+                fkIdUsuario__isnull=False,
                 vehEstado=True
             )
         except Vehiculo.DoesNotExist:
@@ -158,7 +158,7 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
         # Obtener vehículos activos del usuario
         vehiculos = Vehiculo.objects.filter(
             fkIdUsuario=usuario,
-            es_visitante=False,
+            fkIdUsuario__isnull=False,
             vehEstado=True
         )
 
@@ -198,7 +198,7 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
             vehiculo = Vehiculo.objects.get(
                 pk=vehiculo_id,
                 fkIdUsuario=usuario,
-                es_visitante=False,
+                fkIdUsuario__isnull=False,
                 vehEstado=True
             )
         except Vehiculo.DoesNotExist:
@@ -300,7 +300,6 @@ class ClienteConfirmarReservaView(ClienteRequiredMixin, View):
         )
 
         # Marcar como confirmada
-        reserva.resConfirmada = True
         reserva.resEstado = 'CONFIRMADA'
         reserva.save()
 

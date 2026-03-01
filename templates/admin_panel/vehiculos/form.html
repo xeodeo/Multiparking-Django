@@ -18,10 +18,12 @@
             <div class="space-y-6">
                 <!-- Placa -->
                 <div>
-                    <label for="vehPlaca" class="block text-sm font-medium text-mp-muted mb-2">Placa</label>
+                    <label for="vehPlaca" class="block text-sm font-medium text-mp-muted mb-2">Placa <span class="text-red-400">*</span></label>
                     <input type="text" id="vehPlaca" name="vehPlaca" value="{{ vehiculo.vehPlaca }}"
                         class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white uppercase focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                        placeholder="Ej: ABC-123" required>
+                        placeholder="Ej: ABC-123" required
+                        pattern="[A-Za-z0-9\-]+" maxlength="8"
+                        title="Solo letras, números y guiones">
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
@@ -30,7 +32,9 @@
                         <label for="vehMarca" class="block text-sm font-medium text-mp-muted mb-2">Marca</label>
                         <input type="text" id="vehMarca" name="vehMarca" value="{{ vehiculo.vehMarca }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: Chevrolet">
+                            placeholder="Ej: Chevrolet" maxlength="30"
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+"
+                            title="Solo letras y números">
                     </div>
 
                     <!-- Modelo -->
@@ -38,7 +42,9 @@
                         <label for="vehModelo" class="block text-sm font-medium text-mp-muted mb-2">Modelo</label>
                         <input type="text" id="vehModelo" name="vehModelo" value="{{ vehiculo.vehModelo }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: Spark">
+                            placeholder="Ej: Spark" maxlength="30"
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+"
+                            title="Solo letras, números y puntos">
                     </div>
                 </div>
 
@@ -48,12 +54,14 @@
                         <label for="vehColor" class="block text-sm font-medium text-mp-muted mb-2">Color</label>
                         <input type="text" id="vehColor" name="vehColor" value="{{ vehiculo.vehColor }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: Blanco">
+                            placeholder="Ej: Blanco" maxlength="20"
+                            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                            title="Solo letras">
                     </div>
 
                     <!-- Tipo -->
                     <div>
-                        <label for="vehTipo" class="block text-sm font-medium text-mp-muted mb-2">Tipo</label>
+                        <label for="vehTipo" class="block text-sm font-medium text-mp-muted mb-2">Tipo <span class="text-red-400">*</span></label>
                         <select id="vehTipo" name="vehTipo" required
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
                             <option value="">Seleccione tipo</option>
@@ -108,13 +116,17 @@
                             <label for="nombre_contacto" class="block text-sm font-medium text-mp-muted mb-2">Nombre</label>
                             <input type="text" id="nombre_contacto" name="nombre_contacto" value="{{ vehiculo.nombre_contacto }}"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                                placeholder="Nombre del contacto">
+                                placeholder="Nombre del contacto" maxlength="50"
+                                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                title="Solo letras">
                         </div>
                         <div>
                             <label for="telefono_contacto" class="block text-sm font-medium text-mp-muted mb-2">Teléfono</label>
-                            <input type="text" id="telefono_contacto" name="telefono_contacto" value="{{ vehiculo.telefono_contacto }}"
+                            <input type="tel" id="telefono_contacto" name="telefono_contacto" value="{{ vehiculo.telefono_contacto }}"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                                placeholder="Teléfono del contacto">
+                                placeholder="Teléfono del contacto" maxlength="10"
+                                pattern="[0-9]+"
+                                title="Solo números">
                         </div>
                     </div>
                 </div>
@@ -142,5 +154,40 @@
 
     usuarioSelect.addEventListener('change', toggleContacto);
     toggleContacto();
+
+    (function(){
+        const rules = {
+            vehPlaca:           { re: /^[A-Za-z0-9\-]+$/, msg: 'Solo letras, números y guiones' },
+            vehMarca:           { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/, msg: 'Solo letras y números' },
+            vehModelo:          { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$/, msg: 'Solo letras, números y puntos' },
+            vehColor:           { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+            nombre_contacto:    { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+            telefono_contacto:  { re: /^[0-9]+$/, msg: 'Solo números' },
+        };
+        Object.keys(rules).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const hint = document.createElement('p');
+            hint.className = 'text-xs text-red-400 mt-1 hidden';
+            el.parentNode.appendChild(hint);
+            el.addEventListener('input', function(){
+                const v = this.value;
+                if (v && !rules[id].re.test(v)) {
+                    hint.textContent = rules[id].msg;
+                    hint.classList.remove('hidden');
+                    this.classList.add('border-red-500');
+                    this.classList.remove('border-mp-border');
+                } else {
+                    hint.classList.add('hidden');
+                    this.classList.remove('border-red-500');
+                    this.classList.add('border-mp-border');
+                }
+            });
+        });
+        const tel = document.getElementById('telefono_contacto');
+        if (tel) tel.addEventListener('keypress', function(e){
+            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+        });
+    })();
 </script>
 {% endblock %}

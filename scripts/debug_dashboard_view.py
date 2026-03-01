@@ -16,7 +16,7 @@ def debug_view():
     admin_user, _ = Usuario.objects.get_or_create(
         usuCorreo='admin_debug@test.com',
         defaults={
-            'usuNombreCompleto': 'Admin Debug',
+            'usuNombre': 'Admin', 'usuApellido': 'Debug',
             'usuDocumento': '999999',
             'rolTipoRol': 'ADMIN',
             'usuEstado': True

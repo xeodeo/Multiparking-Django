@@ -31,14 +31,14 @@ usuario, created = Usuario.objects.get_or_create(
     usuCorreo='cliente@test.com',
     defaults={
         'usuDocumento': '1234567890',
-        'usuNombreCompleto': 'Cliente de Prueba',
+        'usuNombre': 'Cliente', 'usuApellido': 'de Prueba',
         'usuTelefono': '3001234567',
         'usuClaveHash': make_password('test123'),
         'rolTipoRol': 'CLIENTE',
         'usuEstado': True,
     }
 )
-print(f"[OK] Usuario: {usuario.usuNombreCompleto} {'(creado)' if created else '(existente)'}")
+print(f"[OK] Usuario: {usuario.usuNombre} {usuario.usuApellido} {'(creado)' if created else '(existente)'}")
 
 # 2. Crear piso si no existe
 piso, created = Piso.objects.get_or_create(
@@ -94,7 +94,6 @@ for placa in placas:
             'vehTipo': 'Carro',
             'vehMarca': 'Toyota',
             'fkIdUsuario': usuario,
-            'es_visitante': False,
         }
     )
     vehiculos.append(vehiculo)

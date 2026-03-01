@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -63,6 +65,19 @@ class TarifaCreateView(AdminRequiredMixin, View):
             messages.error(request, 'Todos los campos obligatorios deben estar llenos.')
             return render(request, 'admin_panel/tarifas/form.html', ctx)
 
+        try:
+            for campo, valor_str in [('Precio hora', precio_hora), ('Precio día', precio_dia),
+                                      ('Precio mensual', precio_mensual)]:
+                if Decimal(str(valor_str)) < 0:
+                    messages.error(request, f'{campo} no puede ser negativo.')
+                    return render(request, 'admin_panel/tarifas/form.html', ctx)
+            if precio_hora_visitante and Decimal(str(precio_hora_visitante)) < 0:
+                messages.error(request, 'Precio hora visitante no puede ser negativo.')
+                return render(request, 'admin_panel/tarifas/form.html', ctx)
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'Los precios deben ser números válidos.')
+            return render(request, 'admin_panel/tarifas/form.html', ctx)
+
         Tarifa.objects.create(
             nombre=nombre,
             fkIdTipoEspacio_id=tipo_id,
@@ -109,6 +124,25 @@ class TarifaUpdateView(AdminRequiredMixin, View):
                 'tarifa': tarifa,
                 'tipos': TipoEspacio.objects.order_by('nombre'),
             })
+
+        edit_ctx = {
+            'active_page': 'tarifas',
+            'title': 'Editar Tarifa',
+            'tarifa': tarifa,
+            'tipos': TipoEspacio.objects.order_by('nombre'),
+        }
+        try:
+            for campo, val in [('Precio hora', tarifa.precioHora), ('Precio día', tarifa.precioDia),
+                                ('Precio mensual', tarifa.precioMensual)]:
+                if Decimal(str(val)) < 0:
+                    messages.error(request, f'{campo} no puede ser negativo.')
+                    return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
+            if tarifa.precioHoraVisitante and Decimal(str(tarifa.precioHoraVisitante)) < 0:
+                messages.error(request, 'Precio hora visitante no puede ser negativo.')
+                return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'Los precios deben ser números válidos.')
+            return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
 
         tarifa.save()
         messages.success(request, 'Tarifa actualizada.')

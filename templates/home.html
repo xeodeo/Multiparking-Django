@@ -213,43 +213,52 @@
                     Número de Cédula
                     <span class="text-red-400">*</span>
                 </label>
-                <input type="text" name="documento" required placeholder="Ej: 1234567890"
+                <input type="text" name="documento" id="regDocumento" required placeholder="Ej: 1234567890"
+                       pattern="[0-9]+" maxlength="15" minlength="6"
+                       title="Solo números, mínimo 6 dígitos"
                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-mp-muted mb-2">Nombre</label>
-                    <input type="text" name="nombre" required placeholder="Juan"
+                    <label class="block text-sm font-medium text-mp-muted mb-2">Nombre <span class="text-red-400">*</span></label>
+                    <input type="text" name="nombre" id="regNombre" required placeholder="Juan"
+                           pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                           title="Solo letras"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-mp-muted mb-2">Apellido</label>
-                    <input type="text" name="apellido" required placeholder="Pérez"
+                    <label class="block text-sm font-medium text-mp-muted mb-2">Apellido <span class="text-red-400">*</span></label>
+                    <input type="text" name="apellido" id="regApellido" required placeholder="Pérez"
+                           pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                           title="Solo letras"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-mp-muted mb-2">Correo Electrónico</label>
-                <input type="email" name="correo" required placeholder="juan.perez@email.com"
+                <label class="block text-sm font-medium text-mp-muted mb-2">Correo Electrónico <span class="text-red-400">*</span></label>
+                <input type="email" name="correo" id="regCorreo" required placeholder="juan.perez@email.com"
+                       maxlength="100"
                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-mp-muted mb-2">Teléfono</label>
-                <input type="text" name="telefono" placeholder="300 123 4567"
+                <input type="tel" name="telefono" id="regTelefono" placeholder="3001234567"
+                       pattern="[0-9]+" maxlength="10"
+                       title="Solo números, máximo 10 dígitos"
                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-mp-muted mb-2">Contraseña</label>
-                <input type="password" name="clave" id="regClave" required placeholder="••••••••"
+                <label class="block text-sm font-medium text-mp-muted mb-2">Contraseña <span class="text-red-400">*</span></label>
+                <input type="password" name="clave" id="regClave" required placeholder="••••••••" minlength="6"
                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-mp-muted mb-2">Confirmar Contraseña</label>
+                <label class="block text-sm font-medium text-mp-muted mb-2">Confirmar Contraseña <span class="text-red-400">*</span></label>
                 <input type="password" name="clave_confirm" id="regClaveConfirm" required placeholder="••••••••"
                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
             </div>
@@ -404,5 +413,70 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     btn.disabled = false;
     btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg> Crear Cuenta';
 });
+
+// ── Validación en tiempo real: modal de registro ──
+(function(){
+    const rules = {
+        regDocumento: { re: /^[0-9]+$/, msg: 'Solo números', max: 15 },
+        regNombre:    { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras', max: 50 },
+        regApellido:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras', max: 50 },
+        regTelefono:  { re: /^[0-9]*$/, msg: 'Solo números', max: 10 },
+    };
+    Object.keys(rules).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        el.addEventListener('input', function(){
+            // Forzar límite de caracteres
+            if (this.value.length > rules[id].max) {
+                this.value = this.value.slice(0, rules[id].max);
+            }
+            const v = this.value;
+            if (v && !rules[id].re.test(v)) {
+                hint.textContent = rules[id].msg;
+                hint.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hint.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    });
+    // Bloqueo de teclas en documento y teléfono
+    document.getElementById('regDocumento').addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+    const tel = document.getElementById('regTelefono');
+    if (tel) tel.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+
+    // Forzar límite en correo
+    const correo = document.getElementById('regCorreo');
+    if (correo) {
+        const hintCorreo = document.createElement('p');
+        hintCorreo.className = 'text-xs text-red-400 mt-1 hidden';
+        correo.parentNode.appendChild(hintCorreo);
+        const reCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        correo.addEventListener('input', function(){
+            if (this.value.length > 100) this.value = this.value.slice(0, 100);
+            const v = this.value;
+            if (v && !reCorreo.test(v)) {
+                hintCorreo.textContent = 'Ingresa un correo válido (ej: usuario@dominio.com)';
+                hintCorreo.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hintCorreo.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    }
+})();
 </script>
 {% endblock %}

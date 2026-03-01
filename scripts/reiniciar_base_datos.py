@@ -50,7 +50,7 @@ print("\n[2/9] Creando usuarios...")
 admin = Usuario.objects.create(
     usuCorreo='admin@multiparking.com',
     usuDocumento='0000000001',
-    usuNombreCompleto='Administrador Principal',
+    usuNombre='Administrador', usuApellido='Principal',
     usuTelefono='3000000000',
     usuClaveHash=make_password('admin123'),
     rolTipoRol='ADMIN',
@@ -61,7 +61,7 @@ print(f"  [OK] Admin: admin@multiparking.com / admin123")
 vigilante = Usuario.objects.create(
     usuCorreo='vigilante@multiparking.com',
     usuDocumento='0000000002',
-    usuNombreCompleto='Vigilante Principal',
+    usuNombre='Vigilante', usuApellido='Principal',
     usuTelefono='3001111111',
     usuClaveHash=make_password('vigil123'),
     rolTipoRol='VIGILANTE',
@@ -72,7 +72,7 @@ print(f"  [OK] Vigilante: vigilante@multiparking.com / vigil123")
 cliente1 = Usuario.objects.create(
     usuCorreo='cliente@test.com',
     usuDocumento='1234567890',
-    usuNombreCompleto='Carlos Perez',
+    usuNombre='Carlos', usuApellido='Perez',
     usuTelefono='3001234567',
     usuClaveHash=make_password('test123'),
     rolTipoRol='CLIENTE',
@@ -83,7 +83,7 @@ print(f"  [OK] Cliente 1: cliente@test.com / test123")
 cliente2 = Usuario.objects.create(
     usuCorreo='maria@test.com',
     usuDocumento='9876543210',
-    usuNombreCompleto='Maria Lopez',
+    usuNombre='Maria', usuApellido='Lopez',
     usuTelefono='3009876543',
     usuClaveHash=make_password('test123'),
     rolTipoRol='CLIENTE',
@@ -222,7 +222,6 @@ for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
         vehMarca=marca,
         vehModelo=modelo,
         fkIdUsuario=propietario,
-        es_visitante=False,
     )
     vehiculos.append(v)
     print(f"  [OK] {placa} - {color} {marca} {modelo} ({tipo})")

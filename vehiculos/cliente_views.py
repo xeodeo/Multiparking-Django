@@ -1,6 +1,8 @@
 """
 Vistas para que los clientes gestionen sus propios vehículos
 """
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
@@ -8,13 +10,18 @@ from django.views import View
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 
+RE_PLACA = re.compile(r'^[A-Za-z0-9-]+$')
+RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
+RE_LETRAS_NUMEROS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$')
+RE_MODELO = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$')
+
 
 class ClienteRequiredMixin:
     """Mixin para requerir que el usuario sea un cliente autenticado"""
     def dispatch(self, request, *args, **kwargs):
         if not request.session.get('usuario_id'):
             messages.error(request, 'Debes iniciar sesión.')
-            return redirect('login')
+            return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -37,18 +44,36 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
         color = request.POST.get('vehColor', '').strip()
         estado = request.POST.get('vehEstado') == 'on'
 
+        form_ctx = {
+            'title': 'Agregar Vehículo',
+            'placa': placa,
+            'tipo': tipo,
+            'marca': marca,
+            'modelo': modelo,
+            'color': color,
+            'estado': estado,
+        }
+
         # Validaciones
         if not placa:
             messages.error(request, 'La placa es obligatoria.')
-            return render(request, 'cliente/vehiculo_form.html', {
-                'title': 'Agregar Vehículo',
-                'placa': placa,
-                'tipo': tipo,
-                'marca': marca,
-                'modelo': modelo,
-                'color': color,
-                'estado': estado,
-            })
+            return render(request, 'cliente/vehiculo_form.html', form_ctx)
+
+        if not RE_PLACA.match(placa):
+            messages.error(request, 'La placa solo acepta letras, números y guiones.')
+            return render(request, 'cliente/vehiculo_form.html', form_ctx)
+
+        if color and not RE_SOLO_LETRAS.match(color):
+            messages.error(request, 'El color solo debe contener letras.')
+            return render(request, 'cliente/vehiculo_form.html', form_ctx)
+
+        if marca and not RE_LETRAS_NUMEROS.match(marca):
+            messages.error(request, 'La marca solo acepta letras y números.')
+            return render(request, 'cliente/vehiculo_form.html', form_ctx)
+
+        if modelo and not RE_MODELO.match(modelo):
+            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
+            return render(request, 'cliente/vehiculo_form.html', form_ctx)
 
         # Verificar si el vehículo ya existe
         vehiculo_existente = Vehiculo.objects.filter(vehPlaca=placa).first()
@@ -57,7 +82,6 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
             # Si existe y es visitante, permitir que el usuario lo reclame
             if vehiculo_existente.es_visitante:
                 # Convertir de visitante a vehículo registrado
-                vehiculo_existente.es_visitante = False
                 vehiculo_existente.fkIdUsuario = usuario
                 vehiculo_existente.vehTipo = tipo
                 vehiculo_existente.vehMarca = marca or vehiculo_existente.vehMarca
@@ -91,7 +115,6 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
             vehModelo=modelo,
             vehColor=color,
             vehEstado=estado if estado else True,
-            es_visitante=False,
             fkIdUsuario=usuario
         )
 
@@ -104,7 +127,7 @@ class ClienteEditarVehiculoView(ClienteRequiredMixin, View):
 
     def get(self, request, pk):
         usuario_id = request.session.get('usuario_id')
-        vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, es_visitante=False)
+        vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, fkIdUsuario__isnull=False)
 
         return render(request, 'cliente/vehiculo_form.html', {
             'title': 'Editar Vehículo',
@@ -113,7 +136,7 @@ class ClienteEditarVehiculoView(ClienteRequiredMixin, View):
 
     def post(self, request, pk):
         usuario_id = request.session.get('usuario_id')
-        vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, es_visitante=False)
+        vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, fkIdUsuario__isnull=False)
 
         placa = request.POST.get('vehPlaca', '').strip().upper()
         tipo = request.POST.get('vehTipo', 'Carro')
@@ -129,6 +152,24 @@ class ClienteEditarVehiculoView(ClienteRequiredMixin, View):
                 'title': 'Editar Vehículo',
                 'vehiculo': vehiculo,
             })
+
+        edit_ctx = {'title': 'Editar Vehículo', 'vehiculo': vehiculo}
+
+        if not RE_PLACA.match(placa):
+            messages.error(request, 'La placa solo acepta letras, números y guiones.')
+            return render(request, 'cliente/vehiculo_form.html', edit_ctx)
+
+        if color and not RE_SOLO_LETRAS.match(color):
+            messages.error(request, 'El color solo debe contener letras.')
+            return render(request, 'cliente/vehiculo_form.html', edit_ctx)
+
+        if marca and not RE_LETRAS_NUMEROS.match(marca):
+            messages.error(request, 'La marca solo acepta letras y números.')
+            return render(request, 'cliente/vehiculo_form.html', edit_ctx)
+
+        if modelo and not RE_MODELO.match(modelo):
+            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
+            return render(request, 'cliente/vehiculo_form.html', edit_ctx)
 
         # Verificar que la placa no exista en otro vehículo
         if Vehiculo.objects.filter(vehPlaca=placa).exclude(pk=pk).exists():

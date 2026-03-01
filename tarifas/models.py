@@ -1,18 +1,31 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
 class Tarifa(models.Model):
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=50)
     fkIdTipoEspacio = models.ForeignKey(
         'parqueadero.TipoEspacio',
         on_delete=models.CASCADE,
         related_name='tarifas',
         db_column='fkIdTipoEspacio',
     )
-    precioHora = models.DecimalField(max_digits=10, decimal_places=2)
-    precioHoraVisitante = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Tarifa visitante
-    precioDia = models.DecimalField(max_digits=10, decimal_places=2)
-    precioMensual = models.DecimalField(max_digits=12, decimal_places=2)
+    precioHora = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
+    )
+    precioHoraVisitante = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
+    )
+    precioDia = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
+    )
+    precioMensual = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
+    )
     activa = models.BooleanField(default=True)
     fechaInicio = models.DateField()
     fechaFin = models.DateField(null=True, blank=True)

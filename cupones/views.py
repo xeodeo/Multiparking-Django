@@ -1,3 +1,6 @@
+import re
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -5,6 +8,8 @@ from django.views import View
 from usuarios.mixins import AdminRequiredMixin
 
 from .models import Cupon
+
+RE_CODIGO_CUPON = re.compile(r'^[A-Z0-9]+$')
 
 
 class CuponListView(AdminRequiredMixin, View):
@@ -57,6 +62,19 @@ class CuponCreateView(AdminRequiredMixin, View):
             messages.error(request, 'Todos los campos obligatorios deben estar llenos.')
             return render(request, 'admin_panel/cupones/form.html', ctx)
 
+        if not RE_CODIGO_CUPON.match(codigo):
+            messages.error(request, 'El código solo acepta letras mayúsculas y números.')
+            return render(request, 'admin_panel/cupones/form.html', ctx)
+
+        try:
+            valor_decimal = Decimal(valor)
+            if valor_decimal < 0:
+                messages.error(request, 'El valor no puede ser negativo.')
+                return render(request, 'admin_panel/cupones/form.html', ctx)
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'El valor debe ser un número válido.')
+            return render(request, 'admin_panel/cupones/form.html', ctx)
+
         if Cupon.objects.filter(cupCodigo__iexact=codigo).exists():
             messages.error(request, f'Ya existe un cupón con el código "{codigo}".')
             return render(request, 'admin_panel/cupones/form.html', ctx)
@@ -103,6 +121,21 @@ class CuponUpdateView(AdminRequiredMixin, View):
                 'title': 'Editar Cupón',
                 'cupon': cupon,
             })
+
+        edit_ctx = {'active_page': 'cupones', 'title': 'Editar Cupón', 'cupon': cupon}
+
+        if not RE_CODIGO_CUPON.match(cupon.cupCodigo):
+            messages.error(request, 'El código solo acepta letras mayúsculas y números.')
+            return render(request, 'admin_panel/cupones/form.html', edit_ctx)
+
+        try:
+            valor_decimal = Decimal(str(cupon.cupValor))
+            if valor_decimal < 0:
+                messages.error(request, 'El valor no puede ser negativo.')
+                return render(request, 'admin_panel/cupones/form.html', edit_ctx)
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'El valor debe ser un número válido.')
+            return render(request, 'admin_panel/cupones/form.html', edit_ctx)
 
         # Verificar que el código no exista en otro cupón
         duplicado = Cupon.objects.filter(cupCodigo__iexact=cupon.cupCodigo).exclude(pk=pk).exists()

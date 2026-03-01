@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
         admin1 = Usuario.objects.create(
             usuDocumento='1001234567',
-            usuNombreCompleto='Carlos Andrés Martínez López',
+            usuNombre='Carlos Andrés', usuApellido='Martínez López',
             usuCorreo='carlos.martinez@multiparking.com',
             usuTelefono='3101234567',
             usuClaveHash=clave,
@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         admin2 = Usuario.objects.create(
             usuDocumento='1009876543',
-            usuNombreCompleto='Laura Patricia Gómez Ruiz',
+            usuNombre='Laura Patricia', usuApellido='Gómez Ruiz',
             usuCorreo='laura.gomez@multiparking.com',
             usuTelefono='3209876543',
             usuClaveHash=clave,
@@ -59,7 +59,7 @@ class Command(BaseCommand):
 
         vig1 = Usuario.objects.create(
             usuDocumento='1012345678',
-            usuNombreCompleto='Pedro José Ramírez Castro',
+            usuNombre='Pedro José', usuApellido='Ramírez Castro',
             usuCorreo='pedro.ramirez@multiparking.com',
             usuTelefono='3112345678',
             usuClaveHash=clave,
@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
         vig2 = Usuario.objects.create(
             usuDocumento='1023456789',
-            usuNombreCompleto='María Fernanda Torres Díaz',
+            usuNombre='María Fernanda', usuApellido='Torres Díaz',
             usuCorreo='maria.torres@multiparking.com',
             usuTelefono='3153456789',
             usuClaveHash=clave,
@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         vig3 = Usuario.objects.create(
             usuDocumento='1034567890',
-            usuNombreCompleto='Jorge Luis Hernández Peña',
+            usuNombre='Jorge Luis', usuApellido='Hernández Peña',
             usuCorreo='jorge.hernandez@multiparking.com',
             usuTelefono='3184567890',
             usuClaveHash=clave,
@@ -89,7 +89,7 @@ class Command(BaseCommand):
 
         cli1 = Usuario.objects.create(
             usuDocumento='1045678901',
-            usuNombreCompleto='Andrea Sofía Vargas Mendoza',
+            usuNombre='Andrea Sofía', usuApellido='Vargas Mendoza',
             usuCorreo='andrea.vargas@gmail.com',
             usuTelefono='3005678901',
             usuClaveHash=clave,
@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
         cli2 = Usuario.objects.create(
             usuDocumento='1056789012',
-            usuNombreCompleto='Santiago David Morales Ríos',
+            usuNombre='Santiago David', usuApellido='Morales Ríos',
             usuCorreo='santiago.morales@gmail.com',
             usuTelefono='3016789012',
             usuClaveHash=clave,
@@ -109,7 +109,7 @@ class Command(BaseCommand):
 
         cli3 = Usuario.objects.create(
             usuDocumento='1067890123',
-            usuNombreCompleto='Valentina Restrepo Aguilar',
+            usuNombre='Valentina', usuApellido='Restrepo Aguilar',
             usuCorreo='valentina.restrepo@hotmail.com',
             usuTelefono='3127890123',
             usuClaveHash=clave,
@@ -119,7 +119,7 @@ class Command(BaseCommand):
 
         cli4 = Usuario.objects.create(
             usuDocumento='1078901234',
-            usuNombreCompleto='Daniel Felipe Ospina Cardona',
+            usuNombre='Daniel Felipe', usuApellido='Ospina Cardona',
             usuCorreo='daniel.ospina@yahoo.com',
             usuTelefono='3148901234',
             usuClaveHash=clave,
@@ -129,7 +129,7 @@ class Command(BaseCommand):
 
         cli5 = Usuario.objects.create(
             usuDocumento='1089012345',
-            usuNombreCompleto='Camila Alejandra Parra Suárez',
+            usuNombre='Camila Alejandra', usuApellido='Parra Suárez',
             usuCorreo='camila.parra@gmail.com',
             usuTelefono='3169012345',
             usuClaveHash=clave,
@@ -139,7 +139,7 @@ class Command(BaseCommand):
 
         cli6 = Usuario.objects.create(
             usuDocumento='1090123456',
-            usuNombreCompleto='Nicolás Esteban Rojas Luna',
+            usuNombre='Nicolás Esteban', usuApellido='Rojas Luna',
             usuCorreo='nicolas.rojas@outlook.com',
             usuTelefono='3190123456',
             usuClaveHash=clave,

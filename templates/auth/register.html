@@ -41,19 +41,33 @@
                     <input type="text" id="documento" name="documento" required
                            value="{{ form_data.documento|default:'' }}"
                            placeholder="Ej: 1234567890"
-                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
-                </div>
-
-                <div class="sm:col-span-2">
-                    <label for="nombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre completo</label>
-                    <input type="text" id="nombre" name="nombre" required
-                           value="{{ form_data.nombre|default:'' }}"
-                           placeholder="Juan Carlos Pérez López"
+                           pattern="[0-9]+" maxlength="15" minlength="6"
+                           title="Solo números, mínimo 6 dígitos"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
 
                 <div>
-                    <label for="correo" class="block text-sm font-medium text-mp-muted mb-2">Correo electrónico</label>
+                    <label for="nombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre <span class="text-red-400">*</span></label>
+                    <input type="text" id="nombre" name="nombre" required
+                           value="{{ form_data.nombre|default:'' }}"
+                           placeholder="Juan Carlos"
+                           pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                           title="Solo letras y espacios"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="apellido" class="block text-sm font-medium text-mp-muted mb-2">Apellido <span class="text-red-400">*</span></label>
+                    <input type="text" id="apellido" name="apellido" required
+                           value="{{ form_data.apellido|default:'' }}"
+                           placeholder="P&eacute;rez L&oacute;pez"
+                           pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" maxlength="50"
+                           title="Solo letras y espacios"
+                           class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
+                </div>
+
+                <div>
+                    <label for="correo" class="block text-sm font-medium text-mp-muted mb-2">Correo electrónico <span class="text-red-400">*</span></label>
                     <input type="email" id="correo" name="correo" required
                            value="{{ form_data.correo|default:'' }}"
                            placeholder="correo@ejemplo.com"
@@ -62,21 +76,23 @@
 
                 <div>
                     <label for="telefono" class="block text-sm font-medium text-mp-muted mb-2">Teléfono</label>
-                    <input type="text" id="telefono" name="telefono"
+                    <input type="tel" id="telefono" name="telefono"
                            value="{{ form_data.telefono|default:'' }}"
                            placeholder="3001234567"
+                           pattern="[0-9]+" maxlength="10"
+                           title="Solo números, máximo 10 dígitos"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
 
                 <div>
-                    <label for="clave" class="block text-sm font-medium text-mp-muted mb-2">Contraseña</label>
+                    <label for="clave" class="block text-sm font-medium text-mp-muted mb-2">Contraseña <span class="text-red-400">*</span></label>
                     <input type="password" id="clave" name="clave" required
-                           placeholder="••••••••"
+                           placeholder="••••••••" minlength="6"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
                 </div>
 
                 <div>
-                    <label for="clave_confirm" class="block text-sm font-medium text-mp-muted mb-2">Confirmar contraseña</label>
+                    <label for="clave_confirm" class="block text-sm font-medium text-mp-muted mb-2">Confirmar contraseña <span class="text-red-400">*</span></label>
                     <input type="password" id="clave_confirm" name="clave_confirm" required
                            placeholder="••••••••"
                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition">
@@ -102,4 +118,65 @@
         </p>
     </div>
 </div>
+
+<script>
+(function(){
+    const rules = {
+        documento: { re: /^[0-9]+$/, msg: 'Solo números' },
+        nombre:    { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+        apellido:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+        telefono:  { re: /^[0-9]*$/, msg: 'Solo números' },
+    };
+    Object.keys(rules).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        el.addEventListener('input', function(){
+            const v = this.value;
+            if (v && !rules[id].re.test(v)) {
+                hint.textContent = rules[id].msg;
+                hint.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hint.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    });
+    // Block invalid keystrokes on document and phone
+    document.getElementById('documento').addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+    const tel = document.getElementById('telefono');
+    if (tel) tel.addEventListener('keypress', function(e){
+        if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+    });
+
+    // Validación de correo electrónico
+    const correo = document.getElementById('correo');
+    if (correo) {
+        const hintCorreo = document.createElement('p');
+        hintCorreo.className = 'text-xs text-red-400 mt-1 hidden';
+        correo.parentNode.appendChild(hintCorreo);
+        const reCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        correo.addEventListener('input', function(){
+            const v = this.value;
+            if (v && !reCorreo.test(v)) {
+                hintCorreo.textContent = 'Ingresa un correo válido (ej: usuario@dominio.com)';
+                hintCorreo.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hintCorreo.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}

@@ -21,7 +21,7 @@ def create_admin():
     else:
         Usuario.objects.create(
             usuDocumento='ADMIN001',
-            usuNombreCompleto='Administrador Principal',
+            usuNombre='Administrador', usuApellido='Principal',
             usuCorreo=email,
             usuTelefono='0000000000',
             usuClaveHash=make_password(password),

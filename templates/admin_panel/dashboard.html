@@ -247,6 +247,8 @@
                     <label class="block text-sm font-medium text-mp-muted mb-2">Placa del Vehículo <span class="text-red-500">*</span></label>
                     <div class="flex gap-3">
                         <input type="text" name="placa" id="modalPlaca" required
+                            maxlength="8" pattern="[A-Za-z0-9\-]+"
+                            title="Solo letras, números y guiones"
                             class="flex-1 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-600 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                             placeholder="ABC-123" autocomplete="off">
                         <button type="button" id="btnBuscarPlaca" onclick="buscarPlaca()"
@@ -308,12 +310,16 @@
                         <div>
                             <label class="block text-sm text-mp-muted mb-1">Nombre del Conductor</label>
                             <input type="text" name="nombre" id="modalNombre"
+                                maxlength="50" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                title="Solo letras"
                                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 placeholder="Nombre completo">
                         </div>
                         <div>
                             <label class="block text-sm text-mp-muted mb-1">Teléfono de Contacto</label>
-                            <input type="text" name="telefono" id="modalTelefono"
+                            <input type="tel" name="telefono" id="modalTelefono"
+                                maxlength="10" pattern="[0-9]+"
+                                title="Solo números, máximo 10 dígitos"
                                 class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 placeholder="3001234567">
                         </div>
@@ -1025,6 +1031,39 @@
             });
         }
     });
+
+    // ── Validación en tiempo real del modal de ingreso ──
+    (function(){
+        const rules = {
+            modalPlaca:    { re: /^[A-Za-z0-9\-]+$/, msg: 'Solo letras, números y guiones' },
+            modalNombre:   { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
+            modalTelefono: { re: /^[0-9]+$/, msg: 'Solo números' },
+        };
+        Object.keys(rules).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const hint = document.createElement('p');
+            hint.className = 'text-xs text-red-400 mt-1 hidden';
+            el.parentNode.appendChild(hint);
+            el.addEventListener('input', function(){
+                const v = this.value;
+                if (v && !rules[id].re.test(v)) {
+                    hint.textContent = rules[id].msg;
+                    hint.classList.remove('hidden');
+                    this.classList.add('border-red-500');
+                    this.classList.remove('border-mp-border');
+                } else {
+                    hint.classList.add('hidden');
+                    this.classList.remove('border-red-500');
+                    this.classList.add('border-mp-border');
+                }
+            });
+        });
+        const tel = document.getElementById('modalTelefono');
+        if (tel) tel.addEventListener('keypress', function(e){
+            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
+        });
+    })();
 </script>
 
 <style>

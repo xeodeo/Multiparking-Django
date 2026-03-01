@@ -11,7 +11,9 @@
       "Bash(/c/xampp/mysql/bin/mysql.exe:*)",
       "Bash(curl:*)",
       "Bash(grep:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(\"/c/Users/xeodeo/Desktop/Multiparking/Gemini -:*)",
+      "Bash(find:*)"
     ]
   }
 }

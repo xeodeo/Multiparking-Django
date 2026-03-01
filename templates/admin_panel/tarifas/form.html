@@ -21,15 +21,15 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                         <label for="nombre" class="block text-sm font-medium text-mp-muted mb-2">Nombre de la
-                            Tarifa</label>
+                            Tarifa <span class="text-red-400">*</span></label>
                         <input type="text" id="nombre" name="nombre" value="{{ tarifa.nombre }}"
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                            placeholder="Ej: Tarifa Plena 2024" required>
+                            placeholder="Ej: Tarifa Plena 2024" required maxlength="50">
                     </div>
 
                     <div>
                         <label for="fkIdTipoEspacio" class="block text-sm font-medium text-mp-muted mb-2">Para Tipo de
-                            Vehículo</label>
+                            Vehículo <span class="text-red-400">*</span></label>
                         <select id="fkIdTipoEspacio" name="fkIdTipoEspacio" required
                             class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition appearance-none">
                             <option value="">Seleccione...</option>
@@ -45,11 +45,11 @@
                 <!-- Precios -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="precioHora" class="block text-sm font-medium text-mp-muted mb-2">Precio Hora (Usuario)</label>
+                        <label for="precioHora" class="block text-sm font-medium text-mp-muted mb-2">Precio Hora (Usuario) <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
                             <input type="number" id="precioHora" name="precioHora" value="{{ tarifa.precioHora|unlocalize }}"
-                                step="0.01"
+                                step="0.01" min="0"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
                         </div>
@@ -74,22 +74,22 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label for="precioDia" class="block text-sm font-medium text-mp-muted mb-2">Precio Día</label>
+                        <label for="precioDia" class="block text-sm font-medium text-mp-muted mb-2">Precio Día <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
                             <input type="number" id="precioDia" name="precioDia" value="{{ tarifa.precioDia|unlocalize }}"
-                                step="0.01"
+                                step="0.01" min="0"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
                         </div>
                     </div>
                     <div>
                         <label for="precioMensual" class="block text-sm font-medium text-mp-muted mb-2">Precio
-                            Mensual</label>
+                            Mensual <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-mp-muted">$</span>
                             <input type="number" id="precioMensual" name="precioMensual"
-                                value="{{ tarifa.precioMensual|unlocalize }}" step="0.01"
+                                value="{{ tarifa.precioMensual|unlocalize }}" step="0.01" min="0"
                                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-8 pr-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition"
                                 required>
                         </div>
@@ -104,7 +104,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                Fecha Inicio
+                                Fecha Inicio <span class="text-red-400">*</span>
                             </span>
                         </label>
                         <input type="date" id="fechaInicio" name="fechaInicio"
@@ -153,4 +153,52 @@
         </form>
     </div>
 </div>
+
+<script>
+(function(){
+    const precios = ['precioHora', 'precioHoraVisitante', 'precioDia', 'precioMensual'];
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+
+    precios.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const hint = document.createElement('p');
+        hint.className = 'text-xs text-red-400 mt-1 hidden';
+        el.parentNode.appendChild(hint);
+        el.addEventListener('input', function(){
+            const v = parseFloat(this.value);
+            if (this.value !== '' && v < 0) {
+                hint.textContent = 'El precio no puede ser negativo';
+                hint.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hint.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    });
+
+    // Fecha fin >= fecha inicio
+    if (fechaFin) {
+        const hintFecha = document.createElement('p');
+        hintFecha.className = 'text-xs text-red-400 mt-1 hidden';
+        fechaFin.parentNode.appendChild(hintFecha);
+        fechaFin.addEventListener('change', function(){
+            if (fechaInicio.value && this.value && this.value < fechaInicio.value) {
+                hintFecha.textContent = 'La fecha fin debe ser posterior a la fecha inicio';
+                hintFecha.classList.remove('hidden');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-mp-border');
+            } else {
+                hintFecha.classList.add('hidden');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-mp-border');
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}

@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 
@@ -7,13 +8,19 @@ class Cupon(models.Model):
         PORCENTAJE = 'PORCENTAJE', 'Porcentaje'
         VALOR_FIJO = 'VALOR_FIJO', 'Valor Fijo'
 
-    cupNombre = models.CharField(max_length=100)  # Nombre descriptivo: "Descuento Primer Uso"
-    cupCodigo = models.CharField(max_length=30, unique=True, default='')  # Código real: "PRIMERO10"
+    cupNombre = models.CharField(max_length=50)
+    cupCodigo = models.CharField(
+        max_length=20, unique=True,
+        validators=[RegexValidator(r'^[A-Z0-9]+$', 'El código solo acepta letras mayúsculas y números')],
+    )
     cupTipo = models.CharField(
         max_length=10,
         choices=TipoChoices.choices,
     )
-    cupValor = models.DecimalField(max_digits=10, decimal_places=2)
+    cupValor = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0, 'El valor no puede ser negativo')],
+    )
     cupDescripcion = models.TextField(blank=True)
     cupFechaInicio = models.DateField()
     cupFechaFin = models.DateField()
@@ -47,6 +54,7 @@ class CuponAplicado(models.Model):
         db_table = 'cupones_aplicados'
         verbose_name = 'Cupón Aplicado'
         verbose_name_plural = 'Cupones Aplicados'
+        unique_together = [('fkIdPago', 'fkIdCupon')]
 
     def __str__(self):
         return f'Cupón {self.fkIdCupon.cupNombre} → Pago {self.fkIdPago.pk}'
