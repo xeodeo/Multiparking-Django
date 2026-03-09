@@ -20,10 +20,10 @@
                 <div>
                     <label for="vehPlaca" class="block text-sm font-medium text-mp-muted mb-2">Placa <span class="text-red-400">*</span></label>
                     <input type="text" id="vehPlaca" name="vehPlaca" value="{{ vehiculo.vehPlaca }}"
-                        class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white uppercase focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
-                        placeholder="Ej: ABC-123" required
-                        pattern="[A-Za-z0-9\-]+" maxlength="8"
-                        title="Solo letras, números y guiones">
+                        autocomplete="off" required maxlength="8"
+                        class="w-48 bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white font-mono tracking-widest text-center text-lg uppercase focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                        placeholder="ABC-123">
+                    <p class="text-xs text-mp-muted mt-1">El guion se agrega automáticamente</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
@@ -155,9 +155,22 @@
     usuarioSelect.addEventListener('change', toggleContacto);
     toggleContacto();
 
+    // Placa auto-format
+    (function(){
+        const el = document.getElementById('vehPlaca');
+        el.addEventListener('input', function(){
+            const cursor = this.selectionStart;
+            const raw = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+            const formatted = raw.length > 3 ? raw.slice(0, 3) + '-' + raw.slice(3) : raw;
+            this.value = formatted;
+            // Ajustar cursor: saltar el guion al escribir el 4to caracter
+            const newPos = cursor + (formatted.length - (raw.length > 3 ? raw.length : raw.length));
+            this.setSelectionRange(formatted.length, formatted.length);
+        });
+    })();
+
     (function(){
         const rules = {
-            vehPlaca:           { re: /^[A-Za-z0-9\-]+$/, msg: 'Solo letras, números y guiones' },
             vehMarca:           { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/, msg: 'Solo letras y números' },
             vehModelo:          { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$/, msg: 'Solo letras, números y puntos' },
             vehColor:           { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },

@@ -33,10 +33,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', default='your secret key')
 DEBUG = 'RENDER' not in os.environ
 
 #Completo Ngrok para local
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app']
 
 #Para produccion
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -175,6 +175,6 @@ REST_FRAMEWORK = {
 }
 
 # Completo Ngrok para local
-# CSRF_TRUSTED_ORIGINS = [
-#     'https://*.ngrok-free.app',
-# ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.app',
+]
