@@ -13,7 +13,12 @@
       "Bash(grep:*)",
       "Bash(python:*)",
       "Bash(\"/c/Users/xeodeo/Desktop/Multiparking/Gemini -:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(venv/Scripts/pip install -r requirements.txt)",
+      "Bash(venv/Scripts/python manage.py migrate)",
+      "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS multiparking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(\"C:/xampp/mysql/bin/mysql.exe\" -u root -e \"CREATE DATABASE IF NOT EXISTS multiparking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(venv/Scripts/python scripts/reiniciar_base_datos.py)"
     ]
   }
 }

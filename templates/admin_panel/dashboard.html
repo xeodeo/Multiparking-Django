@@ -247,9 +247,8 @@
                     <label class="block text-sm font-medium text-mp-muted mb-2">Placa del Vehículo <span class="text-red-500">*</span></label>
                     <div class="flex gap-3">
                         <input type="text" name="placa" id="modalPlaca" required
-                            maxlength="8" pattern="[A-Za-z0-9\-]+"
-                            title="Solo letras, números y guiones"
-                            class="flex-1 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-600 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            maxlength="8"
+                            class="flex-1 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono tracking-widest uppercase placeholder-gray-600 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                             placeholder="ABC-123" autocomplete="off">
                         <button type="button" id="btnBuscarPlaca" onclick="buscarPlaca()"
                             class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-3 rounded-lg font-medium transition flex items-center gap-2">
@@ -571,6 +570,19 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // ── Placa auto-format ──
+    (function(){
+        const el = document.getElementById('modalPlaca');
+        if (!el) return;
+        el.addEventListener('input', function(){
+            const raw = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+            this.value = raw.length > 3 ? raw.slice(0, 3) + '-' + raw.slice(3) : raw;
+        });
+        el.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') { e.preventDefault(); buscarPlaca(); }
+        });
+    })();
+
     // ── Piso Tabs ──
     function showPiso(id) {
         document.querySelectorAll('.piso-content').forEach(el => el.classList.add('hidden'));
