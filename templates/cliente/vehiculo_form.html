@@ -20,7 +20,7 @@
 
         <!-- Placa -->
         <div class="mb-6">
-            <label class="block text-sm font-medium text-mp-muted mb-2">
+            <label for="vehPlaca" class="block text-sm font-medium text-mp-muted mb-2">
                 Placa del Vehículo <span class="text-red-500">*</span>
             </label>
             <input
@@ -30,11 +30,10 @@
                 value="{% if vehiculo %}{{ vehiculo.vehPlaca }}{% else %}{{ placa }}{% endif %}"
                 required
                 maxlength="8"
-                pattern="[A-Za-z0-9\-]+"
-                title="Solo letras, números y guiones"
-                class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-lg font-mono uppercase placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                autocomplete="off"
+                class="w-52 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white text-xl font-mono tracking-widest text-center uppercase placeholder-gray-500 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
                 placeholder="ABC-123">
-            <p class="text-xs text-mp-muted mt-1">Formato: ABC-123 o ABC123</p>
+            <p class="text-xs text-mp-muted mt-1">El guion se agrega automáticamente</p>
         </div>
 
         <!-- Tipo de Vehículo -->
@@ -164,9 +163,17 @@
 </div>
 
 <script>
+// Placa auto-format
+(function(){
+    const el = document.getElementById('vehPlaca');
+    el.addEventListener('input', function(){
+        const raw = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+        this.value = raw.length > 3 ? raw.slice(0, 3) + '-' + raw.slice(3) : raw;
+    });
+})();
+
 (function(){
     const rules = {
-        vehPlaca:  { re: /^[A-Za-z0-9\-]+$/, msg: 'Solo letras, números y guiones' },
         vehMarca:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/, msg: 'Solo letras y números' },
         vehModelo: { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$/, msg: 'Solo letras, números y puntos' },
         vehColor:  { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
