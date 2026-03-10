@@ -1,0 +1,600 @@
+{% extends "vigilante/base.html" %}
+{% block title %}Interfaz del Guardia{% endblock %}
+
+{% block extra_head %}
+<style>
+    .tab-btn.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+    .piso-content { display: none; }
+    .piso-content.active { display: block; }
+    @keyframes ping2 { 75%,100%{transform:scale(1.5);opacity:0;} }
+    .animate-ping2 { animation: ping2 1s cubic-bezier(0,0,.2,1) infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Encabezado -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold">Interfaz del Guardia</h1>
+        <p class="text-mp-muted mt-1">Valida las solicitudes de entrada y salida de vehículos</p>
+    </div>
+    <!-- Búsqueda -->
+    <form method="get" class="flex items-center gap-2">
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por placa o nombre..."
+                class="bg-mp-card border border-mp-border rounded-xl pl-10 pr-4 py-2.5 text-sm w-64 focus:outline-none focus:border-mp-purple placeholder-mp-muted">
+        </div>
+        {% if q %}
+        <a href="{% url 'guardia_dashboard' %}" class="text-mp-muted hover:text-white text-sm px-3 py-2.5 rounded-lg bg-mp-card border border-mp-border transition">
+            &times; Limpiar
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="text-mp-muted text-xs font-medium">Entradas Pendientes</p>
+            <p class="text-3xl font-bold mt-1 text-violet-400" id="kpi-entradas">{{ entradas_pendientes }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="text-mp-muted text-xs font-medium">Salidas Pendientes</p>
+            <p class="text-3xl font-bold mt-1 text-yellow-400" id="kpi-salidas">{{ salidas_pendientes }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-yellow-900/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="text-mp-muted text-xs font-medium">Efectivo Pendiente</p>
+            <p class="text-3xl font-bold mt-1 text-red-400" id="kpi-efectivo">{{ efectivo_pendiente }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-red-900/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="bg-mp-card border border-mp-border rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="text-mp-muted text-xs font-medium">Activos Hoy</p>
+            <p class="text-3xl font-bold mt-1 text-green-400" id="kpi-activos">{{ activos_hoy }}</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-green-900/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- SOLICITUDES (2 columnas) -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+
+    <!-- ENTRADAS -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                </svg>
+                Solicitudes de Entrada
+                <span class="bg-violet-900/50 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_entrada|length }}</span>
+            </h2>
+            <button onclick="document.getElementById('modal-ingreso-rapido').classList.remove('hidden')"
+                class="text-xs bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Ingreso Rápido
+            </button>
+        </div>
+
+        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {% for reserva in solicitudes_entrada %}
+            <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                        <p class="font-bold text-lg tracking-wider">{{ reserva.fkIdVehiculo.vehPlaca }}</p>
+                        <p class="text-sm text-mp-muted">
+                            {% if reserva.fkIdVehiculo.fkIdUsuario %}
+                                {{ reserva.fkIdVehiculo.fkIdUsuario.usuNombreCompleto }}
+                            {% else %}
+                                Visitante
+                            {% endif %}
+                        </p>
+                    </div>
+                    <span class="text-xs bg-violet-900/40 text-violet-300 border border-violet-700/30 px-2.5 py-1 rounded-lg whitespace-nowrap font-medium">
+                        {{ reserva.fkIdEspacio.fkIdPiso.pisNombre }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-mp-muted mb-3">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ reserva.resHoraInicio|time:"H:i" }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/>
+                        </svg>
+                        RES-{{ reserva.pk|stringformat:"010d" }}
+                    </span>
+                    <span class="font-medium text-white">Esp. {{ reserva.fkIdEspacio.espNumero }}</span>
+                </div>
+                <form method="post" action="{% url 'guardia_registrar_ingreso' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="reserva_id" value="{{ reserva.pk }}">
+                    <button type="submit"
+                        class="w-full bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Verificar y Permitir Entrada
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="text-center py-10 text-mp-muted">
+                <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+                </svg>
+                <p class="text-sm">No hay reservas pendientes para hoy</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- SALIDAS -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+                Solicitudes de Salida
+                <span class="bg-yellow-900/50 text-yellow-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_salida|length }}</span>
+            </h2>
+        </div>
+
+        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {% for reg in solicitudes_salida %}
+            <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                        <p class="font-bold text-lg tracking-wider">{{ reg.fkIdVehiculo.vehPlaca }}</p>
+                        <p class="text-sm text-mp-muted">
+                            {% if reg.fkIdVehiculo.fkIdUsuario %}
+                                {{ reg.fkIdVehiculo.fkIdUsuario.usuNombreCompleto }}
+                            {% else %}
+                                {{ reg.fkIdVehiculo.nombre_contacto|default:"Visitante" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-xs text-mp-muted">{{ reg.fkIdEspacio.fkIdPiso.pisNombre }} - #{{ reg.fkIdEspacio.espNumero }}</p>
+                        <p class="font-bold text-white">{{ reg.costo_display }} COP</p>
+                        {% if reg.pago_pendiente_obj %}
+                        <span class="inline-flex mt-1 text-[11px] bg-yellow-900/60 text-yellow-300 border border-yellow-600/30 px-2 py-0.5 rounded-full font-medium">
+                            Efectivo Pendiente
+                        </span>
+                        {% else %}
+                        <span class="inline-flex mt-1 text-[11px] bg-green-900/60 text-green-300 border border-green-600/30 px-2 py-0.5 rounded-full font-medium">
+                            Pagado
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-mp-muted mb-3">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ reg.parHoraEntrada|date:"H:i" }}
+                </div>
+                <div class="flex gap-2">
+                    {% if reg.pago_pendiente_obj %}
+                    <form method="post" action="{% url 'guardia_confirmar_pago' %}" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="registro_id" value="{{ reg.pk }}">
+                        <button type="submit"
+                            class="w-full bg-mp-card border border-mp-border hover:border-yellow-500/50 hover:bg-yellow-900/20 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+                            </svg>
+                            Confirmar Pago
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="{% url 'guardia_registrar_salida' %}" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="registro_id" value="{{ reg.pk }}">
+                        <button type="submit"
+                            class="w-full bg-mp-card border border-mp-border hover:border-green-500/50 hover:bg-green-900/20 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Autorizar Salida
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-10 text-mp-muted">
+                <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+                <p class="text-sm">No hay vehículos con salida pendiente</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- VISTA GENERAL DE PISOS -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-6 mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 class="text-xl font-bold">Vista General de Pisos</h2>
+        <div class="flex items-center gap-4 text-xs flex-wrap">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-mp-muted">Disponible</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-mp-muted">Ocupado</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span><span class="text-mp-muted">Salida pendiente</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-mp-muted">Reservado (&lt;2h)</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gray-600"></span><span class="text-mp-muted">Inactivo</span></span>
+        </div>
+    </div>
+
+    {% if pisos %}
+    <!-- Tabs -->
+    <div class="flex flex-wrap gap-2 mb-6 border-b border-mp-border pb-1">
+        {% for piso in pisos %}
+        <button onclick="showPiso('piso-{{ piso.pk }}')" id="btn-piso-{{ piso.pk }}"
+            class="px-4 py-2 rounded-t-lg font-medium transition-colors border-b-2 border-transparent hover:bg-white/5 text-mp-muted tab-btn">
+            {{ piso.pisNombre }}
+            <span class="ml-2 text-xs bg-black/30 px-1.5 py-0.5 rounded">{{ piso.ocupados_espacios }}</span>
+        </button>
+        {% endfor %}
+    </div>
+
+    {% for piso in pisos %}
+    <div id="piso-{{ piso.pk }}" class="piso-content">
+        <p class="text-sm text-mp-muted mb-4">
+            {{ piso.ocupados_espacios }} ocupados de {{ piso.total_espacios }} ({{ piso.ocupacion_pct }}% ocupación)
+        </p>
+        {% if piso.espacios_list %}
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5">
+            {% for espacio in piso.espacios_list %}
+            <div class="relative group">
+                <div data-espacio-id="{{ espacio.pk }}"
+                    onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {{ espacio.pago_pendiente|yesno:'true,false' }})"
+                    class="aspect-square rounded-lg flex items-center justify-center text-xs font-bold border transition-transform hover:scale-105 cursor-pointer
+                    {% if espacio.pago_pendiente %}bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space
+                    {% elif espacio.reserva_proxima %}bg-orange-500 border-orange-600 text-white hover:bg-orange-600
+                    {% elif espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20
+                    {% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20
+                    {% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
+                    title="Espacio {{ espacio.espNumero }}{% if espacio.pago_pendiente %} — Salida pendiente{% elif espacio.reserva_proxima %} — Reservado{% endif %}">
+                    {{ espacio.espNumero }}
+                </div>
+                {% if espacio.pago_pendiente %}
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping2"></div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-center py-8 text-mp-muted text-sm">Este piso no tiene espacios.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-center py-12 text-mp-muted">No hay pisos configurados.</p>
+    {% endif %}
+</div>
+
+<!-- ─── MODAL INGRESO RÁPIDO ─────────────────────────── -->
+<div id="modal-ingreso-rapido" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-mp-card border border-mp-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold">Ingreso Rápido</h3>
+            <button onclick="document.getElementById('modal-ingreso-rapido').classList.add('hidden')"
+                class="text-mp-muted hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        <form method="post" action="{% url 'guardia_registrar_ingreso' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-mp-muted mb-1.5 font-medium">Placa del Vehículo *</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="placa" id="placa-ingreso" placeholder="ABC123"
+                            maxlength="8" pattern="[A-Za-z0-9\-]+"
+                            class="flex-1 bg-black/30 border border-mp-border rounded-xl px-4 py-2.5 text-sm uppercase focus:outline-none focus:border-mp-purple placeholder-mp-muted"
+                            oninput="this.value=this.value.toUpperCase()" required>
+                        <button type="button" onclick="buscarVehiculoModal()"
+                            class="bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light border border-mp-purple/30 px-4 rounded-xl text-sm transition">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+                <div id="info-vehiculo" class="hidden bg-green-900/20 border border-green-700/30 rounded-xl p-3 text-sm text-green-300"></div>
+                <div>
+                    <label class="block text-xs text-mp-muted mb-1.5 font-medium">Nombre (visitante opcional)</label>
+                    <input type="text" name="nombre" id="nombre-ingreso" placeholder="Nombre del visitante"
+                        class="w-full bg-black/30 border border-mp-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-mp-purple placeholder-mp-muted">
+                </div>
+                <div>
+                    <label class="block text-xs text-mp-muted mb-1.5 font-medium">Teléfono (opcional)</label>
+                    <input type="tel" name="telefono" id="telefono-ingreso" placeholder="3001234567"
+                        maxlength="10" pattern="[0-9]+"
+                        class="w-full bg-black/30 border border-mp-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-mp-purple placeholder-mp-muted">
+                </div>
+                <div>
+                    <label class="block text-xs text-mp-muted mb-1.5 font-medium">Espacio *</label>
+                    <select name="espacio_id" class="w-full bg-black/30 border border-mp-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-mp-purple" required>
+                        <option value="">Seleccionar espacio disponible…</option>
+                        {% for esp in espacios_disponibles %}
+                        <option value="{{ esp.pk }}">{{ esp.fkIdPiso.pisNombre }} — #{{ esp.espNumero }} ({{ esp.fkIdTipoEspacio.nombre }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button"
+                    onclick="document.getElementById('modal-ingreso-rapido').classList.add('hidden')"
+                    class="flex-1 bg-black/30 border border-mp-border hover:border-mp-purple/30 text-white py-2.5 rounded-xl text-sm font-semibold transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-xl text-sm font-bold transition">
+                    Registrar Entrada
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ─── MODAL DETALLE ESPACIO ─────────────────────────── -->
+<div id="modal-detalle" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-mp-card border border-mp-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold" id="det-titulo">Espacio —</h3>
+            <button onclick="cerrarDetalle()" class="text-mp-muted hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        <div id="det-loader" class="text-center py-8 text-mp-muted">Cargando…</div>
+        <div id="det-contenido" class="hidden space-y-3">
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Placa</p>
+                    <p class="font-bold" id="det-placa">—</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Vehículo</p>
+                    <p id="det-tipo">—</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Cliente</p>
+                    <p id="det-cliente">—</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Teléfono</p>
+                    <p id="det-telefono">—</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Hora entrada</p>
+                    <p id="det-entrada">—</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-3">
+                    <p class="text-xs text-mp-muted mb-0.5">Tiempo</p>
+                    <p id="det-duracion" class="font-semibold text-yellow-300">—</p>
+                </div>
+            </div>
+            <div class="bg-black/20 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-mp-muted mb-0.5">Tarifa</p>
+                    <p class="text-sm" id="det-tarifa">—</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-mp-muted mb-0.5">Total estimado</p>
+                    <p class="text-xl font-bold text-green-400" id="det-total">—</p>
+                </div>
+            </div>
+            <div id="det-pago-pendiente-aviso" class="hidden bg-yellow-900/30 border border-yellow-700/30 rounded-xl p-3 text-sm text-yellow-300 flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+                Pago en efectivo pendiente de confirmación
+            </div>
+        </div>
+        <div id="det-acciones" class="hidden flex gap-3 mt-5">
+            <form method="post" action="{% url 'guardia_confirmar_pago' %}" id="form-confirmar-pago" class="flex-1 hidden">
+                {% csrf_token %}
+                <input type="hidden" name="registro_id" id="det-registro-id">
+                <button type="submit"
+                    class="w-full bg-mp-card border border-yellow-600/40 hover:border-yellow-500 hover:bg-yellow-900/20 text-yellow-300 py-2.5 rounded-xl text-sm font-semibold transition">
+                    Confirmar Pago
+                </button>
+            </form>
+            <form method="post" action="{% url 'guardia_registrar_salida' %}" id="form-salida" class="flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="registro_id" id="det-registro-id-salida">
+                <button type="submit"
+                    class="w-full bg-green-700 hover:bg-green-600 text-white py-2.5 rounded-xl text-sm font-bold transition">
+                    Autorizar Salida
+                </button>
+            </form>
+        </div>
+        <div id="det-disponible" class="hidden mt-4">
+            <div class="bg-green-900/20 border border-green-700/30 rounded-xl p-4 text-center">
+                <p class="text-green-400 font-semibold text-sm">Espacio disponible</p>
+                <p class="text-mp-muted text-xs mt-1">No hay vehículo activo en este espacio.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ─── TABS ─────────────────────────────────────────────────────────
+function showPiso(id) {
+    document.querySelectorAll('.piso-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    const btnId = 'btn-' + id;
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('active');
+}
+// Activar primer piso
+(function() {
+    const first = document.querySelector('.piso-content');
+    const firstBtn = document.querySelector('.tab-btn');
+    if (first) { first.classList.add('active'); }
+    if (firstBtn) { firstBtn.classList.add('active'); }
+})();
+
+// ─── BÚSQUEDA VEHÍCULO EN MODAL ───────────────────────────────────
+function buscarVehiculoModal() {
+    const placa = document.getElementById('placa-ingreso').value.trim();
+    if (!placa) return;
+    fetch(`{% url 'guardia_buscar_vehiculo' %}?placa=${encodeURIComponent(placa)}`)
+        .then(r => r.json())
+        .then(data => {
+            const info = document.getElementById('info-vehiculo');
+            if (data.found) {
+                info.classList.remove('hidden');
+                if (data.es_visitante) {
+                    info.textContent = 'Visitante encontrado: ' + (data.nombre || 'Sin nombre');
+                } else {
+                    info.textContent = 'Usuario registrado: ' + data.nombre;
+                }
+                if (data.nombre) document.getElementById('nombre-ingreso').value = data.nombre;
+                if (data.telefono) document.getElementById('telefono-ingreso').value = data.telefono;
+            } else {
+                info.classList.remove('hidden');
+                info.className = 'bg-blue-900/20 border border-blue-700/30 rounded-xl p-3 text-sm text-blue-300';
+                info.textContent = 'Vehículo no registrado. Se creará como visitante.';
+            }
+        });
+}
+
+// ─── DETALLE ESPACIO ──────────────────────────────────────────────
+function handleSpaceClick(espacioId, numero, estado, pisoNombre, pagoPendiente) {
+    if (estado === 'INACTIVO') return;
+    document.getElementById('det-titulo').textContent = `${pisoNombre} — Espacio ${numero}`;
+    document.getElementById('det-loader').classList.remove('hidden');
+    document.getElementById('det-contenido').classList.add('hidden');
+    document.getElementById('det-acciones').classList.add('hidden');
+    document.getElementById('det-disponible').classList.add('hidden');
+    document.getElementById('modal-detalle').classList.remove('hidden');
+
+    if (estado === 'DISPONIBLE') {
+        document.getElementById('det-loader').classList.add('hidden');
+        document.getElementById('det-disponible').classList.remove('hidden');
+        return;
+    }
+
+    fetch(`{% url 'guardia_detalle_ocupacion' %}?espacio_id=${espacioId}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('det-loader').classList.add('hidden');
+            if (!data.found) { cerrarDetalle(); return; }
+            document.getElementById('det-placa').textContent = data.placa;
+            document.getElementById('det-tipo').textContent = data.tipo_vehiculo + ' / ' + data.tipo_espacio;
+            document.getElementById('det-cliente').textContent = data.cliente;
+            document.getElementById('det-telefono').textContent = data.telefono;
+            document.getElementById('det-entrada').textContent = data.hora_entrada;
+            document.getElementById('det-tarifa').textContent = data.tarifa_info;
+            document.getElementById('det-total').textContent = data.total_pagar;
+            document.getElementById('det-registro-id').value = data.registro_id;
+            document.getElementById('det-registro-id-salida').value = data.registro_id;
+
+            // Timer
+            if (data.entrada_iso && data.precio_hora) {
+                startTimer(data.entrada_iso, data.precio_hora);
+            } else {
+                document.getElementById('det-duracion').textContent = data.duracion;
+            }
+
+            if (data.tiene_pago_pendiente) {
+                document.getElementById('det-pago-pendiente-aviso').classList.remove('hidden');
+                document.getElementById('form-confirmar-pago').classList.remove('hidden');
+            } else {
+                document.getElementById('det-pago-pendiente-aviso').classList.add('hidden');
+                document.getElementById('form-confirmar-pago').classList.add('hidden');
+            }
+            document.getElementById('det-contenido').classList.remove('hidden');
+            document.getElementById('det-acciones').classList.remove('hidden');
+        })
+        .catch(() => cerrarDetalle());
+}
+
+let timerInterval = null;
+function startTimer(entradaIso, precioHora) {
+    clearInterval(timerInterval);
+    function update() {
+        const now = new Date();
+        const entrada = new Date(entradaIso);
+        const diffMs = now - entrada;
+        const totalMin = Math.max(Math.ceil(diffMs / 60000), 1);
+        const dias = Math.floor(totalMin / 1440);
+        const horas = Math.floor((totalMin % 1440) / 60);
+        const mins = totalMin % 60;
+        let str = '';
+        if (dias) str += dias + 'd ';
+        if (horas) str += horas + 'h ';
+        str += mins + 'm';
+        document.getElementById('det-duracion').textContent = str;
+        const costo = Math.ceil((precioHora / 60) * totalMin / 100) * 100;
+        document.getElementById('det-total').textContent = '$' + costo.toLocaleString('es-CO') + ' COP';
+    }
+    update();
+    timerInterval = setInterval(update, 30000);
+}
+
+function cerrarDetalle() {
+    clearInterval(timerInterval);
+    document.getElementById('modal-detalle').classList.add('hidden');
+}
+
+// Cerrar modal con Esc
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.getElementById('modal-detalle').classList.add('hidden');
+        document.getElementById('modal-ingreso-rapido').classList.add('hidden');
+    }
+});
+
+// ─── AUTO-REFRESH KPIs ────────────────────────────────────────────
+setInterval(() => {
+    fetch('{% url 'guardia_data' %}')
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('kpi-entradas').textContent = d.entradas_pendientes;
+            document.getElementById('kpi-salidas').textContent = d.salidas_pendientes;
+            document.getElementById('kpi-efectivo').textContent = d.efectivo_pendiente;
+            document.getElementById('kpi-activos').textContent = d.activos_hoy;
+        });
+}, 30000);
+</script>
+{% endblock %}

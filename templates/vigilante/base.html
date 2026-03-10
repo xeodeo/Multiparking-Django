@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Guardia{% endblock %} - MultiParking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mp: {
+                            dark: '#0a0a14',
+                            card: '#12121f',
+                            border: '#1e1e3a',
+                            purple: '#7c3aed',
+                            'purple-light': '#a78bfa',
+                            'purple-dark': '#5b21b6',
+                            muted: '#9ca3af',
+                            footer: '#0d0d1a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0a0a14; }
+        select option { background-color: #12121f; color: #fff; }
+        input[type="date"] { color-scheme: dark; }
+        @keyframes pulse-space { 0%,100%{opacity:1;} 50%{opacity:.6;} }
+        .animate-pulse-space { animation: pulse-space 1.5s ease-in-out infinite; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="text-white min-h-screen bg-mp-dark">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 bg-mp-card border-b border-mp-border px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        <!-- Logo + Badge -->
+        <div class="flex items-center gap-3 min-w-0">
+            <a href="{% url 'guardia_dashboard' %}" class="text-lg font-extrabold whitespace-nowrap">
+                <span class="text-mp-purple-light">Multi</span>Parking
+            </a>
+            <span class="hidden sm:inline-flex text-xs font-medium bg-purple-900/40 text-mp-purple-light border border-purple-700/30 px-2.5 py-1 rounded-full whitespace-nowrap">
+                Panel del Guardia
+            </span>
+        </div>
+
+        <!-- Clock -->
+        <div class="hidden md:flex flex-col items-center text-center">
+            <span id="clock" class="text-xl font-bold tracking-widest tabular-nums">--:--:--</span>
+            <span id="fecha" class="text-xs text-mp-muted capitalize"></span>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex items-center gap-3">
+            <!-- Notifications -->
+            <div class="relative">
+                <button class="relative p-2 rounded-lg hover:bg-white/5 transition">
+                    <svg class="w-5 h-5 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+                    </svg>
+                    {% if entradas_pendientes or efectivo_pendiente %}
+                    <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center">
+                        {{ efectivo_pendiente|add:entradas_pendientes }}
+                    </span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- User -->
+            <div class="flex items-center gap-2 cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-mp-purple/30 border border-mp-purple/50 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-mp-purple-light" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                    </svg>
+                </div>
+                <div class="hidden sm:block text-right">
+                    <p class="text-sm font-medium leading-none">{{ request.session.usuario_nombre }}</p>
+                    <p class="text-xs text-mp-muted mt-0.5">{{ request.session.usuario_correo }}</p>
+                </div>
+                <a href="{% url 'logout' %}" class="ml-1 text-mp-muted hover:text-red-400 transition" title="Cerrar sesión">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="fixed top-16 right-4 z-50 space-y-2 max-w-sm w-full" id="toast-container">
+        {% for message in messages %}
+        <div class="flex items-start gap-3 p-4 rounded-xl border shadow-xl toast-item
+            {% if message.tags == 'success' %}bg-green-900/80 border-green-700/50 text-green-100
+            {% elif message.tags == 'error' %}bg-red-900/80 border-red-700/50 text-red-100
+            {% elif message.tags == 'warning' %}bg-yellow-900/80 border-yellow-700/50 text-yellow-100
+            {% else %}bg-mp-card border-mp-border text-white{% endif %}">
+            <span class="flex-1 text-sm">{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="text-white/60 hover:text-white text-lg leading-none mt-0.5">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.toast-item').forEach(el => {
+                el.style.transition = 'opacity 0.5s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 500);
+            });
+        }, 4000);
+    </script>
+    {% endif %}
+
+    <!-- MAIN -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Reloj
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('es-CO', { hour12: false });
+            const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fecha').textContent = now.toLocaleDateString('es-CO', opts);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

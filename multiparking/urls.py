@@ -17,6 +17,12 @@ from parqueadero.views import (
     InventarioListView,
     EntradaParqueaderoView, EscanearQRView, GenerarQRView
 )
+from parqueadero.vigilante_views import (
+    VigilanteDashboardView, VigilanteDashboardDataView,
+    VigilanteRegistrarIngresoView, VigilanteRegistrarSalidaView,
+    VigilanteConfirmarPagoView, VigilanteBuscarVehiculoView,
+    VigilanteObtenerDetalleView,
+)
 from parqueadero.cliente_views import ClienteSalidaView
 from tarifas.views import (
     TarifaListView, TarifaCreateView, TarifaUpdateView, TarifaToggleView, TarifaDeleteView
@@ -122,6 +128,16 @@ urlpatterns = [
 
     # Código QR
     path('admin-panel/qr/generar/', GenerarQRView.as_view(), name='admin_generar_qr'),
+
+    # ── GUARDIA PANEL ────────────────────────────────────────────────────
+
+    path('guardia/', VigilanteDashboardView.as_view(), name='guardia_dashboard'),
+    path('guardia/api/data/', VigilanteDashboardDataView.as_view(), name='guardia_data'),
+    path('guardia/registrar-ingreso/', VigilanteRegistrarIngresoView.as_view(), name='guardia_registrar_ingreso'),
+    path('guardia/registrar-salida/', VigilanteRegistrarSalidaView.as_view(), name='guardia_registrar_salida'),
+    path('guardia/confirmar-pago/', VigilanteConfirmarPagoView.as_view(), name='guardia_confirmar_pago'),
+    path('guardia/api/buscar-vehiculo/', VigilanteBuscarVehiculoView.as_view(), name='guardia_buscar_vehiculo'),
+    path('guardia/api/detalle-ocupacion/', VigilanteObtenerDetalleView.as_view(), name='guardia_detalle_ocupacion'),
 
     # ── CLIENTE PANEL ────────────────────────────────────────────────────
 
