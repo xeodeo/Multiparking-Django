@@ -19,23 +19,32 @@ def _is_ajax(request):
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
+def _redirect_by_rol(rol):
+    if rol == 'ADMIN':
+        return 'admin_dashboard'
+    if rol == 'VIGILANTE':
+        return 'guardia_dashboard'
+    return 'dashboard'
+
+
 def home_view(request):
     if request.session.get('usuario_id'):
-        return redirect('admin_dashboard' if request.session.get('usuario_rol') == 'ADMIN' else 'dashboard')
+        return redirect(_redirect_by_rol(request.session.get('usuario_rol')))
     return render(request, 'home.html')
 
 
 def login_view(request):
     if request.session.get('usuario_id'):
-        target = 'admin_dashboard' if request.session.get('usuario_rol') == 'ADMIN' else 'dashboard'
+        rol = request.session.get('usuario_rol')
         if _is_ajax(request):
-            return JsonResponse({'ok': True, 'redirect': target}) # JsonResponse needs URL path, not name, but let's assume client handles it or returned path in line 59 logic
-            # Correction: line 59 returns '/admin-panel/' string.
-            # Ideally we return the string path here too to be consistent.
-            # But line 59 logic is: return JsonResponse({'ok': True, 'redirect': '/admin-panel/' if usuario.rolTipoRol == 'ADMIN' else '/dashboard/'})
-            # Let's match that.
-            return JsonResponse({'ok': True, 'redirect': '/admin-panel/' if request.session.get('usuario_rol') == 'ADMIN' else '/dashboard/'})
-        return redirect(target)
+            if rol == 'ADMIN':
+                redir = '/admin-panel/'
+            elif rol == 'VIGILANTE':
+                redir = '/guardia/'
+            else:
+                redir = '/dashboard/'
+            return JsonResponse({'ok': True, 'redirect': redir})
+        return redirect(_redirect_by_rol(rol))
 
     if request.method == 'POST':
         correo = request.POST.get('correo', '').strip()
@@ -69,9 +78,15 @@ def login_view(request):
         request.session['usuario_correo'] = usuario.usuCorreo
 
         if _is_ajax(request):
-            return JsonResponse({'ok': True, 'redirect': '/admin-panel/' if usuario.rolTipoRol == 'ADMIN' else '/dashboard/'})
+            if usuario.rolTipoRol == 'ADMIN':
+                redir = '/admin-panel/'
+            elif usuario.rolTipoRol == 'VIGILANTE':
+                redir = '/guardia/'
+            else:
+                redir = '/dashboard/'
+            return JsonResponse({'ok': True, 'redirect': redir})
         messages.success(request, f'Bienvenido, {usuario.usuNombreCompleto}.')
-        return redirect('admin_dashboard' if usuario.rolTipoRol == 'ADMIN' else 'dashboard')
+        return redirect(_redirect_by_rol(usuario.rolTipoRol))
 
     return render(request, 'auth/login.html')
 

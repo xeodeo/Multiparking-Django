@@ -13,3 +13,16 @@ class AdminRequiredMixin:
             messages.error(request, 'No tienes permisos para acceder.')
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
+
+
+class VigilanteRequiredMixin:
+    """Verifica que el usuario en sesión tenga rol ADMIN o VIGILANTE."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get('usuario_id'):
+            messages.error(request, 'Debes iniciar sesión.')
+            return redirect('home')
+        if request.session.get('usuario_rol') not in ('ADMIN', 'VIGILANTE'):
+            messages.error(request, 'No tienes permisos para acceder.')
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
