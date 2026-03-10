@@ -4,14 +4,15 @@ Script para generar datos de prueba en la base de datos local
 Ejecutar: python generar_datos_prueba.py
 """
 import os
+import sys
 import django
 from datetime import timedelta
-import sys
 
 # Fix encoding for Windows console
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
 django.setup()
 
@@ -47,52 +48,88 @@ piso, created = Piso.objects.get_or_create(
 )
 print(f"[OK] Piso: {piso.pisNombre} {'(creado)' if created else '(existente)'}")
 
-# 3. Crear tipo de espacio si no existe
-tipo_espacio, created = TipoEspacio.objects.get_or_create(
-    nombre='Estandar',
-)
-print(f"[OK] Tipo Espacio: {tipo_espacio.nombre} {'(creado)' if created else '(existente)'}")
+# 3. Crear tipos de espacio si no existen
+tipo_carro, created = TipoEspacio.objects.get_or_create(nombre='Carro')
+print(f"[OK] Tipo Espacio: Carro {'(creado)' if created else '(existente)'}")
+
+tipo_moto, created = TipoEspacio.objects.get_or_create(nombre='Moto')
+print(f"[OK] Tipo Espacio: Moto {'(creado)' if created else '(existente)'}")
 
 # 4. Crear espacios si no existen
+from datetime import date
 espacios_creados = 0
-for i in range(1, 6):  # Crear 5 espacios
-    espacio, created = Espacio.objects.get_or_create(
-        espNumero=f'A-{i:03d}',
+for i in range(1, 4):  # 3 espacios de carro
+    _, created = Espacio.objects.get_or_create(
+        espNumero=f'C1-{i:02d}',
         defaults={
             'fkIdPiso': piso,
-            'fkIdTipoEspacio': tipo_espacio,
+            'fkIdTipoEspacio': tipo_carro,
             'espEstado': 'DISPONIBLE',
         }
     )
     if created:
         espacios_creados += 1
+
+for i in range(1, 3):  # 2 espacios de moto
+    _, created = Espacio.objects.get_or_create(
+        espNumero=f'M1-{i:02d}',
+        defaults={
+            'fkIdPiso': piso,
+            'fkIdTipoEspacio': tipo_moto,
+            'espEstado': 'DISPONIBLE',
+        }
+    )
+    if created:
+        espacios_creados += 1
+
 print(f"[OK] Espacios: {espacios_creados} creados, {Espacio.objects.count()} totales")
 
-# 5. Crear tarifa activa si no existe
-from datetime import date
+# 5. Crear tarifas activas si no existen
 tarifa, created = Tarifa.objects.get_or_create(
-    fkIdTipoEspacio=tipo_espacio,
+    fkIdTipoEspacio=tipo_carro,
     activa=True,
     defaults={
-        'nombre': 'Tarifa Estandar 2024',
+        'nombre': 'Tarifa Carros 2026',
         'precioHora': 5000,
-        'precioDia': 50000,
-        'precioMensual': 500000,
+        'precioHoraVisitante': 7000,
+        'precioDia': 40000,
+        'precioMensual': 450000,
         'fechaInicio': date.today(),
-        'fechaFin': None,
     }
 )
-print(f"[OK] Tarifa: ${tarifa.precioHora}/hora {'(creada)' if created else '(existente)'}")
+print(f"[OK] Tarifa Carros: ${tarifa.precioHora}/h usuario | ${tarifa.precioHoraVisitante}/h visitante {'(creada)' if created else '(existente)'}")
+
+Tarifa.objects.get_or_create(
+    fkIdTipoEspacio=tipo_moto,
+    activa=True,
+    defaults={
+        'nombre': 'Tarifa Motos 2026',
+        'precioHora': 2000,
+        'precioHoraVisitante': 3000,
+        'precioDia': 18000,
+        'precioMensual': 180000,
+        'fechaInicio': date.today(),
+    }
+)
+print(f"[OK] Tarifa Motos: $2,000/h usuario | $3,000/h visitante")
 
 # 6. Crear vehículos de prueba si no existen
 vehiculos = []
-placas = ['ABC123', 'DEF456', 'GHI789', 'JKL012', 'MNO345']
-for placa in placas:
+vehiculos_demo = [
+    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla'),
+    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3'),
+    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250'),
+    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark'),
+    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125'),
+]
+for placa, tipo, color, marca, modelo in vehiculos_demo:
     vehiculo, created = Vehiculo.objects.get_or_create(
         vehPlaca=placa,
         defaults={
-            'vehTipo': 'Carro',
-            'vehMarca': 'Toyota',
+            'vehTipo': tipo,
+            'vehColor': color,
+            'vehMarca': marca,
+            'vehModelo': modelo,
             'fkIdUsuario': usuario,
         }
     )
@@ -155,9 +192,11 @@ for dia_offset in range(7):  # Últimos 7 días
         # Actualizar manualmente para datos de prueba
         InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada)
 
-        # Calcular monto (3 horas * tarifa)
-        horas = 3
-        monto = float(tarifa.precioHora) * horas
+        # Calcular monto (3 horas * tarifa del tipo del vehiculo)
+        tarifa_vehiculo = Tarifa.objects.filter(
+            fkIdTipoEspacio=espacio.fkIdTipoEspacio, activa=True
+        ).first() or tarifa
+        monto = float(tarifa_vehiculo.precioHora) * 3
 
         # Crear pago
         # Nota: pagFechaPago también tiene auto_now_add=True

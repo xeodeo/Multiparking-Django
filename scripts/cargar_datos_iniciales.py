@@ -36,7 +36,7 @@ admin, created = Usuario.objects.get_or_create(
     usuCorreo='admin@multiparking.com',
     defaults={
         'usuDocumento': '0000000001',
-        'usuNombre': 'Administrador', 'usuApellido': '',
+        'usuNombre': 'Administrador', 'usuApellido': 'Principal',
         'usuTelefono': '3000000000',
         'usuClaveHash': make_password('admin123'),
         'rolTipoRol': 'ADMIN',

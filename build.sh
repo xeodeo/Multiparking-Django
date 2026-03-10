@@ -7,4 +7,4 @@ python manage.py collectstatic --no-input
 
 python manage.py migrate
 
-# python scripts/render_datos_prueba.py
+python scripts/cargar_datos_iniciales.py
