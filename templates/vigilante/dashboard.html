@@ -277,11 +277,11 @@
 
     {% for piso in pisos %}
     <div id="piso-{{ piso.pk }}" class="piso-content">
-        <p class="text-sm text-mp-muted mb-4">
+        <p class="text-sm text-mp-muted mb-4 piso-stats">
             {{ piso.ocupados_espacios }} ocupados de {{ piso.total_espacios }} ({{ piso.ocupacion_pct }}% ocupación)
         </p>
         {% if piso.espacios_list %}
-        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5">
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5 espacios-grid">
             {% for espacio in piso.espacios_list %}
             <div class="relative group">
                 <div data-espacio-id="{{ espacio.pk }}"
@@ -585,16 +585,111 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// ─── AUTO-REFRESH KPIs ────────────────────────────────────────────
-setInterval(() => {
-    fetch('{% url 'guardia_data' %}')
+// ─── AUTO-REFRESH (KPIs + Mapa de Pisos) ─────────────────────────
+let autoRefreshInterval = null;
+
+function refreshDashboard() {
+    // No refrescar si hay un modal abierto
+    if (!document.getElementById('modal-detalle').classList.contains('hidden') ||
+        !document.getElementById('modal-ingreso-rapido').classList.contains('hidden')) {
+        return;
+    }
+
+    fetch('{% url "guardia_data" %}')
         .then(r => r.json())
         .then(d => {
+            // Actualizar KPIs
             document.getElementById('kpi-entradas').textContent = d.entradas_pendientes;
             document.getElementById('kpi-salidas').textContent = d.salidas_pendientes;
             document.getElementById('kpi-efectivo').textContent = d.efectivo_pendiente;
             document.getElementById('kpi-activos').textContent = d.activos_hoy;
-        });
-}, 30000);
+
+            if (!d.pisos) return;
+
+            // Actualizar mapa de pisos
+            d.pisos.forEach(piso => {
+                // Badge del tab
+                const tabBtn = document.getElementById('btn-piso-' + piso.pk);
+                if (tabBtn) {
+                    const badge = tabBtn.querySelector('span');
+                    if (badge) badge.textContent = piso.ocupados_espacios;
+                }
+
+                // Stats del piso
+                const pisoDiv = document.getElementById('piso-' + piso.pk);
+                if (!pisoDiv) return;
+                const statsP = pisoDiv.querySelector('.piso-stats');
+                if (statsP) {
+                    statsP.textContent = `${piso.ocupados_espacios} ocupados de ${piso.total_espacios} (${piso.ocupacion_pct}% ocupación)`;
+                }
+
+                // Grid de espacios
+                const grid = pisoDiv.querySelector('.espacios-grid');
+                if (!grid) return;
+
+                piso.espacios.forEach(esp => {
+                    const spaceEl = grid.querySelector(`[data-espacio-id="${esp.pk}"]`);
+                    if (!spaceEl) return;
+
+                    const wrapper = spaceEl.closest('.relative');
+                    const pingDot = wrapper ? wrapper.querySelector('.animate-ping2') : null;
+
+                    let cls, title;
+                    if (esp.pago_pendiente) {
+                        cls = 'bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space';
+                        title = `Espacio ${esp.espNumero} — Salida pendiente`;
+                        if (!pingDot && wrapper) {
+                            const dot = document.createElement('div');
+                            dot.className = 'absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping2';
+                            wrapper.appendChild(dot);
+                        }
+                    } else if (esp.reserva_pk) {
+                        cls = 'bg-orange-500 border-orange-600 text-white hover:bg-orange-600';
+                        title = `Espacio ${esp.espNumero} — Reservado`;
+                        if (pingDot) pingDot.remove();
+                    } else if (esp.espEstado === 'DISPONIBLE') {
+                        cls = 'bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20';
+                        title = `Espacio ${esp.espNumero}`;
+                        if (pingDot) pingDot.remove();
+                    } else if (esp.espEstado === 'OCUPADO') {
+                        cls = 'bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20';
+                        title = `Espacio ${esp.espNumero}`;
+                        if (pingDot) pingDot.remove();
+                    } else {
+                        cls = 'bg-gray-700 border-gray-600 text-gray-400';
+                        title = `Espacio ${esp.espNumero}`;
+                        if (pingDot) pingDot.remove();
+                    }
+
+                    spaceEl.setAttribute('onclick',
+                        `handleSpaceClick('${esp.pk}', '${esp.espNumero}', '${esp.espEstado}', '${piso.pisNombre}', ${esp.pago_pendiente})`
+                    );
+                    spaceEl.className = `aspect-square rounded-lg flex items-center justify-center text-xs font-bold border transition-transform hover:scale-105 cursor-pointer ${cls}`;
+                    spaceEl.title = title;
+                });
+            });
+        })
+        .catch(err => console.warn('Auto-refresh error:', err));
+}
+
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(refreshDashboard, 10000);
+}
+function stopAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+}
+
+// Iniciar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    startAutoRefresh();
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            refreshDashboard();
+            startAutoRefresh();
+        }
+    });
+});
 </script>
 {% endblock %}

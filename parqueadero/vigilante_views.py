@@ -436,6 +436,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
         hoy_local = timezone.localtime(now).date()
         inicio_hoy = timezone.make_aware(datetime.combine(hoy_local, datetime.min.time()))
         fin_hoy = timezone.make_aware(datetime.combine(hoy_local, datetime.max.time()))
+        limite_2h = now + timedelta(hours=2)
 
         entradas_pendientes = Reserva.objects.filter(
             resFechaReserva=hoy_local, resEstado__in=['PENDIENTE', 'CONFIRMADA']
@@ -453,9 +454,58 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
             parHoraEntrada__range=(inicio_hoy, fin_hoy)
         ).count()
 
+        # Pisos para actualizar el mapa
+        pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
+            'espacios', 'espacios__reservas'
+        ).order_by('pisNombre')
+
+        pisos_data = []
+        for piso in pisos:
+            total_piso = piso.espacios.count()
+            ocupados_piso = piso.espacios.filter(espEstado='OCUPADO').count()
+            ocupacion_pct = int((ocupados_piso / total_piso) * 100) if total_piso > 0 else 0
+
+            espacios_data = []
+            for espacio in piso.espacios.all():
+                reserva_proxima = None
+                pago_pendiente = False
+
+                for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
+                    fhr = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
+                    fhr = timezone.make_aware(fhr)
+                    if now <= fhr <= limite_2h:
+                        reserva_proxima = reserva
+                        break
+
+                if espacio.espEstado == 'OCUPADO':
+                    pago_pendiente = Pago.objects.filter(
+                        fkIdParqueo__fkIdEspacio=espacio,
+                        fkIdParqueo__parHoraSalida__isnull=True,
+                        pagEstado='PENDIENTE',
+                        pagMetodo='EFECTIVO',
+                    ).exists()
+
+                espacios_data.append({
+                    'pk': espacio.pk,
+                    'espNumero': espacio.espNumero,
+                    'espEstado': espacio.espEstado,
+                    'pago_pendiente': pago_pendiente,
+                    'reserva_pk': reserva_proxima.pk if reserva_proxima else None,
+                })
+
+            pisos_data.append({
+                'pk': piso.pk,
+                'pisNombre': piso.pisNombre,
+                'total_espacios': total_piso,
+                'ocupados_espacios': ocupados_piso,
+                'ocupacion_pct': ocupacion_pct,
+                'espacios': espacios_data,
+            })
+
         return JsonResponse({
             'entradas_pendientes': entradas_pendientes,
             'salidas_pendientes': salidas_pendientes,
             'efectivo_pendiente': efectivo_pendiente,
             'activos_hoy': activos_hoy,
+            'pisos': pisos_data,
         })
