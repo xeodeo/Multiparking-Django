@@ -99,6 +99,19 @@ def enviar_recibo_pago(pago, registro):
     _send_async(msg)
 
 
+def enviar_registro_vehiculo(vehiculo, usuario):
+    """
+    Envía confirmación al registrar un vehículo nuevo en la cuenta del cliente.
+    """
+    msg = _build_msg(
+        subject="Vehículo registrado — Multiparking",
+        template_html="emails/registro_vehiculo.html",
+        context={"vehiculo": vehiculo, "usuario": usuario},
+        to_email=usuario.usuCorreo,
+    )
+    _send_async(msg)
+
+
 def enviar_confirmacion_entrada(registro):
     """
     Envía confirmación de entrada al parqueadero.
