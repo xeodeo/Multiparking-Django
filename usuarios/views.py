@@ -653,3 +653,71 @@ class PasswordResetConfirmView(View):
         usuario.save()
         messages.success(request, 'Contraseña actualizada exitosamente. Ya puedes iniciar sesión.')
         return redirect('home')
+
+
+# ── Prueba de Correos (solo ADMIN) ──────────────────────────────────────────
+
+class AdminTestEmailView(AdminRequiredMixin, View):
+    """
+    Permite al administrador enviar un correo de prueba para verificar
+    que la configuración de SendGrid esté funcionando correctamente.
+    El envío es SÍNCRONO (sin hilo) para capturar y mostrar errores en pantalla.
+    """
+    def _get_config(self):
+        import os
+        from django.conf import settings as django_settings
+        return {
+            'api_key_set': bool(os.getenv('SENDGRID_API_KEY', '')),
+            'from_email': django_settings.DEFAULT_FROM_EMAIL,
+            'smtp_host': django_settings.EMAIL_HOST,
+        }
+
+    def get(self, request):
+        return render(request, 'admin_panel/test_email.html', {
+            'active_page': 'test_email',
+            'config': self._get_config(),
+            'admin_correo': request.session.get('usuario_correo', ''),
+        })
+
+    def post(self, request):
+        from django.conf import settings as django_settings
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+
+        config = self._get_config()
+        destinatario = request.POST.get('destinatario', '').strip()
+
+        ctx = {
+            'active_page': 'test_email',
+            'config': config,
+            'admin_correo': request.session.get('usuario_correo', ''),
+            'ultimo_destinatario': destinatario,
+        }
+
+        if not destinatario:
+            messages.error(request, 'Ingresa un correo destinatario.')
+            return render(request, 'admin_panel/test_email.html', ctx)
+
+        if not config['api_key_set']:
+            messages.error(request, 'SENDGRID_API_KEY no está configurada. Agrégala en .env o en las variables de entorno de Render.')
+            return render(request, 'admin_panel/test_email.html', ctx)
+
+        try:
+            # Envío SÍNCRONO para capturar el error exacto inmediatamente
+            html_body = render_to_string('emails/test_email.html', {
+                'destinatario': destinatario,
+                'from_email': config['from_email'],
+            })
+            msg = EmailMultiAlternatives(
+                subject='✅ Prueba de correo — Multiparking',
+                body='Este es un correo de prueba del sistema Multiparking.',
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                to=[destinatario],
+            )
+            msg.attach_alternative(html_body, 'text/html')
+            msg.send(fail_silently=False)
+            messages.success(request, f'Correo enviado exitosamente a {destinatario}. Revisa tu bandeja de entrada (y spam).')
+        except Exception as e:
+            messages.error(request, f'Error al enviar: {e}')
+
+        return render(request, 'admin_panel/test_email.html', ctx)
