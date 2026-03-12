@@ -316,6 +316,8 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
             pago_existente.pagEstado = 'PAGADO'
             pago_existente.save()
             monto = pago_existente.pagMonto
+            if not registro.fkIdVehiculo.es_visitante:
+                email_utils.enviar_recibo_pago(pago_existente, registro)
         else:
             # Calcular el cobro ahora según la tarifa activa del tipo de espacio
             tarifa = Tarifa.objects.filter(
@@ -329,12 +331,14 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
                 # Visitantes pagan tarifa diferencial si está configurada
                 precio = tarifa.precioHoraVisitante if vehiculo.es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
                 monto = math.ceil((float(precio) / 60) * total_minutos)
-                Pago.objects.create(
+                nuevo_pago = Pago.objects.create(
                     pagMonto=monto,
                     pagMetodo='EFECTIVO',
                     pagEstado='PAGADO',
                     fkIdParqueo=registro,
                 )
+                if not registro.fkIdVehiculo.es_visitante:
+                    email_utils.enviar_recibo_pago(nuevo_pago, registro)
 
         # Liberar el espacio para nuevos ingresos
         espacio.espEstado = 'DISPONIBLE'
