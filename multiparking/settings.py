@@ -179,11 +179,8 @@ REST_FRAMEWORK = {
 #     'https://*.ngrok-free.app',
 # ]
 
-# ── Email via SendGrid SMTP ────────────────────────────────────────────────────
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'apikey'  # SendGrid requiere literalmente "apikey" como usuario
-EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY', '')
+# ── Email via SendGrid HTTP API (evita bloqueo de puertos SMTP en Render) ─────
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Multiparking <pintololpez53@gmail.com>')

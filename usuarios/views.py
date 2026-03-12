@@ -669,7 +669,7 @@ class AdminTestEmailView(AdminRequiredMixin, View):
         return {
             'api_key_set': bool(os.getenv('SENDGRID_API_KEY', '')),
             'from_email': django_settings.DEFAULT_FROM_EMAIL,
-            'smtp_host': django_settings.EMAIL_HOST,
+            'smtp_host': 'api.sendgrid.com (HTTP)',
         }
 
     def get(self, request):
