@@ -16,6 +16,7 @@ from tarifas.models import Tarifa
 from usuarios.mixins import VigilanteRequiredMixin
 from vehiculos.models import Vehiculo
 
+from multiparking import email_utils
 from .models import Espacio, InventarioParqueo, Piso
 
 
@@ -206,7 +207,8 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
                 return redirect('guardia_dashboard')
 
             # Crea el registro de parqueo, ocupa el espacio y cierra la reserva
-            InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+            nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+            email_utils.enviar_confirmacion_entrada(nuevo_registro)
             espacio.espEstado = 'OCUPADO'
             espacio.save()
             reserva.resEstado = 'COMPLETADA'
@@ -266,7 +268,8 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
                 return redirect('guardia_dashboard')
 
             # Crea el registro de parqueo y ocupa el espacio
-            InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+            nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+            email_utils.enviar_confirmacion_entrada(nuevo_registro)
             espacio.espEstado = 'OCUPADO'
             espacio.save()
             messages.success(request, f'Ingreso registrado: {placa} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')

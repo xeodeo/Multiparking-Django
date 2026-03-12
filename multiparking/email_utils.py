@@ -99,6 +99,24 @@ def enviar_recibo_pago(pago, registro):
     _send_async(msg)
 
 
+def enviar_confirmacion_entrada(registro):
+    """
+    Envía confirmación de entrada al parqueadero.
+    Solo se llama cuando el vehículo pertenece a un usuario registrado (no visitante).
+    registro es el objeto InventarioParqueo recién creado.
+    """
+    usuario = registro.fkIdVehiculo.fkIdUsuario
+    if not usuario:
+        return
+    msg = _build_msg(
+        subject="Entrada registrada — Multiparking",
+        template_html="emails/confirmacion_entrada.html",
+        context={"registro": registro, "usuario": usuario},
+        to_email=usuario.usuCorreo,
+    )
+    _send_async(msg)
+
+
 def enviar_reset_clave(usuario, token, request):
     """
     Envía el correo de restablecimiento de contraseña con el enlace firmado.
