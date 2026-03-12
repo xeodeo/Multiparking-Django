@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.utils import timezone
 
+from multiparking import email_utils
 from parqueadero.models import Espacio, InventarioParqueo
 from parqueadero.views import ClienteRequiredMixin
 from pagos.models import Pago
@@ -190,6 +191,8 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
             espacio = registro.fkIdEspacio
             espacio.espEstado = 'DISPONIBLE'
             espacio.save()
+
+            email_utils.enviar_recibo_pago(pago, registro)
 
             return render(request, 'cliente/salida_exitosa.html', {
                 'registro': registro,

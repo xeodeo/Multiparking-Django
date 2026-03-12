@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
 
+from multiparking import email_utils
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 
@@ -91,6 +92,7 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
                 vehiculo_existente.nombre_contacto = None     # Limpia datos de contacto de visitante
                 vehiculo_existente.telefono_contacto = None
                 vehiculo_existente.save()
+                email_utils.enviar_registro_vehiculo(vehiculo_existente, usuario)
 
                 messages.success(request, f'Vehículo {placa} registrado exitosamente. Era un vehículo visitante y ahora es tuyo.')
                 return redirect('dashboard')
@@ -108,7 +110,7 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
                 })
 
         # Crear nuevo vehículo
-        Vehiculo.objects.create(
+        nuevo_vehiculo = Vehiculo.objects.create(
             vehPlaca=placa,
             vehTipo=tipo,
             vehMarca=marca,
@@ -117,6 +119,7 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
             vehEstado=estado if estado else True,
             fkIdUsuario=usuario
         )
+        email_utils.enviar_registro_vehiculo(nuevo_vehiculo, usuario)
 
         messages.success(request, f'Vehículo {placa} agregado exitosamente.')
         return redirect('dashboard')
