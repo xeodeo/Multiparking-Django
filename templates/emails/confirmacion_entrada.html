@@ -1,0 +1,65 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Entrada Registrada — Multiparking{% endblock %}
+
+{% block content %}
+  <!-- Título -->
+  <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#ffffff;">
+    Entrada Registrada 🚗
+  </h1>
+  <p style="margin:0 0 28px 0;font-size:15px;color:#a78bfa;font-weight:600;">
+    Tu vehículo ha ingresado al parqueadero.
+  </p>
+
+  <!-- Divider -->
+  <div style="height:1px;background:linear-gradient(90deg,transparent,#7c3aed,transparent);margin-bottom:28px;"></div>
+
+  <p style="margin:0 0 20px 0;font-size:15px;color:#d1d5db;line-height:1.7;">
+    Hola <strong style="color:#ffffff;">{{ usuario.usuNombreCompleto }}</strong>, confirmamos que tu vehículo acaba de ingresar:
+  </p>
+
+  <!-- Detalles de la entrada -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f0f1a;border-radius:12px;border:1px solid #2d2d4e;margin-bottom:28px;overflow:hidden;">
+    <tr style="background-color:#1f1f3a;">
+      <td colspan="2" style="padding:14px 20px;">
+        <span style="font-size:13px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Detalle del Ingreso</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;width:45%;">
+        <span style="font-size:13px;color:#6b7280;">Vehículo</span><br>
+        <span style="font-size:18px;color:#ffffff;font-weight:800;">{{ registro.fkIdVehiculo.vehPlaca }}</span>
+      </td>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Tipo</span><br>
+        <span style="font-size:15px;color:#d1d5db;">{{ registro.fkIdVehiculo.vehTipo }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Espacio</span><br>
+        <span style="font-size:15px;color:#a78bfa;font-weight:700;">#{{ registro.fkIdEspacio.espNumero }}</span>
+      </td>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Piso</span><br>
+        <span style="font-size:15px;color:#d1d5db;">{{ registro.fkIdEspacio.fkIdPiso.pisNombre }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:12px 20px;">
+        <span style="font-size:13px;color:#6b7280;">Hora de entrada</span><br>
+        <span style="font-size:16px;color:#a78bfa;font-weight:700;">{{ registro.parHoraEntrada|date:"d/m/Y" }} — {{ registro.parHoraEntrada|time:"H:i" }}</span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Aviso -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1e1b4b;border-radius:10px;border-left:4px solid #7c3aed;padding:16px 20px;">
+    <tr>
+      <td>
+        <p style="margin:0;font-size:13px;color:#c4b5fd;line-height:1.7;">
+          Guarda este correo como comprobante de tu ingreso. Al salir recibirás el recibo con el monto a pagar.
+        </p>
+      </td>
+    </tr>
+  </table>
+{% endblock %}

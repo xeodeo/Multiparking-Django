@@ -639,11 +639,12 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
              return redirect('admin_dashboard')
 
         # 4. Registrar Ingreso
-        InventarioParqueo.objects.create(
+        nuevo_registro = InventarioParqueo.objects.create(
             fkIdVehiculo=vehiculo,
             fkIdEspacio=espacio
         )
-        
+        email_utils.enviar_confirmacion_entrada(nuevo_registro)
+
         # 5. Actualizar Estado del Espacio
         espacio.espEstado = 'OCUPADO'
         espacio.save()
@@ -1082,11 +1083,12 @@ class EntradaParqueaderoView(ClienteRequiredMixin, View):
                 return redirect('entrada_parqueadero')
 
         # Crear registro en InventarioParqueo
-        InventarioParqueo.objects.create(
+        nuevo_registro = InventarioParqueo.objects.create(
             parHoraEntrada=now,
             fkIdEspacio=espacio,
             fkIdVehiculo=vehiculo
         )
+        email_utils.enviar_confirmacion_entrada(nuevo_registro)
 
         # Cambiar estado del espacio a OCUPADO
         espacio.espEstado = 'OCUPADO'
