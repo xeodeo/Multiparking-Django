@@ -151,6 +151,8 @@
 
 <script>
 (function(){
+    // Validación en tiempo real: para cada campo con regla definida,
+    // muestra un hint de error si el valor no cumple la expresión regular
     const rules = {
         usuDocumento: { re: /^[0-9]+$/, msg: 'Solo números' },
         usuNombre:    { re: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, msg: 'Solo letras' },
@@ -177,6 +179,7 @@
             }
         });
     });
+    // Bloquea caracteres no numéricos en documento y teléfono (prevención extra al keypress)
     document.getElementById('usuDocumento').addEventListener('keypress', function(e){
         if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') e.preventDefault();
     });

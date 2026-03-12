@@ -29,15 +29,16 @@ class Vehiculo(models.Model):
         max_length=30, blank=True,
         validators=[RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$', 'El modelo solo acepta letras, números y puntos')],
     )
-    vehEstado = models.BooleanField(default=True)
+    vehEstado = models.BooleanField(default=True)  # False = vehículo desactivado
     fkIdUsuario = models.ForeignKey(
         'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='vehiculos',
         db_column='fkIdUsuario',
-        null=True,
+        null=True,   # null=True → el vehículo puede pertenecer a un visitante sin cuenta
         blank=True
     )
+    # Datos de contacto opcionales — se usan solo cuando el vehículo es de un visitante (sin cuenta registrada)
     nombre_contacto = models.CharField(
         max_length=50, null=True, blank=True,
         validators=[RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 'El nombre solo debe contener letras')],
@@ -49,6 +50,8 @@ class Vehiculo(models.Model):
 
     @property
     def es_visitante(self):
+        # Propiedad calculada — NO es columna de BD
+        # True cuando el vehículo no tiene usuario registrado asociado
         return self.fkIdUsuario_id is None
 
     class Meta:

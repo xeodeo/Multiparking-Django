@@ -9,6 +9,7 @@ from usuarios.mixins import AdminRequiredMixin
 from .models import Vehiculo
 from usuarios.models import Usuario
 
+# Patrones compilados a nivel de módulo para reutilizarlos sin recompilar en cada request
 RE_PLACA = re.compile(r'^[A-Za-z0-9-]+$')
 RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
 RE_LETRAS_NUMEROS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$')
@@ -114,7 +115,7 @@ class VehiculoCreateView(AdminRequiredMixin, View):
             vehMarca=marca,
             vehModelo=modelo,
             vehEstado=estado if estado else True,
-            fkIdUsuario_id=usuario_id if usuario_id else None,
+            fkIdUsuario_id=usuario_id if usuario_id else None,  # null si es un visitante sin cuenta
             nombre_contacto=nombre_contacto,
             telefono_contacto=telefono_contacto,
         )
@@ -194,6 +195,7 @@ class VehiculoDeleteView(AdminRequiredMixin, View):
     def post(self, request, pk):
         vehiculo = get_object_or_404(Vehiculo, pk=pk)
         from parqueadero.models import InventarioParqueo
+        # No se puede eliminar si el vehículo tiene un registro activo (parHoraSalida IS NULL = aún estacionado)
         if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
             messages.error(request, 'No se puede eliminar un vehículo que está actualmente parqueado.')
             return redirect('admin_vehiculos')

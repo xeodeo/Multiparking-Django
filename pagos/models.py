@@ -10,11 +10,11 @@ class Pago(models.Model):
         PSE = 'PSE', 'PSE'
 
     class EstadoChoices(models.TextChoices):
-        PENDIENTE = 'PENDIENTE', 'Pendiente'
-        PAGADO = 'PAGADO', 'Pagado'
-        ANULADO = 'ANULADO', 'Anulado'
+        PENDIENTE = 'PENDIENTE', 'Pendiente'    # Cobro en efectivo generado pero aún no confirmado por el vigilante
+        PAGADO = 'PAGADO', 'Pagado'              # Pago confirmado
+        ANULADO = 'ANULADO', 'Anulado'           # Pago cancelado
 
-    pagFechaPago = models.DateTimeField(auto_now_add=True)
+    pagFechaPago = models.DateTimeField(auto_now_add=True)  # Se asigna automáticamente al crear el registro
     pagMonto = models.DecimalField(max_digits=12, decimal_places=2)
     pagMetodo = models.CharField(
         max_length=13,

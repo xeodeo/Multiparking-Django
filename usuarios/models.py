@@ -2,12 +2,14 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
+# Modelo propio — NO usa django.contrib.auth.User
+# La autenticación se maneja con sesiones manuales (session keys: usuario_id, usuario_rol, etc.)
 class Usuario(models.Model):
 
     class RolChoices(models.TextChoices):
-        ADMIN = 'ADMIN', 'Administrador'
-        VIGILANTE = 'VIGILANTE', 'Vigilante'
-        CLIENTE = 'CLIENTE', 'Cliente'
+        ADMIN = 'ADMIN', 'Administrador'        # Acceso total al panel de administración
+        VIGILANTE = 'VIGILANTE', 'Vigilante'    # Acceso al panel de guardia (/guardia/)
+        CLIENTE = 'CLIENTE', 'Cliente'          # Acceso al dashboard del cliente (/dashboard/)
 
     usuDocumento = models.CharField(
         max_length=15, unique=True,
@@ -26,17 +28,18 @@ class Usuario(models.Model):
         max_length=10, blank=True,
         validators=[RegexValidator(r'^[0-9]+$', 'El teléfono solo debe contener números')],
     )
-    usuClaveHash = models.CharField(max_length=255)
+    usuClaveHash = models.CharField(max_length=255)  # Contraseña hasheada con django.contrib.auth.hashers.make_password
     rolTipoRol = models.CharField(
         max_length=10,
         choices=RolChoices.choices,
         default=RolChoices.CLIENTE,
     )
-    usuEstado = models.BooleanField(default=True)
+    usuEstado = models.BooleanField(default=True)  # False = cuenta desactivada (no puede iniciar sesión)
     usuFechaRegistro = models.DateTimeField(auto_now_add=True)
 
     @property
     def usuNombreCompleto(self):
+        # Propiedad calculada — NO es columna de base de datos
         return f'{self.usuNombre} {self.usuApellido}'.strip()
 
     class Meta:

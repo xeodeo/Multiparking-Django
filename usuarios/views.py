@@ -2,24 +2,29 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
+from django.core import signing
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
+from multiparking import email_utils
 from .mixins import AdminRequiredMixin
 from .models import Usuario
 
+# Patrones compilados a nivel de módulo para reutilizarlos sin recompilar en cada request
 RE_SOLO_NUMEROS = re.compile(r'^[0-9]+$')
 RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
 RE_CORREO = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$')
 
 
 def _is_ajax(request):
+    # Las peticiones AJAX desde el frontend envían este header manualmente
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
 def _redirect_by_rol(rol):
+    # Devuelve el nombre de URL de destino según el rol del usuario
     if rol == 'ADMIN':
         return 'admin_dashboard'
     if rol == 'VIGILANTE':
@@ -28,6 +33,7 @@ def _redirect_by_rol(rol):
 
 
 def home_view(request):
+    # Si ya hay sesión activa, redirige directo al panel correspondiente según el rol
     if request.session.get('usuario_id'):
         return redirect(_redirect_by_rol(request.session.get('usuario_rol')))
     return render(request, 'home.html')
@@ -65,13 +71,13 @@ def login_view(request):
             messages.error(request, msg)
             return render(request, 'auth/login.html', {'correo': correo})
 
-        if not check_password(clave, usuario.usuClaveHash):
+        if not check_password(clave, usuario.usuClaveHash):  # Verifica la clave contra el hash almacenado
             if _is_ajax(request):
                 return JsonResponse({'ok': False, 'error': 'Correo o contraseña incorrectos.'})
             messages.error(request, 'Correo o contraseña incorrectos.')
             return render(request, 'auth/login.html', {'correo': correo})
 
-        # Crear sesión
+        # Guarda los datos del usuario en la sesión — estas claves se leen en mixins y templates
         request.session['usuario_id'] = usuario.pk
         request.session['usuario_nombre'] = usuario.usuNombreCompleto
         request.session['usuario_rol'] = usuario.rolTipoRol
@@ -107,6 +113,7 @@ def register_view(request):
         clave = request.POST.get('clave', '')
         clave_confirm = request.POST.get('clave_confirm', '')
 
+        # Función auxiliar local para devolver errores tanto en AJAX como en HTML sin repetir código
         def _err(msg):
             if _is_ajax(request):
                 return JsonResponse({'ok': False, 'error': msg})
@@ -153,16 +160,19 @@ def register_view(request):
         if Usuario.objects.filter(usuCorreo=correo).exists():
             return _err('Ya existe un usuario registrado con ese correo electrónico.')
 
-        Usuario.objects.create(
+        nuevo_usuario = Usuario.objects.create(
             usuDocumento=documento,
             usuNombre=nombre,
             usuApellido=apellido,
             usuCorreo=correo,
             usuTelefono=telefono,
             usuClaveHash=make_password(clave),
-            rolTipoRol='CLIENTE',
+            rolTipoRol='CLIENTE',  # El auto-registro público siempre crea CLIENTE; ADMIN/VIGILANTE los crea el admin
             usuEstado=True,
         )
+
+        # Envía correo de bienvenida en hilo separado (no bloquea la respuesta)
+        email_utils.enviar_bienvenida(nuevo_usuario)
 
         if _is_ajax(request):
             return JsonResponse({'ok': True, 'message': 'Cuenta creada exitosamente.'})
@@ -173,7 +183,7 @@ def register_view(request):
 
 
 def logout_view(request):
-    request.session.flush()
+    request.session.flush()  # Elimina todos los datos de sesión y la cookie de sesión
     return redirect('home')
 
 
@@ -203,7 +213,7 @@ def dashboard_view(request):
 
     now = timezone.now()
 
-    # Auto-cancelar reservas PENDIENTES no confirmadas que faltan 15 min o menos
+    # Auto-cancela reservas PENDIENTES cuya hora de inicio es en 15 minutos o menos (no fueron confirmadas a tiempo)
     reservas_pendientes = Reserva.objects.filter(
         resEstado='PENDIENTE'
     )
@@ -224,7 +234,7 @@ def dashboard_view(request):
         'fkIdEspacio__fkIdPiso'
     ).order_by('-resFechaReserva', '-resHoraInicio')[:5]
 
-    # Calcular si falta menos de 1h para cada reserva
+    # Para cada reserva calcula si está dentro de la ventana de confirmación (< 1h) o si aún puede editarse
     reservas = []
     for reserva in reservas_raw:
         fecha_hora_reserva = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
@@ -283,7 +293,9 @@ def dashboard_view(request):
         valor_acumulado = 0
         if tarifa_activa:
             es_vis = registro_activo.fkIdVehiculo.es_visitante
+            # Usa precioHoraVisitante si el vehículo es de un visitante y la tarifa lo tiene definido
             precio_hora = float(tarifa_activa.precioHoraVisitante) if es_vis and tarifa_activa.precioHoraVisitante > 0 else float(tarifa_activa.precioHora)
+            # Costo acumulado: (precio/hora ÷ 60) × minutos, sin redondear al múltiplo de 100
             valor_acumulado = math.ceil((precio_hora / 60) * total_minutos)
 
         parqueo_activo = {
@@ -567,3 +579,77 @@ class UsuarioToggleView(AdminRequiredMixin, View):
         estado = 'activado' if usuario.usuEstado else 'desactivado'
         messages.success(request, f'Usuario {usuario.usuNombreCompleto} {estado}.')
         return redirect('admin_usuarios')
+
+
+# ── Restablecimiento de Contraseña ──────────────────────────────────────────
+
+class PasswordResetRequestView(View):
+    """
+    GET: Muestra el formulario para ingresar el correo.
+    POST: Genera un token firmado y envía el link al correo si existe.
+    Siempre muestra el mismo mensaje para no revelar si el correo está registrado.
+    """
+    def get(self, request):
+        return render(request, 'auth/password_reset.html')
+
+    def post(self, request):
+        correo = request.POST.get('correo', '').strip()
+        try:
+            usuario = Usuario.objects.get(usuCorreo=correo, usuEstado=True)
+            # Token firmado con signing: expira en 1 hora (verificado en la vista confirm)
+            token = signing.dumps({'id': usuario.pk}, salt='mp-password-reset')
+            email_utils.enviar_reset_clave(usuario, token, request)
+        except Usuario.DoesNotExist:
+            pass  # No se revela si el correo existe por seguridad
+        messages.success(
+            request,
+            'Si ese correo está registrado, recibirás un enlace para restablecer tu contraseña en breve.'
+        )
+        return render(request, 'auth/password_reset.html')
+
+
+class PasswordResetConfirmView(View):
+    """
+    GET: Verifica el token. Si es válido muestra el formulario de nueva contraseña;
+         si expiró o es inválido muestra mensaje de error.
+    POST: Valida las contraseñas y actualiza el hash del usuario.
+    """
+    def get(self, request, token):
+        try:
+            signing.loads(token, salt='mp-password-reset', max_age=3600)
+            token_valido = True
+        except signing.BadSignature:
+            token_valido = False
+        return render(request, 'auth/password_reset_confirm.html', {
+            'token': token,
+            'token_valido': token_valido,
+        })
+
+    def post(self, request, token):
+        clave = request.POST.get('clave', '')
+        clave_confirm = request.POST.get('clave_confirm', '')
+        token_post = request.POST.get('token', token)
+
+        try:
+            data = signing.loads(token_post, salt='mp-password-reset', max_age=3600)
+        except signing.BadSignature:
+            messages.error(request, 'El enlace es inválido o ha expirado.')
+            return redirect('password_reset')
+
+        if not clave or len(clave) < 6:
+            messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+            return render(request, 'auth/password_reset_confirm.html', {
+                'token': token_post, 'token_valido': True,
+            })
+
+        if clave != clave_confirm:
+            messages.error(request, 'Las contraseñas no coinciden.')
+            return render(request, 'auth/password_reset_confirm.html', {
+                'token': token_post, 'token_valido': True,
+            })
+
+        usuario = get_object_or_404(Usuario, pk=data['id'])
+        usuario.usuClaveHash = make_password(clave)
+        usuario.save()
+        messages.success(request, 'Contraseña actualizada exitosamente. Ya puedes iniciar sesión.')
+        return redirect('home')

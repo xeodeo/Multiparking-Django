@@ -162,19 +162,19 @@
 
 {% block extra_js %}
 <script>
-// Filtrar espacios por tipo de vehículo
+// Filtra los espacios del mapa según el tipo de vehículo seleccionado:
+// un "Carro" solo ve espacios tipo Carro, una "Moto" solo ve espacios tipo Moto.
+// data-tipo viene del data attribute del <option> del select
 function filtrarEspaciosPorTipoVehiculo() {
     const vehiculoSelect = document.getElementById('vehiculo_select');
     const selectedOption = vehiculoSelect.options[vehiculoSelect.selectedIndex];
     const tipoVehiculo = selectedOption.getAttribute('data-tipo');
 
-    console.log('Tipo de vehículo seleccionado:', tipoVehiculo);
-
-    // Obtener todos los espacios
+    // Obtener todos los espacios renderizados en el mapa
     const espacios = document.querySelectorAll('.espacio-item');
 
     if (!tipoVehiculo) {
-        // Si no hay vehículo seleccionado, mostrar mensaje
+        // Si no hay vehículo seleccionado, ocultar todos los espacios y pedir que se seleccione primero
         espacios.forEach(espacio => {
             espacio.style.display = 'none';
         });
@@ -198,7 +198,7 @@ function filtrarEspaciosPorTipoVehiculo() {
     // Mostrar leyenda
     document.querySelectorAll('.espacios-leyenda').forEach(p => p.style.display = 'block');
 
-    // Tipo de vehículo ya viene como Carro/Moto
+    // El tipo del vehículo ya viene como "Carro" o "Moto" (igual que TipoEspacio.nombre)
     let tipoEspacioBuscado = tipoVehiculo.trim();
 
     console.log('Tipo de espacio a buscar:', tipoEspacioBuscado);
@@ -273,14 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstBtn = document.querySelector('.tab-btn-reserva');
     if(firstBtn) firstBtn.click();
 
-    // Set min date to today
+    // Asegura que la fecha mínima sea hoy (el atributo min ya lo hace en el HTML, esto es redundante pero seguro)
     const dateInput = document.querySelector('input[name="fecha_inicio"]');
     if(dateInput) {
         const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
     }
 
-    // Filtrar espacios al cargar si ya hay vehículo seleccionado
+    // Aplicar filtro inicial por si ya hay un vehículo preseleccionado (modo edición)
     filtrarEspaciosPorTipoVehiculo();
 });
 </script>

@@ -14,6 +14,7 @@ class Tarifa(models.Model):
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
     )
+    # Precio diferenciado para visitantes (sin cuenta registrada) — generalmente mayor que precioHora
     precioHoraVisitante = models.DecimalField(
         max_digits=10, decimal_places=2, default=0,
         validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
@@ -26,9 +27,9 @@ class Tarifa(models.Model):
         max_digits=12, decimal_places=2,
         validators=[MinValueValidator(0, 'El precio no puede ser negativo')],
     )
-    activa = models.BooleanField(default=True)
+    activa = models.BooleanField(default=True)  # Solo debe existir una tarifa activa por TipoEspacio a la vez (regla de negocio)
     fechaInicio = models.DateField()
-    fechaFin = models.DateField(null=True, blank=True)
+    fechaFin = models.DateField(null=True, blank=True)  # null = tarifa vigente indefinidamente
 
     class Meta:
         db_table = 'tarifas'

@@ -6,6 +6,10 @@
     <title>{% block title %}MultiParking{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        /* Paleta de colores personalizada de la marca MultiParking.
+           mp-dark = fondo principal, mp-card = fondo de tarjetas,
+           mp-border = bordes sutiles, mp-purple = color primario de acción,
+           mp-muted = texto secundario/apagado */
         tailwind.config = {
             theme: {
                 extend: {
@@ -29,9 +33,11 @@
         body {
             background-color: #0a0a14;
         }
+        /* Efecto de resplandor radial centrado — usado en la sección hero de la página principal */
         .hero-glow {
             background: radial-gradient(ellipse at 50% 50%, rgba(124, 58, 237, 0.18) 0%, transparent 70%);
         }
+        /* Al pasar el mouse sobre una tarjeta: resalta el borde y la eleva ligeramente */
         .card-hover:hover {
             border-color: #7c3aed;
             transform: translateY(-4px);

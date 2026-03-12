@@ -178,3 +178,12 @@ REST_FRAMEWORK = {
 # CSRF_TRUSTED_ORIGINS = [
 #     'https://*.ngrok-free.app',
 # ]
+
+# ── Email via SendGrid SMTP ────────────────────────────────────────────────────
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'  # SendGrid requiere literalmente "apikey" como usuario
+EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Multiparking <pintololpez53@gmail.com>')

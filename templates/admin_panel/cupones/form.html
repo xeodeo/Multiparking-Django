@@ -137,6 +137,7 @@
     const fechaInicio = document.getElementById('cupFechaInicio');
     const fechaFin = document.getElementById('cupFechaFin');
 
+    // Helper: crea un párrafo de error debajo de un input y lo devuelve
     function addHint(el){
         const hint = document.createElement('p');
         hint.className = 'text-xs text-red-400 mt-1 hidden';
@@ -144,10 +145,10 @@
         return hint;
     }
 
-    // Codigo: solo letras y numeros
+    // Código del cupón: fuerza mayúsculas y valida que solo tenga letras y números
     const hintCodigo = addHint(codigo);
     codigo.addEventListener('input', function(){
-        this.value = this.value.toUpperCase();
+        this.value = this.value.toUpperCase(); // Normaliza a mayúsculas en tiempo real
         const v = this.value;
         if (v && !/^[A-Z0-9]+$/.test(v)) {
             hintCodigo.textContent = 'Solo letras y números, sin espacios';
@@ -161,7 +162,7 @@
         }
     });
 
-    // Valor: no negativo
+    // Valor del descuento: no puede ser negativo
     const hintValor = addHint(valor);
     valor.addEventListener('input', function(){
         const v = parseFloat(this.value);
@@ -177,7 +178,7 @@
         }
     });
 
-    // Fecha fin >= fecha inicio
+    // Valida que la fecha de fin no sea anterior a la de inicio (comparación de strings ISO funciona correctamente)
     const hintFecha = addHint(fechaFin);
     fechaFin.addEventListener('change', function(){
         if (fechaInicio.value && this.value && this.value < fechaInicio.value) {

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(where python)",
-      "Bash(python3 -m py_compile parqueadero/vigilante_views.py)"
+      "Bash(python3 -m py_compile parqueadero/vigilante_views.py)",
+      "Bash(venv/Scripts/python.exe scripts/reiniciar_base_datos.py)"
     ],
     "additionalDirectories": [
       "c:\\Users\\xeodeo\\.claude\\projects\\c--Users-xeodeo-Desktop-Multiparking-Django\\memory"

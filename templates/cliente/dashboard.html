@@ -390,13 +390,18 @@ function scrollToSection(id) {
 
 {% if parqueo_activo %}
 (function() {
+    // Construye la fecha de entrada desde el ISO string enviado por el servidor
     const entradaDate = new Date('{{ parqueo_activo.entrada_iso }}');
+    // precioHora en COP — viene del servidor; |unlocalize evita que Django formatee como "3.500" con punto
     const precioHora = {{ parqueo_activo.precio_hora|unlocalize }};
 
     function actualizarParqueo() {
         const ahora = new Date();
-        const diff = ahora - entradaDate;
-        const totalMinutos = Math.ceil(diff / 60000);
+        const diff = ahora - entradaDate;       // Diferencia en milisegundos
+        const totalMinutos = Math.ceil(diff / 60000); // Redondeo hacia arriba (igual que en el backend)
+
+        // Descomponer minutos totales en días, horas y minutos restantes
+        // 1440 = minutos en un día
         const dias = Math.floor(totalMinutos / 1440);
         const horas = Math.floor((totalMinutos % 1440) / 60);
         const minutos = totalMinutos % 60;
@@ -409,8 +414,9 @@ function scrollToSection(id) {
         const durEl = document.getElementById('parqueoDuracion');
         if (durEl) durEl.textContent = durStr;
 
+        // Calcular valor acumulado con la misma fórmula del backend: ceil((precioHora/60) * minutos)
         if (precioHora > 0) {
-            const minFacturados = Math.max(totalMinutos, 1);
+            const minFacturados = Math.max(totalMinutos, 1); // Mínimo 1 minuto facturado
             const total = Math.ceil((precioHora / 60) * minFacturados);
             const valEl = document.getElementById('parqueoValor');
             if (valEl) valEl.textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0});
@@ -418,7 +424,7 @@ function scrollToSection(id) {
     }
 
     actualizarParqueo();
-    setInterval(actualizarParqueo, 60000);
+    setInterval(actualizarParqueo, 60000); // Actualiza cada minuto (no en segundos para no sobrecargar)
 })();
 {% endif %}
 </script>

@@ -7,6 +7,7 @@ from django.views import View
 from django.utils import timezone
 from datetime import datetime, date, timedelta
 
+from multiparking import email_utils
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 from parqueadero.models import Espacio, Piso
@@ -89,7 +90,7 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
 
         # Validar que la hora de reserva sea mayor a la hora actual
         now = timezone.now()
-        now_local = timezone.localtime(now)  # Convertir a hora local de Bogotá
+        now_local = timezone.localtime(now)  # Convierte a zona horaria de Bogotá (America/Bogota)
 
         # Si es hoy, la hora debe ser mayor a la hora actual
         if fecha_obj == date.today():
@@ -119,13 +120,16 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             return self.get(request)
 
         # Crear la reserva (sin hora de fin)
-        Reserva.objects.create(
+        nueva_reserva = Reserva.objects.create(
             resFechaReserva=fecha_inicio,
             resHoraInicio=hora_inicio_obj,
             resEstado='PENDIENTE',
             fkIdEspacio=espacio,
             fkIdVehiculo=vehiculo
         )
+
+        # Enviar correo de confirmación al cliente (en hilo separado, no bloquea)
+        email_utils.enviar_confirmacion_reserva(nueva_reserva)
 
         messages.success(request, f'Reserva creada exitosamente para {vehiculo.vehPlaca} el {fecha_inicio} a las {hora_inicio}.')
         return redirect('dashboard')

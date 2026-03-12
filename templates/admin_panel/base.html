@@ -32,31 +32,35 @@
             background-color: #0a0a14;
         }
 
+        /* Transición suave para todos los links del sidebar */
         .sidebar-link {
             transition: all 0.15s;
         }
 
+        /* Al pasar el cursor o cuando el link está activo: fondo morado suave + texto claro */
         .sidebar-link:hover,
         .sidebar-link.active {
             background: rgba(124, 58, 237, 0.15);
             color: #a78bfa;
         }
 
+        /* Borde izquierdo morado sólido para indicar la página activa */
         .sidebar-link.active {
             border-left: 3px solid #7c3aed;
         }
 
-        /* Dark dropdown options */
+        /* Fuerza fondo oscuro en las opciones del select nativo (algunos navegadores ignoran esto) */
         select option {
             background-color: #12121f;
             color: #fff;
         }
 
-        /* Dark date picker */
+        /* Activa el esquema de color oscuro para el date picker nativo del navegador */
         input[type="date"] {
             color-scheme: dark;
         }
 
+        /* Recolorea el ícono del calendario en Webkit/Chrome para que coincida con el tema */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0.7) sepia(1) saturate(3) hue-rotate(220deg);
             cursor: pointer;
@@ -275,7 +279,7 @@
     </div>
 
     <script>
-        // Clock
+        // Actualiza el reloj y la fecha en el header cada segundo
         function updateClock() {
             const now = new Date();
             const el = document.getElementById('clockDisplay');
@@ -288,7 +292,7 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Mobile Sidebar Toggle
+        // Muestra/oculta el sidebar en móvil usando clases de Tailwind (-translate-x-full = oculto)
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -296,7 +300,7 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
 
-            // Prevent body scroll when sidebar is open
+            // Bloquea el scroll del body mientras el sidebar está abierto en móvil
             if (!sidebar.classList.contains('-translate-x-full')) {
                 document.body.style.overflow = 'hidden';
             } else {
@@ -331,10 +335,12 @@
             });
         });
     </script>
-    <!-- Searchable Select Component -->
+    <!-- Componente de select con búsqueda: reemplaza los <select data-searchable> nativos
+         por un dropdown personalizado con campo de búsqueda interno -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('select[data-searchable]').forEach(function(select) {
+            // Oculta el select nativo; se reemplaza por el dropdown custom
             select.style.display = 'none';
 
             const wrapper = document.createElement('div');

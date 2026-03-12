@@ -37,12 +37,12 @@ class TarifaCreateView(AdminRequiredMixin, View):
         nombre = request.POST.get('nombre', '').strip()
         tipo_id = request.POST.get('fkIdTipoEspacio', '')
         precio_hora = request.POST.get('precioHora', '')
-        precio_hora_visitante = request.POST.get('precioHoraVisitante', '') or 0
+        precio_hora_visitante = request.POST.get('precioHoraVisitante', '') or 0  # Opcional; 0 si no se ingresa
         precio_dia = request.POST.get('precioDia', '')
         precio_mensual = request.POST.get('precioMensual', '')
         activa = 'activa' in request.POST
         fecha_inicio = request.POST.get('fechaInicio', '')
-        fecha_fin = request.POST.get('fechaFin', '') or None
+        fecha_fin = request.POST.get('fechaFin', '') or None  # Opcional; None = tarifa vigente indefinidamente
 
         ctx = {
             'active_page': 'tarifas',
@@ -66,6 +66,7 @@ class TarifaCreateView(AdminRequiredMixin, View):
             return render(request, 'admin_panel/tarifas/form.html', ctx)
 
         try:
+            # Decimal(str(...)) convierte el string de forma segura; evita errores de float con valores grandes
             for campo, valor_str in [('Precio hora', precio_hora), ('Precio día', precio_dia),
                                       ('Precio mensual', precio_mensual)]:
                 if Decimal(str(valor_str)) < 0:

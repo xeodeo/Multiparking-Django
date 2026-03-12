@@ -1,0 +1,83 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Recibo de Pago — Multiparking{% endblock %}
+
+{% block content %}
+  <!-- Título -->
+  <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#ffffff;">
+    Recibo de Pago 🧾
+  </h1>
+  <p style="margin:0 0 28px 0;font-size:15px;color:#34d399;font-weight:600;">
+    Tu pago ha sido registrado exitosamente.
+  </p>
+
+  <!-- Divider -->
+  <div style="height:1px;background:linear-gradient(90deg,transparent,#34d399,transparent);margin-bottom:28px;"></div>
+
+  <p style="margin:0 0 20px 0;font-size:15px;color:#d1d5db;line-height:1.7;">
+    Hola <strong style="color:#ffffff;">{{ usuario.usuNombreCompleto }}</strong>, aquí está el resumen de tu visita al parqueadero:
+  </p>
+
+  <!-- Monto destacado -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
+    <tr>
+      <td align="center">
+        <p style="margin:0 0 4px 0;font-size:13px;color:#6ee7b7;text-transform:uppercase;letter-spacing:1px;">Total Pagado</p>
+        <p style="margin:0;font-size:42px;font-weight:900;color:#ffffff;">${{ pago.pagMonto|floatformat:0 }}</p>
+        <p style="margin:4px 0 0 0;font-size:13px;color:#6ee7b7;">COP</p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Detalles del parqueo -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f0f1a;border-radius:12px;border:1px solid #2d2d4e;margin-bottom:28px;overflow:hidden;">
+    <tr style="background-color:#1f1f3a;">
+      <td colspan="2" style="padding:14px 20px;">
+        <span style="font-size:13px;color:#34d399;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Detalle del Servicio</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;width:45%;">
+        <span style="font-size:13px;color:#6b7280;">Vehículo</span><br>
+        <span style="font-size:15px;color:#ffffff;font-weight:700;">{{ registro.fkIdVehiculo.vehPlaca }}</span>
+      </td>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Tipo</span><br>
+        <span style="font-size:15px;color:#d1d5db;">{{ registro.fkIdVehiculo.vehTipo }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Entrada</span><br>
+        <span style="font-size:14px;color:#d1d5db;">{{ registro.parHoraEntrada|date:"d/m/Y H:i" }}</span>
+      </td>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Salida</span><br>
+        <span style="font-size:14px;color:#d1d5db;">{{ registro.parHoraSalida|date:"d/m/Y H:i" }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Espacio</span><br>
+        <span style="font-size:15px;color:#a78bfa;font-weight:700;">#{{ registro.fkIdEspacio.espNumero }} — {{ registro.fkIdEspacio.fkIdPiso.pisNombre }}</span>
+      </td>
+      <td style="padding:12px 20px;border-bottom:1px solid #1f1f3a;">
+        <span style="font-size:13px;color:#6b7280;">Método de pago</span><br>
+        <span style="font-size:15px;color:#d1d5db;">{{ pago.pagMetodo }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:12px 20px;">
+        <span style="font-size:13px;color:#6b7280;">Fecha del pago</span><br>
+        <span style="font-size:14px;color:#d1d5db;">{{ pago.pagFechaPago|date:"d/m/Y H:i" }}</span>
+      </td>
+      <td style="padding:12px 20px;">
+        <span style="font-size:13px;color:#6b7280;">Estado</span><br>
+        <span style="font-size:14px;color:#34d399;font-weight:700;">✓ PAGADO</span>
+      </td>
+    </tr>
+  </table>
+
+  <p style="margin:0;font-size:13px;color:#6b7280;text-align:center;">
+    Gracias por usar Multiparking. ¡Te esperamos pronto!
+  </p>
+{% endblock %}
