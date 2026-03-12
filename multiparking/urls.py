@@ -9,6 +9,7 @@ from usuarios.views import (
     register_view,
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioDeleteView, UsuarioToggleView,
     PasswordResetRequestView, PasswordResetConfirmView,
+    AdminTestEmailView,
 )
 from parqueadero.views import (
     AdminDashboardView, AdminDashboardDataView,
@@ -131,6 +132,9 @@ urlpatterns = [
 
     # Código QR
     path('admin-panel/qr/generar/', GenerarQRView.as_view(), name='admin_generar_qr'),
+
+    # Prueba de correos
+    path('admin-panel/test-email/', AdminTestEmailView.as_view(), name='admin_test_email'),
 
     # ── GUARDIA PANEL ────────────────────────────────────────────────────
 
