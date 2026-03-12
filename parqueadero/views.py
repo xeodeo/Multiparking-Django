@@ -861,6 +861,8 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
             pago_existente.pagEstado = 'PAGADO'
             pago_existente.save()
             monto_pagado = pago_existente.pagMonto
+            if not registro.fkIdVehiculo.es_visitante:
+                email_utils.enviar_recibo_pago(pago_existente, registro)
         else:
             # No hay pago previo (salida directa desde admin) → calcular y crear el pago ahora
             tarifa = Tarifa.objects.filter(
