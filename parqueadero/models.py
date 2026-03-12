@@ -7,7 +7,7 @@ class Piso(models.Model):
         max_length=30,
         validators=[RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', 'El nombre solo acepta letras, números y guiones')],
     )
-    pisEstado = models.BooleanField(default=True)
+    pisEstado = models.BooleanField(default=True)  # True = activo, False = desactivado (ej. en mantenimiento)
 
     class Meta:
         db_table = 'pisos'
@@ -19,6 +19,7 @@ class Piso(models.Model):
 
 
 class TipoEspacio(models.Model):
+    # Categoría del espacio: 'Carro' o 'Moto' — determina qué tarifa aplica
     nombre = models.CharField(max_length=20, unique=True)
 
     class Meta:
@@ -33,11 +34,11 @@ class TipoEspacio(models.Model):
 class Espacio(models.Model):
 
     class EstadoChoices(models.TextChoices):
-        DISPONIBLE = 'DISPONIBLE', 'Disponible'
-        OCUPADO = 'OCUPADO', 'Ocupado'
-        INACTIVO = 'INACTIVO', 'Inactivo'
+        DISPONIBLE = 'DISPONIBLE', 'Disponible'  # Libre para recibir vehículos
+        OCUPADO = 'OCUPADO', 'Ocupado'            # Hay un vehículo estacionado
+        INACTIVO = 'INACTIVO', 'Inactivo'         # Fuera de servicio (mantenimiento, etc.)
 
-    espNumero = models.CharField(max_length=10)
+    espNumero = models.CharField(max_length=10)  # Código único del puesto, ej. 'C1-01', 'M2-05'
     fkIdPiso = models.ForeignKey(
         Piso,
         on_delete=models.CASCADE,
@@ -60,7 +61,7 @@ class Espacio(models.Model):
         db_table = 'espacios'
         verbose_name = 'Espacio'
         verbose_name_plural = 'Espacios'
-        unique_together = [('fkIdPiso', 'espNumero')]
+        unique_together = [('fkIdPiso', 'espNumero')]  # El mismo número no puede repetirse dentro de un piso
         indexes = [
             models.Index(fields=['espNumero'], name='idx_espacio_numero'),
         ]
@@ -70,8 +71,8 @@ class Espacio(models.Model):
 
 
 class InventarioParqueo(models.Model):
-    parHoraEntrada = models.DateTimeField(auto_now_add=True)
-    parHoraSalida = models.DateTimeField(null=True, blank=True)
+    parHoraEntrada = models.DateTimeField(auto_now_add=True)              # Se asigna automáticamente al crear el registro
+    parHoraSalida = models.DateTimeField(null=True, blank=True)            # NULL = vehículo aún estacionado; con valor = ya salió
     fkIdVehiculo = models.ForeignKey(
         'vehiculos.Vehiculo',
         on_delete=models.CASCADE,
@@ -90,6 +91,7 @@ class InventarioParqueo(models.Model):
         verbose_name = 'Inventario Parqueo'
         verbose_name_plural = 'Inventario Parqueo'
         indexes = [
+            # Índice en parHoraSalida para filtrar eficientemente los vehículos activos (parHoraSalida IS NULL)
             models.Index(fields=['parHoraSalida'], name='idx_parqueo_estado'),
         ]
 

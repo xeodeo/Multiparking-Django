@@ -570,7 +570,8 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // ── Placa auto-format ──
+    // ── Formateo automático de placa: fuerza mayúsculas y agrega el guion tras el 3er caracter ──
+    // Ej: "abc123" → "ABC-123"
     (function(){
         const el = document.getElementById('modalPlaca');
         if (!el) return;
@@ -583,7 +584,8 @@
         });
     })();
 
-    // ── Piso Tabs ──
+    // ── Tabs de pisos: oculta todos los paneles y muestra solo el seleccionado ──
+    // También resalta el tab activo con borde morado
     function showPiso(id) {
         document.querySelectorAll('.piso-content').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(el => {
@@ -599,13 +601,14 @@
         }
     }
 
-    // ── Space Click Handler ──
+    // ── Click en un espacio del mapa: decide qué modal abrir según el estado ──
+    // Prioridad: pago pendiente > reservado > disponible > ocupado
     function handleSpaceClick(id, num, estado, pisoNombre, reservaId, pagoPendiente) {
         if(pagoPendiente) {
-            // Espacio con pago pendiente en efectivo - abrir modal de salida
+            // Espacio con pago pendiente en efectivo — abrir modal de salida para cobrar
             openExitModal(id, num);
         } else if(reservaId) {
-            // Espacio reservado - mostrar detalles de la reserva
+            // Espacio reservado — mostrar detalles de la reserva (sin acción de ingreso)
             openReservaModal(id, num, pisoNombre, reservaId);
         } else if(estado === 'DISPONIBLE') {
             openEntryModal(id, num, pisoNombre);
@@ -722,12 +725,13 @@
             });
     }
 
-    // ── Exit Modal (con cálculo dinámico en tiempo real) ──
+    // ── Modal de Salida con timer en tiempo real ──
+    // Variables globales del timer para poder limpiarlas al cerrar el modal
     let exitTimerInterval = null;
-    let exitEntradaDate = null;
-    let exitPrecioHora = 0;
-    let exitTienePagoPendiente = false;
-    let exitMontoPendiente = 0;
+    let exitEntradaDate = null;    // Fecha/hora de entrada del vehículo
+    let exitPrecioHora = 0;        // Tarifa en COP/hora (0 si ya tiene pago pendiente)
+    let exitTienePagoPendiente = false; // true si el cliente ya pagó online y solo falta confirmar
+    let exitMontoPendiente = 0;    // Monto ya cobrado online (si tiene pago pendiente)
 
     function calcularDuracionYCosto() {
         if (!exitEntradaDate || exitTienePagoPendiente) return;
@@ -852,12 +856,13 @@
         document.getElementById('exitModal').classList.remove('flex');
     }
 
-    // ── Auto-refresh ──
+    // ── Auto-refresh cada 10 segundos ──
+    // Actualiza KPIs y colores del mapa de espacios sin recargar la página completa
     let autoRefreshInterval = null;
     let activeTabPisoId = null;
 
     function startAutoRefresh() {
-        autoRefreshInterval = setInterval(refreshDashboard, 10000);
+        autoRefreshInterval = setInterval(refreshDashboard, 10000); // cada 10s
     }
 
     function stopAutoRefresh() {
@@ -865,7 +870,7 @@
     }
 
     function refreshDashboard() {
-        // No refrescar si hay un modal abierto
+        // No refrescar si hay un modal abierto — evita interrumpir al operador
         if (!document.getElementById('entryModal').classList.contains('hidden') ||
             !document.getElementById('exitModal').classList.contains('hidden') ||
             !document.getElementById('reservaModal').classList.contains('hidden')) {
@@ -973,17 +978,18 @@
         // Iniciar auto-refresh
         startAutoRefresh();
 
-        // Pausar si la pestaña no está visible
+        // Pausar el auto-refresh cuando el usuario cambia de pestaña del navegador
+        // para no hacer peticiones innecesarias en segundo plano
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopAutoRefresh();
             } else {
-                refreshDashboard();
+                refreshDashboard(); // Refresco inmediato al volver
                 startAutoRefresh();
             }
         });
 
-        // Charts
+        // Gráfico de línea: Tendencias de ocupación del día (labels y data vienen del servidor)
         const ctxOcc = document.getElementById('occupancyChart');
         if(ctxOcc) {
             new Chart(ctxOcc, {
@@ -1011,6 +1017,7 @@
             });
         }
 
+        // Gráfico de barras: Ingresos últimos 7 días en COP
         const ctxInc = document.getElementById('incomeChart');
         if(ctxInc) {
             new Chart(ctxInc, {

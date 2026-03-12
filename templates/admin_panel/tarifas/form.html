@@ -156,6 +156,8 @@
 
 <script>
 (function(){
+    // Validación en tiempo real de todos los campos de precio:
+    // muestra error si el valor ingresado es negativo
     const precios = ['precioHora', 'precioHoraVisitante', 'precioDia', 'precioMensual'];
     const fechaInicio = document.getElementById('fechaInicio');
     const fechaFin = document.getElementById('fechaFin');
@@ -181,7 +183,7 @@
         });
     });
 
-    // Fecha fin >= fecha inicio
+    // Validación: fecha de fin debe ser >= fecha de inicio (comparación de strings ISO YYYY-MM-DD funciona correctamente)
     if (fechaFin) {
         const hintFecha = document.createElement('p');
         hintFecha.className = 'text-xs text-red-400 mt-1 hidden';

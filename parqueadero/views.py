@@ -10,6 +10,7 @@ from django.views import View
 from django.utils import timezone
 import json
 
+from multiparking import email_utils
 from reservas.models import Reserva
 from usuarios.mixins import AdminRequiredMixin
 from usuarios.models import Usuario
@@ -107,7 +108,7 @@ class AdminDashboardView(AdminRequiredMixin, View):
             pagEstado='PAGADO',
         )
 
-        # Acumular montos por día en memoria
+        # Acumula montos por día en un dict para no hacer 7 queries separados
         ingresos_por_dia = {}
         for d in range(7):
             dia = hace_7_dias + timedelta(days=d)
@@ -132,7 +133,7 @@ class AdminDashboardView(AdminRequiredMixin, View):
         ocupacion_data = []
         labels_horas = []
         
-        # Optimización: Traer todos los registros del día y contar en Python
+        # Optimización: trae todos los registros del día en una sola query y cuenta por hora en Python (evita 17 queries)
         registros_hoy = InventarioParqueo.objects.filter(
             parHoraEntrada__range=(
                 timezone.make_aware(timezone.datetime.combine(hoy_local, timezone.datetime.min.time())),
@@ -572,8 +573,8 @@ class EspacioRangeCreateView(AdminRequiredMixin, View):
 
         creados = 0
         for i in range(inicio_n, fin_n + 1):
-            numero = f'{prefijo}{i:02d}'
-            if not Espacio.objects.filter(espNumero=numero, fkIdPiso_id=piso_id).exists():
+            numero = f'{prefijo}{i:02d}'  # Formato con cero inicial: A-01, A-02, ..., A-10, etc.
+            if not Espacio.objects.filter(espNumero=numero, fkIdPiso_id=piso_id).exists():  # Omite los que ya existen
                 Espacio.objects.create(
                     espNumero=numero,
                     fkIdPiso_id=piso_id,
@@ -618,10 +619,10 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
         # 2. Buscar/Crear Vehículo
         vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
         if not vehiculo:
-            # Crear como visitante
+            # Placa nueva → crea el vehículo como visitante (sin usuario asociado)
             vehiculo = Vehiculo.objects.create(
                 vehPlaca=placa,
-                vehTipo='Carro',  # Tipo por defecto
+                vehTipo='Carro',  # Tipo por defecto; se puede cambiar después
                 nombre_contacto=nombre,
                 telefono_contacto=telefono
             )
@@ -772,7 +773,7 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
 
             usuario = vehiculo.fkIdUsuario
 
-            # Datos crudos para cálculo dinámico en JS
+            # entrada_iso y precio_hora se envían al JS para calcular el costo en tiempo real (timer vivo)
             precio_hora_num = precio_hora if tarifa else 0
             entrada_iso = timezone.localtime(entrada).isoformat()
 
@@ -855,12 +856,12 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
         ).first()
 
         if pago_existente:
-            # Ya hay pago del cliente (con cupón aplicado si lo usó) → confirmar
+            # El cliente ya generó su cobro desde la app (posiblemente con cupón aplicado) → solo confirmar
             pago_existente.pagEstado = 'PAGADO'
             pago_existente.save()
             monto_pagado = pago_existente.pagMonto
         else:
-            # No hay pago previo → calcular y crear uno nuevo
+            # No hay pago previo (salida directa desde admin) → calcular y crear el pago ahora
             tarifa = Tarifa.objects.filter(
                 fkIdTipoEspacio=espacio.fkIdTipoEspacio,
                 activa=True
@@ -878,12 +879,16 @@ class RegistrarSalidaView(AdminRequiredMixin, View):
                 precio_hora = tarifa.precioHoraVisitante if es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
                 monto_pagado = math.ceil((float(precio_hora) / 60) * total_minutos)
 
-                Pago.objects.create(
+                nuevo_pago = Pago.objects.create(
                     pagMonto=monto_pagado,
                     pagMetodo='EFECTIVO',
                     pagEstado='PAGADO',
                     fkIdParqueo=registro
                 )
+
+                # Enviar recibo de pago si el vehículo pertenece a un usuario registrado
+                if not registro.fkIdVehiculo.es_visitante:
+                    email_utils.enviar_recibo_pago(nuevo_pago, registro)
 
         # 5. Actualizar Espacio
         espacio.espEstado = 'DISPONIBLE'
@@ -917,7 +922,7 @@ class InventarioListView(AdminRequiredMixin, View):
                 Q(fkIdEspacio__espNumero__icontains=query)
             )
 
-        # Obtener pago si existe para cada registro
+        # Adjunta el pago PAGADO de cada registro para mostrarlo en la tabla
         for r in registros:
             r.pago_monto = r.pagos.filter(pagEstado='PAGADO').first()
 

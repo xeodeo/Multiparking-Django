@@ -18,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-django.setup()
+django.setup()  # Inicializa Django antes de importar modelos
 
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
@@ -36,6 +36,7 @@ print("=" * 60)
 
 # ── 1. LIMPIAR TODO ─────────────────────────────────────────
 print("\n[1/11] Limpiando base de datos...")
+# Se elimina en orden para respetar las restricciones de FK (dependientes primero)
 CuponAplicado.objects.all().delete()
 Cupon.objects.all().delete()
 Reserva.objects.all().delete()
@@ -116,13 +117,14 @@ pisos = []
 for nombre, estado in pisos_config:
     piso = Piso.objects.create(pisNombre=nombre, pisEstado=estado)
     pisos.append(piso)
-    estado_txt = "activo" if estado else "DESACTIVADO"
+    estado_txt = "activo" if estado else "DESACTIVADO"  # Piso 4 queda desactivado para simular mantenimiento
     print(f"  [OK] {nombre} ({estado_txt})")
 
 # ── 5. ESPACIOS ─────────────────────────────────────────────
 print("\n[5/11] Creando espacios...")
 
 espacios_config = [
+    # (piso_index, prefijo_numeración, tipo_espacio, cantidad)
     (0, 'C1', tipo_carro, 15),   # Piso 1: 15 carros
     (0, 'M1', tipo_moto, 10),    # Piso 1: 10 motos
     (1, 'C2', tipo_carro, 20),   # Piso 2: 20 carros
@@ -132,6 +134,7 @@ espacios_config = [
 ]
 
 total_espacios = 0
+# Genera espacios numerados tipo C1-01, C1-02, etc. — el Piso 4 (mantenimiento) no tiene espacios asignados
 for piso_idx, prefijo, tipo, cantidad in espacios_config:
     for i in range(1, cantidad + 1):
         Espacio.objects.create(
@@ -203,12 +206,12 @@ print("  [OK] Tarifa Motos 2025 (DESACTIVADA)")
 print("\n[7/11] Creando vehiculos...")
 
 vehiculos_demo = [
-    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
-    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
-    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
-    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
-    ('PQR678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
+    ('ABC-123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
+    ('DEF-456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
+    ('GHI-789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
+    ('JKL-012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('MNO-345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('PQR-678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
 ]
 
 vehiculos = []
@@ -305,12 +308,13 @@ for idx in range(min(len(espacios_disponibles), len(vehiculos_a_parquear))):
     espacio = espacios_disponibles[idx]
     vehiculo = vehiculos_a_parquear[idx]
 
-    hora_entrada = timezone.now() - timedelta(hours=(idx + 1))
+    hora_entrada = timezone.now() - timedelta(hours=(idx + 1))  # Cada vehículo lleva una hora más (1h, 2h, 3h...)
     registro = InventarioParqueo.objects.create(
         fkIdVehiculo=vehiculo,
         fkIdEspacio=espacio,
-        parHoraSalida=None,
+        parHoraSalida=None,  # parHoraSalida=None indica que el vehículo sigue estacionado
     )
+    # parHoraEntrada tiene auto_now_add=True; se sobreescribe manualmente con .update()
     InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada)
 
     espacio.espEstado = 'OCUPADO'
@@ -319,7 +323,7 @@ for idx in range(min(len(espacios_disponibles), len(vehiculos_a_parquear))):
 
 print(f"  [OK] {parqueados} vehiculos estacionados actualmente")
 
-# Marcar algunos espacios como INACTIVOS (mantenimiento)
+# Marca algunos espacios como INACTIVOS para simular puestos en mantenimiento
 espacios_inactivar = list(Espacio.objects.filter(espEstado='DISPONIBLE')[10:15])
 for espacio in espacios_inactivar:
     espacio.espEstado = 'INACTIVO'
@@ -331,6 +335,7 @@ print(f"  [OK] {len(espacios_inactivar)} espacios en mantenimiento (INACTIVO)")
 print("\n[10/11] Creando reservas...")
 
 reservas_data = [
+    # (fecha, hora_inicio, hora_fin, estado, vehiculo)
     (hoy, time(14, 0), time(18, 0), 'CONFIRMADA', vehiculos[0]),
     (hoy, time(10, 0), time(12, 0), 'PENDIENTE', vehiculos[1]),
     (hoy + timedelta(days=1), time(8, 0), time(17, 0), 'CONFIRMADA', vehiculos[2]),
@@ -367,32 +372,36 @@ if tarifa:
     for dia_offset in range(5):
         dia_fecha = hoy_local - timedelta(days=dia_offset)
 
-        for i in range(3):
+        for i in range(3):  # 3 pagos por día
             vehiculo = vehiculos[i % len(vehiculos)]
             espacio = Espacio.objects.filter(espEstado='DISPONIBLE').first()
 
             if not espacio:
+                # Si no hay disponibles, usar cualquiera (solo para crear el registro histórico)
                 espacio = Espacio.objects.first()
 
             if not espacio:
                 break
 
-            hora_base = 10 + (i * 2)
+            hora_base = 10 + (i * 2)  # Escalonado: 10h, 12h, 14h para evitar solapamiento
 
+            # Se construye la fecha+hora como naive y luego se hace aware con la zona horaria del proyecto
             hora_entrada_naive = datetime(dia_fecha.year, dia_fecha.month, dia_fecha.day, hora_base, 0, 0)
             hora_salida_naive = datetime(dia_fecha.year, dia_fecha.month, dia_fecha.day, hora_base + 3, 0, 0)
 
             hora_entrada_dt = timezone.make_aware(hora_entrada_naive)
             hora_salida_dt = timezone.make_aware(hora_salida_naive)
 
+            # parHoraEntrada tiene auto_now_add=True; se sobreescribe manualmente con .update()
             registro = InventarioParqueo.objects.create(
                 fkIdVehiculo=vehiculo, fkIdEspacio=espacio,
                 parHoraSalida=hora_salida_dt,
             )
             InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada_dt)
 
-            monto = float(tarifa.precioHora) * 3
+            monto = float(tarifa.precioHora) * 3  # Monto fijo de 3 horas según la tarifa activa
 
+            # pagFechaPago también tiene auto_now_add=True; se sobreescribe manualmente
             pago = Pago.objects.create(
                 pagMonto=monto, pagMetodo='EFECTIVO',
                 pagEstado='PAGADO', fkIdParqueo=registro,

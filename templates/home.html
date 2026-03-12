@@ -294,6 +294,7 @@
 
 {% block extra_js %}
 <script>
+// Muestra un modal (añade 'flex', quita 'hidden') y bloquea el scroll del body
 function openModal(id) {
     const modal = document.getElementById(id);
     modal.classList.remove('hidden');
@@ -301,6 +302,7 @@ function openModal(id) {
     document.body.style.overflow = 'hidden';
 }
 
+// Oculta el modal y limpia todos los mensajes de error/éxito que pueda tener adentro
 function closeModal(id) {
     const modal = document.getElementById(id);
     modal.classList.add('hidden');
@@ -311,6 +313,7 @@ function closeModal(id) {
     modal.querySelectorAll('[id$="Success"]').forEach(e => { e.classList.add('hidden'); e.textContent = ''; });
 }
 
+// Alterna la visibilidad de un campo de contraseña entre texto y puntos
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
     const open = btn.querySelector('.eye-open');
@@ -326,19 +329,20 @@ function togglePassword(inputId, btn) {
     }
 }
 
-// Cerrar con Escape
+// Cerrar cualquier modal abierto con la tecla Escape
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         document.querySelectorAll('.fixed.z-50:not(.hidden)').forEach(m => closeModal(m.id));
     }
 });
 
-// CSRF helper
+// Obtiene el token CSRF del formulario para enviarlo en peticiones AJAX
 function getCSRF() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-// LOGIN AJAX
+// LOGIN AJAX — envía las credenciales a /login/ sin recargar la página
+// Si ok=true, redirige al dashboard; si hay error, muestra el mensaje en el modal
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -373,7 +377,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// REGISTER AJAX
+// REGISTER AJAX — envía el formulario a /register/; si ok=true cierra el modal
+// de registro y abre el de login automáticamente después de 1.5 segundos
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('registerBtn');
@@ -415,6 +420,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 });
 
 // ── Validación en tiempo real: modal de registro ──
+// Para cada campo con regla definida: agrega un hint de error rojo debajo del input
+// y lo muestra cuando el valor no cumple la expresión regular
 (function(){
     const rules = {
         regDocumento: { re: /^[0-9]+$/, msg: 'Solo números', max: 15 },
@@ -429,7 +436,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         hint.className = 'text-xs text-red-400 mt-1 hidden';
         el.parentNode.appendChild(hint);
         el.addEventListener('input', function(){
-            // Forzar límite de caracteres
+            // Forzar límite de caracteres (equivale al maxlength pero garantizado por JS)
             if (this.value.length > rules[id].max) {
                 this.value = this.value.slice(0, rules[id].max);
             }

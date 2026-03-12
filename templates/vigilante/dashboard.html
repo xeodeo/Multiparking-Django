@@ -3,9 +3,12 @@
 
 {% block extra_head %}
 <style>
+    /* Tab activo del mapa de pisos */
     .tab-btn.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+    /* Solo muestra el contenido del piso que tiene la clase active */
     .piso-content { display: none; }
     .piso-content.active { display: block; }
+    /* Animación del punto pulsante en espacios con pago pendiente */
     @keyframes ping2 { 75%,100%{transform:scale(1.5);opacity:0;} }
     .animate-ping2 { animation: ping2 1s cubic-bezier(0,0,.2,1) infinite; }
 </style>
@@ -98,7 +101,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
                 </svg>
                 Solicitudes de Entrada
-                <span class="bg-violet-900/50 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_entrada|length }}</span>
+                <span id="badge-entradas" class="bg-violet-900/50 text-violet-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_entrada|length }}</span>
             </h2>
             <button onclick="document.getElementById('modal-ingreso-rapido').classList.remove('hidden')"
                 class="text-xs bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
@@ -109,7 +112,8 @@
             </button>
         </div>
 
-        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+        <!-- Lista de reservas del día con scroll; se actualiza vía auto-refresh -->
+        <div id="lista-entradas" class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
             {% for reserva in solicitudes_entrada %}
             <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -173,11 +177,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
                 </svg>
                 Solicitudes de Salida
-                <span class="bg-yellow-900/50 text-yellow-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_salida|length }}</span>
+                <span id="badge-salidas" class="bg-yellow-900/50 text-yellow-300 text-xs px-2 py-0.5 rounded-full font-medium">{{ solicitudes_salida|length }}</span>
             </h2>
         </div>
 
-        <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+        <!-- Lista de vehículos con pago en efectivo pendiente; se actualiza vía auto-refresh -->
+        <div id="lista-salidas" class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
             {% for reg in solicitudes_salida %}
             <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -283,7 +288,9 @@
         {% if piso.espacios_list %}
         <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5 espacios-grid">
             {% for espacio in piso.espacios_list %}
+            <!-- Cuadrito del espacio: color según estado -->
             <div class="relative group">
+                <!-- amarillo=pago pendiente, naranja=reservado próximo, verde=libre, rojo=ocupado, gris=inactivo -->
                 <div data-espacio-id="{{ espacio.pk }}"
                     onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {{ espacio.pago_pendiente|yesno:'true,false' }})"
                     class="aspect-square rounded-lg flex items-center justify-center text-xs font-bold border transition-transform hover:scale-105 cursor-pointer
@@ -295,6 +302,7 @@
                     title="Espacio {{ espacio.espNumero }}{% if espacio.pago_pendiente %} — Salida pendiente{% elif espacio.reserva_proxima %} — Reservado{% endif %}">
                     {{ espacio.espNumero }}
                 </div>
+                <!-- Punto pulsante encima del cuadrito cuando hay pago en efectivo pendiente -->
                 {% if espacio.pago_pendiente %}
                 <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping2"></div>
                 {% endif %}
@@ -325,10 +333,10 @@
                 <div>
                     <label class="block text-xs text-mp-muted mb-1.5 font-medium">Placa del Vehículo *</label>
                     <div class="flex gap-2">
-                        <input type="text" name="placa" id="placa-ingreso" placeholder="ABC123"
+                        <input type="text" name="placa" id="placa-ingreso" placeholder="ABC-123"
                             maxlength="8" pattern="[A-Za-z0-9\-]+"
                             class="flex-1 bg-black/30 border border-mp-border rounded-xl px-4 py-2.5 text-sm uppercase focus:outline-none focus:border-mp-purple placeholder-mp-muted"
-                            oninput="this.value=this.value.toUpperCase()" required>
+                            required>
                         <button type="button" onclick="buscarVehiculoModal()"
                             class="bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light border border-mp-purple/30 px-4 rounded-xl text-sm transition">
                             Buscar
@@ -455,7 +463,10 @@
 
 {% block extra_js %}
 <script>
+const CSRF_TOKEN = '{{ csrf_token }}';
+
 // ─── TABS ─────────────────────────────────────────────────────────
+// Muestra el contenido del piso seleccionado y resalta su tab
 function showPiso(id) {
     document.querySelectorAll('.piso-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -465,7 +476,7 @@ function showPiso(id) {
     const btn = document.getElementById(btnId);
     if (btn) btn.classList.add('active');
 }
-// Activar primer piso
+// Activa el primer tab al cargar la página (IIFE para no contaminar el scope global)
 (function() {
     const first = document.querySelector('.piso-content');
     const firstBtn = document.querySelector('.tab-btn');
@@ -473,7 +484,23 @@ function showPiso(id) {
     if (firstBtn) { firstBtn.classList.add('active'); }
 })();
 
+// ─── PLACA AUTO-FORMAT ─────────────────────────────────────────────
+// Formatea automáticamente la placa al escribir: convierte a mayúsculas e inserta guión tras 3 caracteres (ej: ABC → ABC-, ABC123 → ABC-123)
+(function() {
+    const el = document.getElementById('placa-ingreso');
+    if (!el) return;
+    el.addEventListener('input', function() {
+        const raw = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+        this.value = raw.length > 3 ? raw.slice(0, 3) + '-' + raw.slice(3) : raw;
+    });
+    // Enter en el campo de placa dispara la búsqueda automáticamente
+    el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); buscarVehiculoModal(); }
+    });
+})();
+
 // ─── BÚSQUEDA VEHÍCULO EN MODAL ───────────────────────────────────
+// Consulta el endpoint AJAX para auto-llenar nombre y teléfono según la placa ingresada
 function buscarVehiculoModal() {
     const placa = document.getElementById('placa-ingreso').value.trim();
     if (!placa) return;
@@ -483,14 +510,17 @@ function buscarVehiculoModal() {
             const info = document.getElementById('info-vehiculo');
             if (data.found) {
                 info.classList.remove('hidden');
+                // Distingue entre visitante (sin cuenta) y usuario registrado
                 if (data.es_visitante) {
                     info.textContent = 'Visitante encontrado: ' + (data.nombre || 'Sin nombre');
                 } else {
                     info.textContent = 'Usuario registrado: ' + data.nombre;
                 }
+                // Auto-rellena los campos opcionales si hay datos disponibles
                 if (data.nombre) document.getElementById('nombre-ingreso').value = data.nombre;
                 if (data.telefono) document.getElementById('telefono-ingreso').value = data.telefono;
             } else {
+                // El vehículo no existe; se creará nuevo como visitante al enviar el formulario
                 info.classList.remove('hidden');
                 info.className = 'bg-blue-900/20 border border-blue-700/30 rounded-xl p-3 text-sm text-blue-300';
                 info.textContent = 'Vehículo no registrado. Se creará como visitante.';
@@ -499,9 +529,12 @@ function buscarVehiculoModal() {
 }
 
 // ─── DETALLE ESPACIO ──────────────────────────────────────────────
+// Abre el modal con el detalle del vehículo al hacer clic en un cuadrito del mapa
 function handleSpaceClick(espacioId, numero, estado, pisoNombre, pagoPendiente) {
+    // Los espacios inactivos no tienen detalle
     if (estado === 'INACTIVO') return;
     document.getElementById('det-titulo').textContent = `${pisoNombre} — Espacio ${numero}`;
+    // Resetea el modal a estado de carga
     document.getElementById('det-loader').classList.remove('hidden');
     document.getElementById('det-contenido').classList.add('hidden');
     document.getElementById('det-acciones').classList.add('hidden');
@@ -509,16 +542,19 @@ function handleSpaceClick(espacioId, numero, estado, pisoNombre, pagoPendiente) 
     document.getElementById('modal-detalle').classList.remove('hidden');
 
     if (estado === 'DISPONIBLE') {
+        // Para espacios libres no hay nada que consultar
         document.getElementById('det-loader').classList.add('hidden');
         document.getElementById('det-disponible').classList.remove('hidden');
         return;
     }
 
+    // Consulta el backend para obtener datos del vehículo estacionado
     fetch(`{% url 'guardia_detalle_ocupacion' %}?espacio_id=${espacioId}`)
         .then(r => r.json())
         .then(data => {
             document.getElementById('det-loader').classList.add('hidden');
             if (!data.found) { cerrarDetalle(); return; }
+            // Rellena los campos del modal con los datos recibidos
             document.getElementById('det-placa').textContent = data.placa;
             document.getElementById('det-tipo').textContent = data.tipo_vehiculo + ' / ' + data.tipo_espacio;
             document.getElementById('det-cliente').textContent = data.cliente;
@@ -526,16 +562,18 @@ function handleSpaceClick(espacioId, numero, estado, pisoNombre, pagoPendiente) 
             document.getElementById('det-entrada').textContent = data.hora_entrada;
             document.getElementById('det-tarifa').textContent = data.tarifa_info;
             document.getElementById('det-total').textContent = data.total_pagar;
+            // El registro_id se usa en los formularios de confirmar pago y autorizar salida
             document.getElementById('det-registro-id').value = data.registro_id;
             document.getElementById('det-registro-id-salida').value = data.registro_id;
 
-            // Timer
+            // Si hay datos de tarifa, inicia el timer en vivo; si no, muestra la duración fija
             if (data.entrada_iso && data.precio_hora) {
                 startTimer(data.entrada_iso, data.precio_hora);
             } else {
                 document.getElementById('det-duracion').textContent = data.duracion;
             }
 
+            // Muestra u oculta el aviso y botón de pago pendiente
             if (data.tiene_pago_pendiente) {
                 document.getElementById('det-pago-pendiente-aviso').classList.remove('hidden');
                 document.getElementById('form-confirmar-pago').classList.remove('hidden');
@@ -550,12 +588,14 @@ function handleSpaceClick(espacioId, numero, estado, pisoNombre, pagoPendiente) 
 }
 
 let timerInterval = null;
+// Inicia un contador en vivo que actualiza duración y costo cada 30 segundos
 function startTimer(entradaIso, precioHora) {
-    clearInterval(timerInterval);
+    clearInterval(timerInterval); // Cancela cualquier timer previo
     function update() {
         const now = new Date();
         const entrada = new Date(entradaIso);
         const diffMs = now - entrada;
+        // Minutos redondeados hacia arriba, mínimo 1
         const totalMin = Math.max(Math.ceil(diffMs / 60000), 1);
         const dias = Math.floor(totalMin / 1440);
         const horas = Math.floor((totalMin % 1440) / 60);
@@ -565,15 +605,16 @@ function startTimer(entradaIso, precioHora) {
         if (horas) str += horas + 'h ';
         str += mins + 'm';
         document.getElementById('det-duracion').textContent = str;
+        // Costo: (precio/hora ÷ 60) × minutos, redondeado al siguiente múltiplo de 100 COP
         const costo = Math.ceil((precioHora / 60) * totalMin / 100) * 100;
         document.getElementById('det-total').textContent = '$' + costo.toLocaleString('es-CO') + ' COP';
     }
-    update();
-    timerInterval = setInterval(update, 30000);
+    update(); // Ejecución inmediata al abrir el modal
+    timerInterval = setInterval(update, 30000); // Actualiza cada 30 segundos
 }
 
 function cerrarDetalle() {
-    clearInterval(timerInterval);
+    clearInterval(timerInterval); // Detiene el timer al cerrar el modal
     document.getElementById('modal-detalle').classList.add('hidden');
 }
 
@@ -585,11 +626,95 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// ─── AUTO-REFRESH (KPIs + Mapa de Pisos) ─────────────────────────
+// ─── AUTO-REFRESH (KPIs + Solicitudes + Mapa de Pisos) ───────────
+// Se ejecuta cada 10 segundos para mantener los datos actualizados sin recargar la página
 let autoRefreshInterval = null;
 
+// ── Renderiza una tarjeta de Solicitud de Salida (HTML dinámico para el auto-refresh) ──
+function renderCardSalida(reg) {
+    const badge = reg.pago_pendiente
+        ? `<span class="inline-flex mt-1 text-[11px] bg-yellow-900/60 text-yellow-300 border border-yellow-600/30 px-2 py-0.5 rounded-full font-medium">Efectivo Pendiente</span>`
+        : `<span class="inline-flex mt-1 text-[11px] bg-green-900/60 text-green-300 border border-green-600/30 px-2 py-0.5 rounded-full font-medium">Pagado</span>`;
+
+    const btnPago = reg.pago_pendiente ? `
+        <form method="post" action="{% url 'guardia_confirmar_pago' %}" class="flex-1">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+            <input type="hidden" name="registro_id" value="${reg.pk}">
+            <button type="submit" class="w-full bg-mp-card border border-mp-border hover:border-yellow-500/50 hover:bg-yellow-900/20 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+                Confirmar Pago
+            </button>
+        </form>` : '';
+
+    return `
+    <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+                <p class="font-bold text-lg tracking-wider">${reg.placa}</p>
+                <p class="text-sm text-mp-muted">${reg.nombre}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <p class="text-xs text-mp-muted">${reg.piso} - #${reg.espacio}</p>
+                <p class="font-bold text-white">${reg.costo} COP</p>
+                ${badge}
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-mp-muted mb-3">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            ${reg.hora}
+        </div>
+        <div class="flex gap-2">
+            ${btnPago}
+            <form method="post" action="{% url 'guardia_registrar_salida' %}" class="flex-1">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+                <input type="hidden" name="registro_id" value="${reg.pk}">
+                <button type="submit" class="w-full bg-mp-card border border-mp-border hover:border-green-500/50 hover:bg-green-900/20 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Autorizar Salida
+                </button>
+            </form>
+        </div>
+    </div>`;
+}
+
+// ── Renderiza una tarjeta de Solicitud de Entrada (HTML dinámico para el auto-refresh) ──
+function renderCardEntrada(r) {
+    return `
+    <div class="bg-black/20 border border-mp-border/60 rounded-xl p-4">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+                <p class="font-bold text-lg tracking-wider">${r.placa}</p>
+                <p class="text-sm text-mp-muted">${r.nombre}</p>
+            </div>
+            <span class="text-xs bg-violet-900/40 text-violet-300 border border-violet-700/30 px-2.5 py-1 rounded-lg whitespace-nowrap font-medium">${r.piso}</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-mp-muted mb-3">
+            <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                ${r.hora}
+            </span>
+            <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/></svg>
+                ${r.ref}
+            </span>
+            <span class="font-medium text-white">Esp. ${r.espacio}</span>
+        </div>
+        <form method="post" action="{% url 'guardia_registrar_ingreso' %}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+            <input type="hidden" name="reserva_id" value="${r.pk}">
+            <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Verificar y Permitir Entrada
+            </button>
+        </form>
+    </div>`;
+}
+
+const EMPTY_ENTRADA = `<div class="text-center py-10 text-mp-muted"><p class="text-sm">No hay reservas pendientes para hoy</p></div>`;
+const EMPTY_SALIDA  = `<div class="text-center py-10 text-mp-muted"><p class="text-sm">No hay vehículos con salida pendiente</p></div>`;
+
 function refreshDashboard() {
-    // No refrescar si hay un modal abierto
+    // No refrescar si hay un modal abierto (evita actualizar mientras el guardia usa la UI)
     if (!document.getElementById('modal-detalle').classList.contains('hidden') ||
         !document.getElementById('modal-ingreso-rapido').classList.contains('hidden')) {
         return;
@@ -598,24 +723,49 @@ function refreshDashboard() {
     fetch('{% url "guardia_data" %}')
         .then(r => r.json())
         .then(d => {
-            // Actualizar KPIs
+            // Actualizar contadores del encabezado
             document.getElementById('kpi-entradas').textContent = d.entradas_pendientes;
             document.getElementById('kpi-salidas').textContent = d.salidas_pendientes;
             document.getElementById('kpi-efectivo').textContent = d.efectivo_pendiente;
             document.getElementById('kpi-activos').textContent = d.activos_hoy;
 
+            // Reemplaza el contenido de la lista de salidas con las tarjetas actualizadas
+            if (d.solicitudes_salida !== undefined) {
+                const cont = document.getElementById('lista-salidas');
+                if (cont) {
+                    cont.innerHTML = d.solicitudes_salida.length
+                        ? d.solicitudes_salida.map(renderCardSalida).join('')
+                        : EMPTY_SALIDA;
+                }
+                // Actualiza el badge con el conteo actual
+                const badge = document.getElementById('badge-salidas');
+                if (badge) badge.textContent = d.solicitudes_salida.length;
+            }
+
+            // Reemplaza el contenido de la lista de entradas con las tarjetas actualizadas
+            if (d.solicitudes_entrada !== undefined) {
+                const cont = document.getElementById('lista-entradas');
+                if (cont) {
+                    cont.innerHTML = d.solicitudes_entrada.length
+                        ? d.solicitudes_entrada.map(renderCardEntrada).join('')
+                        : EMPTY_ENTRADA;
+                }
+                const badge = document.getElementById('badge-entradas');
+                if (badge) badge.textContent = d.solicitudes_entrada.length;
+            }
+
             if (!d.pisos) return;
 
-            // Actualizar mapa de pisos
+            // Actualizar mapa de pisos espacio por espacio (sin re-renderizar el DOM completo)
             d.pisos.forEach(piso => {
-                // Badge del tab
+                // Badge con número de espacios ocupados en el tab del piso
                 const tabBtn = document.getElementById('btn-piso-' + piso.pk);
                 if (tabBtn) {
                     const badge = tabBtn.querySelector('span');
                     if (badge) badge.textContent = piso.ocupados_espacios;
                 }
 
-                // Stats del piso
+                // Línea de estadísticas del piso
                 const pisoDiv = document.getElementById('piso-' + piso.pk);
                 if (!pisoDiv) return;
                 const statsP = pisoDiv.querySelector('.piso-stats');
@@ -623,10 +773,10 @@ function refreshDashboard() {
                     statsP.textContent = `${piso.ocupados_espacios} ocupados de ${piso.total_espacios} (${piso.ocupacion_pct}% ocupación)`;
                 }
 
-                // Grid de espacios
                 const grid = pisoDiv.querySelector('.espacios-grid');
                 if (!grid) return;
 
+                // Actualiza el color y evento de cada cuadrito individualmente
                 piso.espacios.forEach(esp => {
                     const spaceEl = grid.querySelector(`[data-espacio-id="${esp.pk}"]`);
                     if (!spaceEl) return;
@@ -638,6 +788,7 @@ function refreshDashboard() {
                     if (esp.pago_pendiente) {
                         cls = 'bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space';
                         title = `Espacio ${esp.espNumero} — Salida pendiente`;
+                        // Agrega el punto pulsante si no existe
                         if (!pingDot && wrapper) {
                             const dot = document.createElement('div');
                             dot.className = 'absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping2';
@@ -661,6 +812,7 @@ function refreshDashboard() {
                         if (pingDot) pingDot.remove();
                     }
 
+                    // Actualiza el onclick con el estado fresco para que el modal refleje datos actuales
                     spaceEl.setAttribute('onclick',
                         `handleSpaceClick('${esp.pk}', '${esp.espNumero}', '${esp.espEstado}', '${piso.pisNombre}', ${esp.pago_pendiente})`
                     );
@@ -673,19 +825,21 @@ function refreshDashboard() {
 }
 
 function startAutoRefresh() {
-    autoRefreshInterval = setInterval(refreshDashboard, 10000);
+    autoRefreshInterval = setInterval(refreshDashboard, 10000); // Refresca cada 10 segundos
 }
 function stopAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
 }
 
-// Iniciar al cargar
+// Inicia el auto-refresh al cargar y lo pausa cuando la pestaña queda en segundo plano
 document.addEventListener('DOMContentLoaded', () => {
     startAutoRefresh();
+    // Page Visibility API: pausa el refresh cuando la pestaña no está visible para ahorrar requests
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             stopAutoRefresh();
         } else {
+            // Al volver a la pestaña, refresca inmediatamente y reinicia el intervalo
             refreshDashboard();
             startAutoRefresh();
         }

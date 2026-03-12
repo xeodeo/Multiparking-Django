@@ -8,13 +8,14 @@ import sys
 import django
 from datetime import timedelta
 
-# Fix encoding for Windows console
+# Evita errores de encoding en consola de Windows
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
+# Agrega el directorio raíz del proyecto al path para poder importar los módulos de Django
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
-django.setup()
+django.setup()  # Inicializa Django antes de importar modelos
 
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
@@ -58,7 +59,8 @@ print(f"[OK] Tipo Espacio: Moto {'(creado)' if created else '(existente)'}")
 # 4. Crear espacios si no existen
 from datetime import date
 espacios_creados = 0
-for i in range(1, 4):  # 3 espacios de carro
+# Crea 3 espacios de carro con numeración C1-01, C1-02, C1-03
+for i in range(1, 4):
     _, created = Espacio.objects.get_or_create(
         espNumero=f'C1-{i:02d}',
         defaults={
@@ -70,7 +72,8 @@ for i in range(1, 4):  # 3 espacios de carro
     if created:
         espacios_creados += 1
 
-for i in range(1, 3):  # 2 espacios de moto
+# Crea 2 espacios de moto con numeración M1-01, M1-02
+for i in range(1, 3):
     _, created = Espacio.objects.get_or_create(
         espNumero=f'M1-{i:02d}',
         defaults={
@@ -116,11 +119,11 @@ print(f"[OK] Tarifa Motos: $2,000/h usuario | $3,000/h visitante")
 # 6. Crear vehículos de prueba si no existen
 vehiculos = []
 vehiculos_demo = [
-    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla'),
-    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3'),
-    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250'),
-    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark'),
-    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125'),
+    ('ABC-123', 'Carro', 'Rojo', 'Toyota', 'Corolla'),
+    ('DEF-456', 'Carro', 'Blanco', 'Mazda', '3'),
+    ('GHI-789', 'Moto', 'Negro', 'Yamaha', 'FZ250'),
+    ('JKL-012', 'Carro', 'Gris', 'Chevrolet', 'Spark'),
+    ('MNO-345', 'Moto', 'Azul', 'Suzuki', 'GN125'),
 ]
 for placa, tipo, color, marca, modelo in vehiculos_demo:
     vehiculo, created = Vehiculo.objects.get_or_create(
@@ -141,8 +144,8 @@ print("\n>> Generando pagos de prueba (ultimos 7 dias)...")
 now = timezone.now()
 pagos_creados = 0
 
-# NO borrar pagos anteriores - queremos datos persistentes
-# Verificar si ya existen pagos recientes
+# No se borran pagos anteriores para mantener datos persistentes entre ejecuciones
+# Verificar si ya existen pagos recientes para no duplicar
 hoy_local = timezone.localtime(now).date()
 hace_7_dias = hoy_local - timedelta(days=6)
 pagos_recientes = Pago.objects.filter(
@@ -153,60 +156,56 @@ pagos_recientes = Pago.objects.filter(
 
 print(f"[INFO] Pagos existentes en ultimos 7 dias: {pagos_recientes}")
 
+# Si ya hay suficientes pagos, no generar más para evitar duplicados
 if pagos_recientes >= 15:
     print("[INFO] Ya hay suficientes pagos recientes. Saltando generacion.")
     pagos_creados = 0
 else:
     print(f"[INFO] Generando mas pagos para completar datos de demostracion...")
 
-for dia_offset in range(7):  # Últimos 7 días
+for dia_offset in range(7):  # Itera sobre los últimos 7 días
     if pagos_recientes >= 15:
         break
     dia = now - timedelta(days=dia_offset)
 
-    # Crear 2-4 pagos por día
-    num_pagos = 2 + (dia_offset % 3)  # Varía entre 2 y 4
+    # Varía entre 2 y 4 pagos por día para simular tráfico real
+    num_pagos = 2 + (dia_offset % 3)
 
     for i in range(num_pagos):
-        # Seleccionar vehículo y espacio
         vehiculo = vehiculos[i % len(vehiculos)]
         espacio = Espacio.objects.filter(espEstado='DISPONIBLE').first()
 
         if not espacio:
-            # Si no hay espacios disponibles, liberar uno
+            # Si no hay espacios disponibles, liberar uno para poder crear el registro
             espacio = Espacio.objects.first()
             espacio.espEstado = 'DISPONIBLE'
             espacio.save()
 
-        # Simular entrada hace algunas horas
+        # Simula una estadía de 3 horas (entrada antes, salida reciente)
         hora_entrada = dia - timedelta(hours=3 + i)
         hora_salida = dia - timedelta(hours=i)
 
-        # Crear registro de inventario
-        # Nota: parHoraEntrada tiene auto_now_add=True
+        # parHoraEntrada tiene auto_now_add=True, por lo que se debe sobreescribir manualmente
         registro = InventarioParqueo.objects.create(
             fkIdVehiculo=vehiculo,
             fkIdEspacio=espacio,
             parHoraSalida=hora_salida,
         )
-        # Actualizar manualmente para datos de prueba
         InventarioParqueo.objects.filter(pk=registro.pk).update(parHoraEntrada=hora_entrada)
 
-        # Calcular monto (3 horas * tarifa del tipo del vehiculo)
+        # Monto fijo de 3 horas según la tarifa activa del tipo de espacio
         tarifa_vehiculo = Tarifa.objects.filter(
             fkIdTipoEspacio=espacio.fkIdTipoEspacio, activa=True
         ).first() or tarifa
         monto = float(tarifa_vehiculo.precioHora) * 3
 
-        # Crear pago
-        # Nota: pagFechaPago también tiene auto_now_add=True
+        # pagFechaPago también tiene auto_now_add=True, se sobreescribe manualmente
         pago = Pago.objects.create(
             pagMonto=monto,
             pagMetodo='EFECTIVO',
             pagEstado='PAGADO',
             fkIdParqueo=registro,
         )
-        # Actualizar manualmente para datos de prueba
         Pago.objects.filter(pk=pago.pk).update(pagFechaPago=hora_salida)
         pagos_creados += 1
 

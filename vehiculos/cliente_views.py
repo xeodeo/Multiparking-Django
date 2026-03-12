@@ -10,6 +10,7 @@ from django.views import View
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 
+# Patrones compilados a nivel de módulo para reutilizarlos sin recompilar en cada request
 RE_PLACA = re.compile(r'^[A-Za-z0-9-]+$')
 RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
 RE_LETRAS_NUMEROS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$')
@@ -79,16 +80,15 @@ class ClienteCrearVehiculoView(ClienteRequiredMixin, View):
         vehiculo_existente = Vehiculo.objects.filter(vehPlaca=placa).first()
 
         if vehiculo_existente:
-            # Si existe y es visitante, permitir que el usuario lo reclame
             if vehiculo_existente.es_visitante:
-                # Convertir de visitante a vehículo registrado
+                # La placa existe pero era de un visitante → el cliente la "reclama" y la convierte en su vehículo registrado
                 vehiculo_existente.fkIdUsuario = usuario
                 vehiculo_existente.vehTipo = tipo
-                vehiculo_existente.vehMarca = marca or vehiculo_existente.vehMarca
+                vehiculo_existente.vehMarca = marca or vehiculo_existente.vehMarca    # Solo sobreescribe si se aportó valor
                 vehiculo_existente.vehModelo = modelo or vehiculo_existente.vehModelo
                 vehiculo_existente.vehColor = color or vehiculo_existente.vehColor
                 vehiculo_existente.vehEstado = estado if estado else True
-                vehiculo_existente.nombre_contacto = None
+                vehiculo_existente.nombre_contacto = None     # Limpia datos de contacto de visitante
                 vehiculo_existente.telefono_contacto = None
                 vehiculo_existente.save()
 
@@ -127,6 +127,7 @@ class ClienteEditarVehiculoView(ClienteRequiredMixin, View):
 
     def get(self, request, pk):
         usuario_id = request.session.get('usuario_id')
+        # fkIdUsuario__pk=usuario_id garantiza que el cliente solo pueda editar sus propios vehículos
         vehiculo = get_object_or_404(Vehiculo, pk=pk, fkIdUsuario__pk=usuario_id, fkIdUsuario__isnull=False)
 
         return render(request, 'cliente/vehiculo_form.html', {

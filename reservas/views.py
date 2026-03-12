@@ -44,6 +44,7 @@ class ReservaListView(AdminRequiredMixin, View):
 class ReservaFinalizarView(AdminRequiredMixin, View):
     def post(self, request, pk):
         reserva = get_object_or_404(Reserva, pk=pk)
+        # Solo se puede finalizar si está activa (PENDIENTE o CONFIRMADA); las CANCELADAS/COMPLETADAS no
         if reserva.resEstado in ('PENDIENTE', 'CONFIRMADA'):
             reserva.resEstado = 'COMPLETADA'
             reserva.save()
@@ -59,7 +60,7 @@ class ReservaCancelarView(AdminRequiredMixin, View):
         if reserva.resEstado in ('PENDIENTE', 'CONFIRMADA'):
             reserva.resEstado = 'CANCELADA'
             reserva.save()
-            # Liberar espacio si estaba reservado
+            # Si el espacio estaba en estado RESERVADO, lo libera al cancelar
             espacio = reserva.fkIdEspacio
             if espacio.espEstado == 'RESERVADO':
                 espacio.espEstado = 'DISPONIBLE'

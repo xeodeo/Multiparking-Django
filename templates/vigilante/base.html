@@ -30,6 +30,7 @@
         body { background-color: #0a0a14; }
         select option { background-color: #12121f; color: #fff; }
         input[type="date"] { color-scheme: dark; }
+        /* Animación de parpadeo suave — usada en espacios ocupados del mapa de pisos */
         @keyframes pulse-space { 0%,100%{opacity:1;} 50%{opacity:.6;} }
         .animate-pulse-space { animation: pulse-space 1.5s ease-in-out infinite; }
     </style>
@@ -64,6 +65,9 @@
                     <svg class="w-5 h-5 text-mp-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
                     </svg>
+                    <!-- Badge rojo con el total de pendientes:
+                         efectivo_pendiente = pagos en efectivo por confirmar
+                         entradas_pendientes = reservas de hoy por confirmar llegada -->
                     {% if entradas_pendientes or efectivo_pendiente %}
                     <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center">
                         {{ efectivo_pendiente|add:entradas_pendientes }}
@@ -107,11 +111,12 @@
         {% endfor %}
     </div>
     <script>
+        // Auto-oculta los toasts después de 4 segundos con un fade-out de 0.5s
         setTimeout(() => {
             document.querySelectorAll('.toast-item').forEach(el => {
                 el.style.transition = 'opacity 0.5s';
                 el.style.opacity = '0';
-                setTimeout(() => el.remove(), 500);
+                setTimeout(() => el.remove(), 500); // Elimina el elemento después del fade
             });
         }, 4000);
     </script>

@@ -1,0 +1,53 @@
+{% extends "emails/base_email.html" %}
+{% block title %}Restablecer Contraseña — Multiparking{% endblock %}
+
+{% block content %}
+  <!-- Título -->
+  <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#ffffff;">
+    Restablecer Contraseña 🔐
+  </h1>
+  <p style="margin:0 0 28px 0;font-size:15px;color:#a78bfa;font-weight:600;">
+    Recibiste este correo porque solicitaste restablecer tu contraseña.
+  </p>
+
+  <!-- Divider -->
+  <div style="height:1px;background:linear-gradient(90deg,transparent,#7c3aed,transparent);margin-bottom:28px;"></div>
+
+  <p style="margin:0 0 20px 0;font-size:15px;color:#d1d5db;line-height:1.7;">
+    Hola <strong style="color:#ffffff;">{{ usuario.usuNombreCompleto }}</strong>,
+    haz clic en el botón de abajo para crear una nueva contraseña.
+    Este enlace es válido por <strong style="color:#a78bfa;">1 hora</strong>.
+  </p>
+
+  <!-- Botón CTA -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+    <tr>
+      <td align="center">
+        <a href="{{ reset_url }}"
+           style="display:inline-block;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:10px;letter-spacing:0.5px;">
+          Restablecer mi contraseña
+        </a>
+      </td>
+    </tr>
+  </table>
+
+  <!-- URL alternativa -->
+  <p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;text-align:center;">
+    Si el botón no funciona, copia y pega este enlace en tu navegador:
+  </p>
+  <p style="margin:0 0 28px 0;font-size:12px;color:#a78bfa;word-break:break-all;text-align:center;background-color:#0f0f1a;padding:12px;border-radius:8px;border:1px solid #2d2d4e;">
+    {{ reset_url }}
+  </p>
+
+  <!-- Aviso de seguridad -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1e1b4b;border-radius:10px;border-left:4px solid #ef4444;padding:16px 20px;">
+    <tr>
+      <td>
+        <p style="margin:0;font-size:13px;color:#fca5a5;line-height:1.7;">
+          <strong>¿No solicitaste esto?</strong> Ignora este correo. Tu contraseña no cambiará a menos que hagas clic en el enlace.
+          Si tienes dudas, contacta al administrador.
+        </p>
+      </td>
+    </tr>
+  </table>
+{% endblock %}

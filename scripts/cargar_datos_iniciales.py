@@ -9,13 +9,14 @@ import os
 import django
 import sys
 
+# Evita errores de encoding en consola de Windows
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
-# Configurar path al proyecto
+# Agrega el directorio raíz al path para poder importar los módulos de Django
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
-django.setup()
+django.setup()  # Inicializa Django antes de importar modelos
 
 from django.contrib.auth.hashers import make_password
 from parqueadero.models import Piso, TipoEspacio, Espacio
@@ -93,7 +94,7 @@ print(f"  [OK] Tipo: Carro {'(creado)' if created else '(existe)'}")
 tipo_moto, created = TipoEspacio.objects.get_or_create(nombre='Moto')
 print(f"  [OK] Tipo: Moto {'(creado)' if created else '(existe)'}")
 
-# Desactivar tipos que no se usan (solo si no tienen espacios asignados)
+# Limpia tipos de espacio obsoletos que no tengan espacios asignados
 for nombre_tipo in ['VIP', 'Visitante', 'Estandar']:
     tipo_viejo = TipoEspacio.objects.filter(nombre=nombre_tipo).first()
     if tipo_viejo and not tipo_viejo.espacios.exists():
@@ -122,7 +123,7 @@ for nombre, estado in pisos_config:
 print("\n[4/8] Creando espacios...")
 
 espacios_config = [
-    # (piso_index, prefijo, tipo, cantidad)
+    # (piso_index, prefijo_numeración, tipo_espacio, cantidad)
     (0, 'C1', tipo_carro, 15),   # Piso 1: 15 carros
     (0, 'M1', tipo_moto, 10),    # Piso 1: 10 motos
     (1, 'C2', tipo_carro, 20),   # Piso 2: 20 carros
@@ -132,6 +133,7 @@ espacios_config = [
 ]
 
 total_creados = 0
+# Genera espacios con numeración tipo C1-01, C1-02... usando get_or_create para ser idempotente
 for piso_idx, prefijo, tipo, cantidad in espacios_config:
     for i in range(1, cantidad + 1):
         _, created = Espacio.objects.get_or_create(
@@ -153,7 +155,7 @@ print(f"       Motos:  {Espacio.objects.filter(fkIdTipoEspacio=tipo_moto).count(
 # ── 5. TARIFAS ───────────────────────────────────────────────
 print("\n[5/8] Creando tarifas...")
 
-# Tarifa Carros
+# Tarifa Carros — si ya existe, actualiza precioHoraVisitante por si cambió
 tarifa_carro, created = Tarifa.objects.get_or_create(
     fkIdTipoEspacio=tipo_carro,
     activa=True,
@@ -171,7 +173,7 @@ if not created:
     tarifa_carro.save()
 print(f"  [OK] Tarifa Carros: $5,000/h usuario | $7,000/h visitante {'(creado)' if created else '(actualizado)'}")
 
-# Tarifa Motos
+# Tarifa Motos — si ya existe, actualiza precioHoraVisitante por si cambió
 tarifa_moto, created = Tarifa.objects.get_or_create(
     fkIdTipoEspacio=tipo_moto,
     activa=True,
@@ -193,11 +195,11 @@ print(f"  [OK] Tarifa Motos: $2,000/h usuario | $3,000/h visitante {'(creado)' i
 print("\n[6/8] Creando vehiculos de prueba...")
 
 vehiculos_demo = [
-    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente),
-    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente),
-    ('JKL012', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente),
-    ('MNO345', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('PQR678', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('ABC-123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente),
+    ('DEF-456', 'Carro', 'Blanco', 'Mazda', '3', cliente),
+    ('JKL-012', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente),
+    ('MNO-345', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('PQR-678', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
 ]
 
 for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:

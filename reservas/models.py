@@ -4,10 +4,10 @@ from django.db import models
 class Reserva(models.Model):
 
     class EstadoChoices(models.TextChoices):
-        PENDIENTE = 'PENDIENTE', 'Pendiente'
-        CONFIRMADA = 'CONFIRMADA', 'Confirmada'
-        CANCELADA = 'CANCELADA', 'Cancelada'
-        COMPLETADA = 'COMPLETADA', 'Completada'
+        PENDIENTE = 'PENDIENTE', 'Pendiente'      # Creada pero no confirmada
+        CONFIRMADA = 'CONFIRMADA', 'Confirmada'   # Confirmada — aparece en el panel del vigilante como solicitud de entrada
+        CANCELADA = 'CANCELADA', 'Cancelada'      # Cancelada por el usuario o admin
+        COMPLETADA = 'COMPLETADA', 'Completada'   # El vehículo ya entró y salió
 
     resFechaReserva = models.DateField()
     resHoraInicio = models.TimeField()
@@ -32,6 +32,8 @@ class Reserva(models.Model):
 
     @property
     def resConfirmada(self):
+        # Propiedad calculada — NO es columna de BD
+        # Shortcut para verificar si la reserva está en estado CONFIRMADA
         return self.resEstado == self.EstadoChoices.CONFIRMADA
 
     class Meta:

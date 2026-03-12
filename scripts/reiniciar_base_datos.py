@@ -8,12 +8,14 @@ import django
 import sys
 from datetime import date, timedelta, datetime
 
+# Evita errores de encoding en consola de Windows
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
+# Agrega el directorio raíz al path para poder importar los módulos de Django
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
-django.setup()
+django.setup()  # Inicializa Django antes de importar modelos
 
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
@@ -119,7 +121,7 @@ for nombre, estado in pisos_config:
 print("\n[5/9] Creando espacios...")
 
 espacios_config = [
-    # (piso_index, prefijo, tipo, cantidad)
+    # (piso_index, prefijo_numeración, tipo_espacio, cantidad)
     (0, 'C1', tipo_carro, 15),   # Piso 1: 15 carros
     (0, 'M1', tipo_moto, 10),    # Piso 1: 10 motos
     (1, 'C2', tipo_carro, 20),   # Piso 2: 20 carros
@@ -129,6 +131,7 @@ espacios_config = [
 ]
 
 total_espacios = 0
+# Genera espacios numerados tipo C1-01, C1-02, etc.
 for piso_idx, prefijo, tipo, cantidad in espacios_config:
     for i in range(1, cantidad + 1):
         Espacio.objects.create(
@@ -205,12 +208,12 @@ print("\n[7/9] Creando vehiculos de prueba...")
 
 vehiculos_demo = [
     # (placa, tipo, color, marca, modelo, propietario)
-    ('ABC123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
-    ('DEF456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
-    ('GHI789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
-    ('JKL012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
-    ('MNO345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
-    ('PQR678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
+    ('ABC-123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
+    ('DEF-456', 'Carro', 'Blanco', 'Mazda', '3', cliente1),
+    ('GHI-789', 'Moto', 'Negro', 'Yamaha', 'FZ250', cliente1),
+    ('JKL-012', 'Carro', 'Gris', 'Chevrolet', 'Spark', cliente2),
+    ('MNO-345', 'Moto', 'Azul', 'Suzuki', 'GN125', cliente2),
+    ('PQR-678', 'Carro', 'Negro', 'Renault', 'Logan', cliente2),
 ]
 
 vehiculos = []
@@ -303,7 +306,7 @@ for cupon_data in cupones_demo:
 # ── 9. SIMULAR VEHICULOS ESTACIONADOS ───────────────────────
 print("\n[9/9] Simulando vehiculos estacionados...")
 
-# Estacionar algunos vehiculos (crear entradas activas)
+# Estaciona los primeros 6 vehículos en los primeros 6 espacios disponibles
 espacios_disponibles = list(Espacio.objects.filter(espEstado='DISPONIBLE')[:6])
 vehiculos_a_parquear = vehiculos[:6]
 
@@ -312,7 +315,9 @@ for idx in range(min(len(espacios_disponibles), len(vehiculos_a_parquear))):
     espacio = espacios_disponibles[idx]
     vehiculo = vehiculos_a_parquear[idx]
 
+    # Cada vehículo lleva una hora más que el anterior (1h, 2h, 3h... desde ahora)
     hora_entrada = timezone.now() - timedelta(hours=(idx + 1))
+    # parHoraEntrada tiene auto_now_add=True; se sobreescribe manualmente
     registro = InventarioParqueo.objects.create(
         fkIdVehiculo=vehiculo,
         fkIdEspacio=espacio,
@@ -326,7 +331,7 @@ for idx in range(min(len(espacios_disponibles), len(vehiculos_a_parquear))):
 
 print(f"  [OK] {parqueados} vehiculos estacionados actualmente")
 
-# Marcar algunos espacios como INACTIVOS (mantenimiento)
+# Marca algunos espacios como INACTIVO para simular mantenimiento
 espacios_inactivar = list(Espacio.objects.filter(espEstado='DISPONIBLE')[10:15])
 for espacio in espacios_inactivar:
     espacio.espEstado = 'INACTIVO'

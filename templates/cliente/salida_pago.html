@@ -256,16 +256,18 @@
 
 {% block extra_js %}
 <script>
+// Monto base calculado por el servidor (minutos × tarifa/60, redondeado arriba a 100 COP)
 const montoTotal = {{ monto_total|unlocalize }};
 
-// Cupones con nombre + código
+// Lista de cupones vigentes embebida desde el servidor para aplicar el descuento
+// sin hacer una llamada AJAX — tipo puede ser PORCENTAJE o VALOR_FIJO
 const cuponesData = [
     {% for cupon in cupones %}
     {
         nombre: '{{ cupon.cupNombre|escapejs }}',
         codigo: '{{ cupon.cupCodigo|upper|escapejs }}',
         tipo: '{{ cupon.cupTipo }}',
-        valor: {{ cupon.cupValor|unlocalize }}
+        valor: {{ cupon.cupValor|unlocalize }} // |unlocalize evita formato 1.000 con punto
     },
     {% endfor %}
 ];
@@ -274,6 +276,7 @@ function formatCOP(n) {
     return '$' + Math.round(n).toLocaleString('es-CO');
 }
 
+// Aplica el cupón ingresado: busca en cuponesData y recalcula el monto final en pantalla
 function aplicarCupon() {
     const codigoCupon = document.getElementById('codigo_cupon').value.trim().toUpperCase();
 
@@ -282,7 +285,7 @@ function aplicarCupon() {
         return;
     }
 
-    // Buscar cupón por código
+    // Buscar cupón por código exacto (comparación case-sensitive, el código ya se normalizó a mayúsculas)
     const cupon = cuponesData.find(c => c.codigo === codigoCupon);
 
     if (!cupon) {
@@ -290,14 +293,16 @@ function aplicarCupon() {
         return;
     }
 
-    // Calcular descuento
+    // Calcular descuento según tipo:
+    // PORCENTAJE: descuento = montoTotal × (valor/100)
+    // VALOR_FIJO: descuento = min(valor, montoTotal) — no puede exceder el total
     let descuento = 0;
     let descLabel = '';
     if (cupon.tipo === 'PORCENTAJE') {
         descuento = (montoTotal * cupon.valor) / 100;
         descLabel = cupon.valor + '% de descuento';
     } else {
-        descuento = Math.min(cupon.valor, montoTotal);
+        descuento = Math.min(cupon.valor, montoTotal); // Tope al monto total
         descLabel = formatCOP(cupon.valor) + ' de descuento';
     }
 

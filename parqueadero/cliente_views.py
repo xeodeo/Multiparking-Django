@@ -38,8 +38,8 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
         duracion = ahora - entrada
 
         total_seconds = int(duracion.total_seconds())
-        total_minutos = max((total_seconds + 59) // 60, 1)
-        dias = total_minutos // 1440
+        total_minutos = max((total_seconds + 59) // 60, 1)  # Redondeo hacia arriba, mínimo 1 minuto
+        dias = total_minutos // 1440                          # 1440 min = 24h
         horas = (total_minutos % 1440) // 60
         minutos = total_minutos % 60
 
@@ -145,7 +145,7 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
                 if cupon.cupTipo == 'PORCENTAJE':
                     monto_descuento = (monto_total * cupon.cupValor) / 100
                 else:  # VALOR_FIJO
-                    monto_descuento = min(cupon.cupValor, monto_total)
+                    monto_descuento = min(cupon.cupValor, monto_total)  # El descuento no puede superar el total
 
             except Cupon.DoesNotExist:
                 messages.warning(request, f'El cupón "{codigo_cupon}" no es válido o ha expirado.')
@@ -155,9 +155,9 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
 
         # Crear registro de pago
         if metodo_pago == 'EFECTIVO':
-            estado_pago = 'PENDIENTE'
+            estado_pago = 'PENDIENTE'  # EFECTIVO: pago pendiente hasta que el guardia confirme la salida
         else:  # PSE
-            estado_pago = 'PAGADO'
+            estado_pago = 'PAGADO'     # PSE: pago inmediato, se libera el espacio al instante
 
         pago = Pago.objects.create(
             pagMonto=monto_final,

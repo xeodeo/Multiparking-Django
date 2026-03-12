@@ -72,6 +72,7 @@ class ReportesView(AdminRequiredMixin, View):
         ).count()
         inventario_actual = inventario_qs.count()
 
+        # Variación porcentual vs el período anterior del mismo largo (positivo = crecimiento)
         if inventario_mes_anterior > 0:
             variacion_ocupacion = int(((inventario_actual - inventario_mes_anterior) / inventario_mes_anterior) * 100)
         else:
@@ -111,7 +112,7 @@ class ReportesView(AdminRequiredMixin, View):
         else:
             variacion_usuarios = 0
 
-        # Rotación diaria (promedio de entradas por espacio)
+        # Rotación diaria: cuántas veces en promedio se ocupa cada espacio al día
         dias_en_periodo = (now - fecha_inicio).days or 1
         rotacion_diaria = round(inventario_actual / total_espacios / dias_en_periodo, 1) if total_espacios > 0 else 0
 
@@ -151,7 +152,7 @@ class ReportesView(AdminRequiredMixin, View):
         ingresos_labels = []
         ingresos_data_values = []
 
-        for i in range(5, -1, -1):  # Últimos 6 meses
+        for i in range(5, -1, -1):  # i=5 → mes más antiguo, i=0 → mes actual
             mes_inicio = now - timedelta(days=30 * (i + 1))
             mes_fin = now - timedelta(days=30 * i)
 
@@ -192,7 +193,7 @@ class ReportesView(AdminRequiredMixin, View):
         if total_uso > 0:
             residentes_pct = int((residentes_count / total_uso) * 100)
             visitantes_pct = int((visitantes_count / total_uso) * 100)
-            reservas_pct = 100 - residentes_pct - visitantes_pct  # Resto para evitar errores de redondeo
+            reservas_pct = 100 - residentes_pct - visitantes_pct  # Se calcula como resto para que sumen exactamente 100%
         else:
             residentes_pct = visitantes_pct = reservas_pct = 0
 

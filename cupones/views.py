@@ -9,7 +9,7 @@ from usuarios.mixins import AdminRequiredMixin
 
 from .models import Cupon
 
-RE_CODIGO_CUPON = re.compile(r'^[A-Z0-9]+$')
+RE_CODIGO_CUPON = re.compile(r'^[A-Z0-9]+$')  # Solo mayúsculas y números, sin espacios ni caracteres especiales
 
 
 class CuponListView(AdminRequiredMixin, View):
@@ -35,7 +35,7 @@ class CuponCreateView(AdminRequiredMixin, View):
 
     def post(self, request):
         nombre = request.POST.get('cupNombre', '').strip()
-        codigo = request.POST.get('cupCodigo', '').strip().upper()
+        codigo = request.POST.get('cupCodigo', '').strip().upper()  # Fuerza mayúsculas para consistencia
         tipo = request.POST.get('cupTipo', '')
         valor = request.POST.get('cupValor', '')
         descripcion = request.POST.get('cupDescripcion', '').strip()
@@ -75,7 +75,7 @@ class CuponCreateView(AdminRequiredMixin, View):
             messages.error(request, 'El valor debe ser un número válido.')
             return render(request, 'admin_panel/cupones/form.html', ctx)
 
-        if Cupon.objects.filter(cupCodigo__iexact=codigo).exists():
+        if Cupon.objects.filter(cupCodigo__iexact=codigo).exists():  # iexact = insensible a mayúsculas/minúsculas
             messages.error(request, f'Ya existe un cupón con el código "{codigo}".')
             return render(request, 'admin_panel/cupones/form.html', ctx)
 

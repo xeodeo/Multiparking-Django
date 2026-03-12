@@ -21,6 +21,7 @@ from .models import Espacio, InventarioParqueo, Piso
 
 def _calcular_pisos_data(now):
     """Comparte la lógica de Vista General de Pisos con el admin dashboard."""
+    # Ventana de 2 horas para detectar reservas próximas en el mapa
     limite_2h = now + timedelta(hours=2)
     pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
         'espacios', 'espacios__reservas'
@@ -30,6 +31,7 @@ def _calcular_pisos_data(now):
     for piso in pisos:
         total_piso = piso.espacios.count()
         ocupados_piso = piso.espacios.filter(espEstado='OCUPADO').count()
+        # Porcentaje de ocupación del piso (0 si no tiene espacios)
         piso.ocupacion_pct = int((ocupados_piso / total_piso) * 100) if total_piso > 0 else 0
         piso.total_espacios = total_piso
         piso.ocupados_espacios = ocupados_piso
@@ -39,6 +41,7 @@ def _calcular_pisos_data(now):
             reserva_proxima = None
             pago_pendiente = False
 
+            # Busca si hay una reserva que inicia en los próximos 2 horas
             for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
                 fhr = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
                 fhr = timezone.make_aware(fhr)
@@ -46,6 +49,7 @@ def _calcular_pisos_data(now):
                     reserva_proxima = reserva
                     break
 
+            # Si el espacio está ocupado, verifica si tiene cobro pendiente en efectivo
             if espacio.espEstado == 'OCUPADO':
                 pago_pendiente = Pago.objects.filter(
                     fkIdParqueo__fkIdEspacio=espacio,
@@ -70,32 +74,37 @@ class VigilanteDashboardView(VigilanteRequiredMixin, View):
         now = timezone.now()
         hoy_local = timezone.localtime(now).date()
 
+        # Rango completo del día local para filtrar entradas de hoy
         inicio_hoy = timezone.make_aware(datetime.combine(hoy_local, datetime.min.time()))
         fin_hoy = timezone.make_aware(datetime.combine(hoy_local, datetime.max.time()))
 
-        # Stats
+        # ── KPIs del encabezado ──────────────────────────────────────
+        # Reservas de hoy que aún no se han procesado (pendientes de entrada)
         entradas_pendientes = Reserva.objects.filter(
             resFechaReserva=hoy_local,
             resEstado__in=['PENDIENTE', 'CONFIRMADA'],
         ).count()
 
+        # Vehículos activos con pago en efectivo pendiente de cobrar
         salidas_pendientes = InventarioParqueo.objects.filter(
             parHoraSalida__isnull=True,
             pagos__pagEstado='PENDIENTE',
             pagos__pagMetodo='EFECTIVO',
         ).distinct().count()
 
+        # Total de registros de pago en efectivo sin confirmar
         efectivo_pendiente = Pago.objects.filter(
             pagEstado='PENDIENTE',
             pagMetodo='EFECTIVO',
             fkIdParqueo__parHoraSalida__isnull=True,
         ).count()
 
+        # Vehículos que ingresaron en algún momento hoy
         activos_hoy = InventarioParqueo.objects.filter(
             parHoraEntrada__range=(inicio_hoy, fin_hoy)
         ).count()
 
-        # Búsqueda
+        # Término de búsqueda opcional (filtra por placa o nombre)
         q = request.GET.get('q', '').strip()
 
         # Solicitudes de Entrada = reservas hoy pendientes/confirmadas
@@ -130,18 +139,22 @@ class VigilanteDashboardView(VigilanteRequiredMixin, View):
 
         solicitudes_salida = list(qs_salida)
         for reg in solicitudes_salida:
+            # Si ya existe un pago pre-calculado, usar ese monto
             reg.pago_pendiente_obj = Pago.objects.filter(
                 fkIdParqueo=reg, pagEstado='PENDIENTE', pagMetodo='EFECTIVO'
             ).first()
             if reg.pago_pendiente_obj:
                 reg.costo_estimado = float(reg.pago_pendiente_obj.pagMonto)
             else:
+                # Si no hay pago previo, calcular en tiempo real según la tarifa activa
                 tarifa = Tarifa.objects.filter(
                     fkIdTipoEspacio=reg.fkIdEspacio.fkIdTipoEspacio, activa=True
                 ).first()
                 if tarifa:
+                    # Redondea los segundos hacia arriba al minuto más cercano, mínimo 1 min
                     total_minutos = max((int((now - reg.parHoraEntrada).total_seconds()) + 59) // 60, 1)
                     es_visitante = reg.fkIdVehiculo.es_visitante
+                    # Usa tarifa visitante si aplica
                     precio = float(tarifa.precioHoraVisitante) if es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
                     reg.costo_estimado = math.ceil((precio / 60) * total_minutos)
                 else:
@@ -177,19 +190,22 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
         reserva_id = request.POST.get('reserva_id')
 
         if reserva_id:
-            # Entrada desde reserva
+            # ── Flujo 1: Entrada desde una reserva existente ──────────
             reserva = get_object_or_404(Reserva, pk=reserva_id)
             vehiculo = reserva.fkIdVehiculo
             espacio = reserva.fkIdEspacio
 
+            # Verifica que el espacio no haya sido ocupado por otro vehículo
             if espacio.espEstado != 'DISPONIBLE':
                 messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
                 return redirect('guardia_dashboard')
 
+            # Evita doble ingreso del mismo vehículo
             if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
                 messages.error(request, f'El vehículo {vehiculo.vehPlaca} ya tiene un ingreso activo.')
                 return redirect('guardia_dashboard')
 
+            # Crea el registro de parqueo, ocupa el espacio y cierra la reserva
             InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
             espacio.espEstado = 'OCUPADO'
             espacio.save()
@@ -197,16 +213,18 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
             reserva.save()
             messages.success(request, f'Entrada permitida: {vehiculo.vehPlaca} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')
         else:
-            # Entrada directa (visitante / usuario sin reserva)
+            # ── Flujo 2: Ingreso rápido (visitante o usuario sin reserva) ──
             placa = request.POST.get('placa', '').upper().strip()
             espacio_id = request.POST.get('espacio_id', '').strip()
             nombre = request.POST.get('nombre', '').strip()
             telefono = request.POST.get('telefono', '').strip()
 
+            # Campos obligatorios
             if not placa or not espacio_id:
                 messages.error(request, 'Placa y espacio son obligatorios.')
                 return redirect('guardia_dashboard')
 
+            # Validaciones de formato
             if not re.match(r'^[A-Za-z0-9-]+$', placa):
                 messages.error(request, 'La placa solo acepta letras, números y guiones.')
                 return redirect('guardia_dashboard')
@@ -224,6 +242,7 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
                 messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
                 return redirect('guardia_dashboard')
 
+            # Busca el vehículo en BD; si no existe, lo crea como visitante (sin usuario)
             vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
             if not vehiculo:
                 vehiculo = Vehiculo.objects.create(
@@ -233,6 +252,7 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
                     telefono_contacto=telefono,
                 )
             else:
+                # Si el vehículo es visitante y se ingresaron datos de contacto, actualizarlos
                 if vehiculo.es_visitante and (nombre or telefono):
                     if nombre:
                         vehiculo.nombre_contacto = nombre
@@ -240,10 +260,12 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
                         vehiculo.telefono_contacto = telefono
                     vehiculo.save()
 
+            # Evita doble ingreso
             if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
                 messages.error(request, f'El vehículo {placa} ya tiene un ingreso activo.')
                 return redirect('guardia_dashboard')
 
+            # Crea el registro de parqueo y ocupa el espacio
             InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
             espacio.espEstado = 'OCUPADO'
             espacio.save()
@@ -259,15 +281,18 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
         registro_id = request.POST.get('registro_id')
         espacio_id = request.POST.get('espacio_id')
 
+        # Acepta identificar el registro por ID de inventario o por ID de espacio
         if registro_id:
             registro = get_object_or_404(InventarioParqueo, pk=registro_id, parHoraSalida__isnull=True)
             espacio = registro.fkIdEspacio
         elif espacio_id:
             espacio = get_object_or_404(Espacio, pk=espacio_id)
+            # Busca el registro activo (sin hora de salida) de este espacio
             registro = InventarioParqueo.objects.filter(
                 fkIdEspacio=espacio, parHoraSalida__isnull=True
             ).first()
             if not registro:
+                # No hay registro activo; liberar el espacio de todas formas
                 espacio.espEstado = 'DISPONIBLE'
                 espacio.save()
                 messages.warning(request, f'Espacio {espacio.espNumero} liberado (sin registro activo).')
@@ -276,23 +301,29 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
             messages.error(request, 'Datos inválidos.')
             return redirect('guardia_dashboard')
 
+        # Registra la hora de salida
         ahora = timezone.now()
         registro.parHoraSalida = ahora
         registro.save()
 
+        # ── Cobro ────────────────────────────────────────────────────
         pago_existente = Pago.objects.filter(fkIdParqueo=registro, pagEstado='PENDIENTE').first()
         if pago_existente:
+            # Ya existe un pago pre-calculado (ej: generado al momento del ingreso); solo confirmarlo
             pago_existente.pagEstado = 'PAGADO'
             pago_existente.save()
             monto = pago_existente.pagMonto
         else:
+            # Calcular el cobro ahora según la tarifa activa del tipo de espacio
             tarifa = Tarifa.objects.filter(
                 fkIdTipoEspacio=espacio.fkIdTipoEspacio, activa=True
             ).first()
             monto = 0
             if tarifa:
+                # Minutos redondeados hacia arriba (ej: 61 min → 62, mínimo 1)
                 total_minutos = max((int((ahora - registro.parHoraEntrada).total_seconds()) + 59) // 60, 1)
                 vehiculo = registro.fkIdVehiculo
+                # Visitantes pagan tarifa diferencial si está configurada
                 precio = tarifa.precioHoraVisitante if vehiculo.es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
                 monto = math.ceil((float(precio) / 60) * total_minutos)
                 Pago.objects.create(
@@ -302,6 +333,7 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
                     fkIdParqueo=registro,
                 )
 
+        # Liberar el espacio para nuevos ingresos
         espacio.espEstado = 'DISPONIBLE'
         espacio.save()
         messages.success(
@@ -314,15 +346,18 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
 # ── Confirmar Pago en Efectivo ────────────────────────────────────
 
 class VigilanteConfirmarPagoView(VigilanteRequiredMixin, View):
+    """Confirma el cobro en efectivo de un vehículo que aún sigue estacionado."""
     def post(self, request):
         registro_id = request.POST.get('registro_id')
         registro = get_object_or_404(InventarioParqueo, pk=registro_id)
 
+        # Busca el pago pendiente asociado al registro de parqueo
         pago = Pago.objects.filter(fkIdParqueo=registro, pagEstado='PENDIENTE').first()
         if not pago:
             messages.error(request, 'No se encontró pago pendiente para este vehículo.')
             return redirect('guardia_dashboard')
 
+        # Marca el pago como cobrado (el vehículo puede seguir estacionado)
         pago.pagEstado = 'PAGADO'
         pago.save()
         messages.success(
@@ -335,6 +370,7 @@ class VigilanteConfirmarPagoView(VigilanteRequiredMixin, View):
 # ── Buscar Vehículo (AJAX) ────────────────────────────────────────
 
 class VigilanteBuscarVehiculoView(VigilanteRequiredMixin, View):
+    """Endpoint AJAX para autocompletar datos del vehículo al escribir la placa en el modal de ingreso."""
     def get(self, request):
         placa = request.GET.get('placa', '').upper().strip()
         if not placa:
@@ -342,6 +378,7 @@ class VigilanteBuscarVehiculoView(VigilanteRequiredMixin, View):
 
         vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
         if vehiculo:
+            # Retorna datos de contacto: primero los del vehículo, luego los del usuario registrado
             return JsonResponse({
                 'found': True,
                 'es_visitante': vehiculo.es_visitante,
@@ -354,6 +391,7 @@ class VigilanteBuscarVehiculoView(VigilanteRequiredMixin, View):
 # ── Detalle de Ocupación (AJAX) ───────────────────────────────────
 
 class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
+    """Endpoint AJAX que retorna el detalle completo de un espacio ocupado para el modal de información."""
     def get(self, request):
         espacio_id = request.GET.get('espacio_id')
         if not espacio_id:
@@ -361,6 +399,7 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
 
         try:
             espacio = get_object_or_404(Espacio, pk=espacio_id)
+            # Busca el registro activo (vehículo actualmente estacionado) en este espacio
             registro = InventarioParqueo.objects.select_related(
                 'fkIdVehiculo__fkIdUsuario',
                 'fkIdEspacio__fkIdPiso',
@@ -372,7 +411,10 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
 
             now = timezone.now()
             entrada = registro.parHoraEntrada
+            # Minutos transcurridos redondeados hacia arriba, mínimo 1
             total_minutos = max((int((now - entrada).total_seconds()) + 59) // 60, 1)
+
+            # Convierte el total de minutos a formato legible: "1d 2h 30m"
             dias = total_minutos // 1440
             horas = (total_minutos % 1440) // 60
             minutos = total_minutos % 60
@@ -384,6 +426,7 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
             partes.append(f'{minutos}m')
             duracion_str = ' '.join(partes)
 
+            # Verifica si ya hay un pago pendiente pre-calculado
             pago_pendiente = Pago.objects.filter(
                 fkIdParqueo=registro, pagEstado='PENDIENTE'
             ).first()
@@ -397,10 +440,12 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
             precio_hora_num = 0
             if tarifa:
                 vehiculo = registro.fkIdVehiculo
+                # Selecciona precio normal o de visitante
                 precio_hora_num = float(tarifa.precioHoraVisitante) if vehiculo.es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
                 subtotal = math.ceil((precio_hora_num / 60) * total_minutos)
                 tarifa_info = f'${precio_hora_num:,.0f} / Hora' + (' (Visitante)' if vehiculo.es_visitante else '')
 
+            # Si ya hay pago calculado, usar ese monto; si no, usar el estimado en tiempo real
             total_pagar = float(pago_pendiente.pagMonto) if pago_pendiente else subtotal
             vehiculo = registro.fkIdVehiculo
             usuario = vehiculo.fkIdUsuario
@@ -419,6 +464,7 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
                 'tarifa_info': tarifa_info,
                 'total_pagar': f'${total_pagar:,.0f}',
                 'tiene_pago_pendiente': pago_pendiente is not None,
+                # entrada_iso y precio_hora se usan en el JS para el timer en vivo
                 'entrada_iso': timezone.localtime(entrada).isoformat(),
                 'precio_hora': precio_hora_num,
                 'piso': espacio.fkIdPiso.pisNombre,
@@ -431,6 +477,10 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
 # ── Dashboard Data API (auto-refresh) ────────────────────────────
 
 class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
+    """
+    Endpoint AJAX que el JS llama cada 30 segundos para actualizar el dashboard
+    sin recargar la página (KPIs, mapa de pisos y listas de solicitudes).
+    """
     def get(self, request):
         now = timezone.now()
         hoy_local = timezone.localtime(now).date()
@@ -438,6 +488,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
         fin_hoy = timezone.make_aware(datetime.combine(hoy_local, datetime.max.time()))
         limite_2h = now + timedelta(hours=2)
 
+        # ── KPIs ─────────────────────────────────────────────────────
         entradas_pendientes = Reserva.objects.filter(
             resFechaReserva=hoy_local, resEstado__in=['PENDIENTE', 'CONFIRMADA']
         ).count()
@@ -454,7 +505,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
             parHoraEntrada__range=(inicio_hoy, fin_hoy)
         ).count()
 
-        # Pisos para actualizar el mapa
+        # ── Datos del mapa de pisos ───────────────────────────────────
         pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
             'espacios', 'espacios__reservas'
         ).order_by('pisNombre')
@@ -470,6 +521,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                 reserva_proxima = None
                 pago_pendiente = False
 
+                # Detecta reservas que inician en los próximos 2 horas
                 for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
                     fhr = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
                     fhr = timezone.make_aware(fhr)
@@ -477,6 +529,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                         reserva_proxima = reserva
                         break
 
+                # Detecta si el espacio ocupado tiene cobro pendiente
                 if espacio.espEstado == 'OCUPADO':
                     pago_pendiente = Pago.objects.filter(
                         fkIdParqueo__fkIdEspacio=espacio,
@@ -502,10 +555,68 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                 'espacios': espacios_data,
             })
 
+        # ── Solicitudes de Entrada ────────────────────────────────────
+        qs_entrada = Reserva.objects.filter(
+            resFechaReserva=hoy_local, resEstado__in=['PENDIENTE', 'CONFIRMADA']
+        ).select_related('fkIdVehiculo__fkIdUsuario', 'fkIdEspacio__fkIdPiso').order_by('resHoraInicio')
+
+        solicitudes_entrada_data = []
+        for r in qs_entrada:
+            v = r.fkIdVehiculo
+            solicitudes_entrada_data.append({
+                'pk': r.pk,
+                'placa': v.vehPlaca,
+                'nombre': v.fkIdUsuario.usuNombreCompleto if v.fkIdUsuario else (v.nombre_contacto or 'Visitante'),
+                'piso': r.fkIdEspacio.fkIdPiso.pisNombre,
+                'espacio': r.fkIdEspacio.espNumero,
+                'hora': r.resHoraInicio.strftime('%H:%M'),
+                # Identificador de referencia legible para el guardia
+                'ref': f'RES-{r.pk:010d}',
+            })
+
+        # ── Solicitudes de Salida ─────────────────────────────────────
+        qs_salida = InventarioParqueo.objects.filter(
+            parHoraSalida__isnull=True,
+            pagos__pagEstado='PENDIENTE',
+            pagos__pagMetodo='EFECTIVO',
+        ).distinct().select_related(
+            'fkIdVehiculo__fkIdUsuario', 'fkIdEspacio__fkIdPiso', 'fkIdEspacio__fkIdTipoEspacio'
+        ).order_by('-parHoraEntrada')
+
+        solicitudes_salida_data = []
+        for reg in qs_salida:
+            v = reg.fkIdVehiculo
+            pago = Pago.objects.filter(fkIdParqueo=reg, pagEstado='PENDIENTE', pagMetodo='EFECTIVO').first()
+            if pago:
+                costo = float(pago.pagMonto)
+            else:
+                # Calcular estimado en tiempo real si no hay pago pre-calculado
+                tarifa = Tarifa.objects.filter(
+                    fkIdTipoEspacio=reg.fkIdEspacio.fkIdTipoEspacio, activa=True
+                ).first()
+                if tarifa:
+                    total_min = max((int((now - reg.parHoraEntrada).total_seconds()) + 59) // 60, 1)
+                    precio = float(tarifa.precioHoraVisitante) if v.es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
+                    costo = math.ceil((precio / 60) * total_min)
+                else:
+                    costo = 0
+            solicitudes_salida_data.append({
+                'pk': reg.pk,
+                'placa': v.vehPlaca,
+                'nombre': v.fkIdUsuario.usuNombreCompleto if v.fkIdUsuario else (v.nombre_contacto or 'Visitante'),
+                'piso': reg.fkIdEspacio.fkIdPiso.pisNombre,
+                'espacio': reg.fkIdEspacio.espNumero,
+                'hora': timezone.localtime(reg.parHoraEntrada).strftime('%H:%M'),
+                'costo': f'${costo:,.0f}',
+                'pago_pendiente': pago is not None,
+            })
+
         return JsonResponse({
             'entradas_pendientes': entradas_pendientes,
             'salidas_pendientes': salidas_pendientes,
             'efectivo_pendiente': efectivo_pendiente,
             'activos_hoy': activos_hoy,
             'pisos': pisos_data,
+            'solicitudes_entrada': solicitudes_entrada_data,
+            'solicitudes_salida': solicitudes_salida_data,
         })

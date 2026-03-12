@@ -9,11 +9,12 @@ import django
 import sys
 from datetime import date, timedelta, datetime, time
 
+# Evita errores de encoding en consola de Windows
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiparking.settings')
-django.setup()
+django.setup()  # Inicializa Django antes de importar modelos
 
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
@@ -31,6 +32,7 @@ print(">> Version 2 - Con reservas y tarifa visitantes")
 print("=" * 60)
 
 # 1. LIMPIAR TODO
+# Se elimina en orden para respetar las restricciones de FK (dependientes primero)
 print("\n[1/10] Limpiando base de datos...")
 CuponAplicado.objects.all().delete()
 Cupon.objects.all().delete()
@@ -291,14 +293,14 @@ print(f"[OK] {espacios_creados} espacios creados")
 # 7. CREAR VEHÍCULOS (más variedad)
 print("\n[7/10] Creando vehículos...")
 vehiculos_data = [
-    ('XYZ789', 'Carro', 'Honda', 'Civic', clientes[0]),
-    ('ABC123', 'Carro', 'Renault', 'Logan', clientes[0]),
-    ('DEF456', 'Carro', 'Mazda', '3', clientes[1]),
-    ('GHI789', 'Carro', 'Chevrolet', 'Onix', clientes[2]),
-    ('JKL012', 'Moto', 'Yamaha', 'MT-03', clientes[2]),
-    ('MNO345', 'Moto', 'Suzuki', 'GSX-R150', clientes[3]),
-    ('PQR678', 'Carro', 'Kia', 'Sportage', clientes[3]),
-    ('STU901', 'Carro', 'Nissan', 'Sentra', clientes[1]),
+    ('XYZ-789', 'Carro', 'Honda', 'Civic', clientes[0]),
+    ('ABC-123', 'Carro', 'Renault', 'Logan', clientes[0]),
+    ('DEF-456', 'Carro', 'Mazda', '3', clientes[1]),
+    ('GHI-789', 'Carro', 'Chevrolet', 'Onix', clientes[2]),
+    ('JKL-012', 'Moto', 'Yamaha', 'MT-03', clientes[2]),
+    ('MNO-345', 'Moto', 'Suzuki', 'GSX-R150', clientes[3]),
+    ('PQR-678', 'Carro', 'Kia', 'Sportage', clientes[3]),
+    ('STU-901', 'Carro', 'Nissan', 'Sentra', clientes[1]),
 ]
 
 vehiculos_list = []

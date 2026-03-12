@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Multiparking{% endblock %}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0f0f1a;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f0f1a;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <!-- Header con logo -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border-radius:16px 16px 0 0;padding:32px 40px;text-align:center;border-bottom:2px solid #7c3aed;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <!-- Ícono de parking en círculo púrpura -->
+                    <div style="display:inline-block;width:56px;height:56px;background-color:#7c3aed;border-radius:50%;text-align:center;line-height:56px;font-size:24px;font-weight:900;color:#ffffff;margin-bottom:12px;">P</div>
+                    <br>
+                    <span style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:1px;">Multi<span style="color:#a78bfa;">parking</span></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Contenido principal -->
+          <tr>
+            <td style="background-color:#1a1a2e;padding:40px 40px 32px 40px;border-left:1px solid #2d2d4e;border-right:1px solid #2d2d4e;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#13132a;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;border:1px solid #2d2d4e;border-top:none;">
+              <p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">
+                Este correo fue enviado automáticamente por el sistema Multiparking.
+              </p>
+              <p style="margin:0;font-size:12px;color:#4b5563;">
+                Si no esperabas este correo, puedes ignorarlo con seguridad.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

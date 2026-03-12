@@ -8,6 +8,7 @@ from usuarios.views import (
     logout_view,
     register_view,
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioDeleteView, UsuarioToggleView,
+    PasswordResetRequestView, PasswordResetConfirmView,
 )
 from parqueadero.views import (
     AdminDashboardView, AdminDashboardDataView,
@@ -50,6 +51,8 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset/<str:token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     # API endpoints
     path('api/usuarios/', include('usuarios.urls')),
     path('api/vehiculos/', include('vehiculos.urls')),
