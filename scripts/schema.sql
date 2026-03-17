@@ -20,7 +20,7 @@ CREATE TABLE usuarios (
     usuDocumento    VARCHAR(15)  NOT NULL,
     usuNombre       VARCHAR(50)  NOT NULL,
     usuApellido     VARCHAR(50)  NOT NULL,
-    usuCorreo       VARCHAR(254) NOT NULL,
+    usuCorreo       VARCHAR(64)  NOT NULL,
     usuTelefono     VARCHAR(10)  NOT NULL DEFAULT '',
     usuClaveHash    VARCHAR(255) NOT NULL,
     rolTipoRol      ENUM('ADMIN', 'VIGILANTE', 'CLIENTE') NOT NULL DEFAULT 'CLIENTE',
