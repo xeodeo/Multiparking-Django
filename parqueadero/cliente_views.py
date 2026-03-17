@@ -73,13 +73,16 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
                 'es_visitante': es_visitante,
             }
 
-        # Obtener cupones activos
+        # Obtener cupones activos que el usuario aún no haya usado
         hoy = timezone.now().date()
+        ya_usados = CuponAplicado.objects.filter(
+            fkIdPago__fkIdParqueo__fkIdVehiculo__fkIdUsuario_id=usuario_id
+        ).values_list('fkIdCupon_id', flat=True)
         cupones_disponibles = Cupon.objects.filter(
             cupActivo=True,
             cupFechaInicio__lte=hoy,
             cupFechaFin__gte=hoy
-        )
+        ).exclude(id__in=ya_usados)
 
         return render(request, 'cliente/salida_pago.html', {
             'registro': registro,
@@ -143,10 +146,20 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
                     cupFechaFin__gte=hoy
                 )
 
-                if cupon.cupTipo == 'PORCENTAJE':
-                    monto_descuento = (monto_total * cupon.cupValor) / 100
-                else:  # VALOR_FIJO
-                    monto_descuento = min(cupon.cupValor, monto_total)  # El descuento no puede superar el total
+                # Verificar que el usuario no haya usado este cupón antes
+                ya_usado = CuponAplicado.objects.filter(
+                    fkIdCupon=cupon,
+                    fkIdPago__fkIdParqueo__fkIdVehiculo__fkIdUsuario_id=usuario_id
+                ).exists()
+
+                if ya_usado:
+                    messages.warning(request, f'Ya usaste el cupón "{codigo_cupon}" anteriormente.')
+                    cupon = None
+                else:
+                    if cupon.cupTipo == 'PORCENTAJE':
+                        monto_descuento = (monto_total * cupon.cupValor) / 100
+                    else:  # VALOR_FIJO
+                        monto_descuento = min(cupon.cupValor, monto_total)
 
             except Cupon.DoesNotExist:
                 messages.warning(request, f'El cupón "{codigo_cupon}" no es válido o ha expirado.')

@@ -85,7 +85,11 @@
                 </div>
                 <div class="hidden sm:block text-right">
                     <p class="text-sm font-medium leading-none">{{ request.session.usuario_nombre }}</p>
-                    <p class="text-xs text-mp-muted mt-0.5">{{ request.session.usuario_correo }}</p>
+                    <p class="text-xs text-mp-muted mt-0.5">
+                        {% if request.session.usuario_rol == 'ADMIN' %}Administrador
+                        {% elif request.session.usuario_rol == 'VIGILANTE' %}Vigilante
+                        {% else %}Cliente{% endif %}
+                    </p>
                 </div>
                 <a href="{% url 'logout' %}" class="ml-1 text-mp-muted hover:text-red-400 transition" title="Cerrar sesión">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">

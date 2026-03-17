@@ -263,7 +263,11 @@
                 </div>
                 <div class="text-right">
                     <p class="text-white text-xs sm:text-sm font-medium truncate max-w-[120px] sm:max-w-none">{{ request.session.usuario_nombre }}</p>
-                    <p class="text-mp-muted text-xs hidden sm:block">{{ request.session.usuario_correo }}</p>
+                    <p class="text-mp-muted text-xs hidden sm:block">
+                        {% if request.session.usuario_rol == 'ADMIN' %}Administrador
+                        {% elif request.session.usuario_rol == 'VIGILANTE' %}Vigilante
+                        {% else %}Cliente{% endif %}
+                    </p>
                 </div>
             </div>
         </header>
