@@ -49,7 +49,11 @@
                     <div class="flex items-center gap-3">
                         <div class="text-right hidden sm:block">
                             <p class="text-white text-sm font-medium">{{ request.session.usuario_nombre }}</p>
-                            <p class="text-mp-muted text-xs">{{ request.session.usuario_correo }}</p>
+                            <p class="text-mp-muted text-xs">
+                                {% if request.session.usuario_rol == 'ADMIN' %}Administrador
+                                {% elif request.session.usuario_rol == 'VIGILANTE' %}Vigilante
+                                {% else %}Cliente{% endif %}
+                            </p>
                         </div>
                         <a href="{% url 'logout' %}"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 transition">
