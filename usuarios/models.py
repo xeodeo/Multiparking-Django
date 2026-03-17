@@ -23,7 +23,7 @@ class Usuario(models.Model):
         max_length=50,
         validators=[RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', 'El apellido solo debe contener letras')],
     )
-    usuCorreo = models.EmailField(unique=True)
+    usuCorreo = models.EmailField(max_length=64, unique=True)
     usuTelefono = models.CharField(
         max_length=10, blank=True,
         validators=[RegexValidator(r'^[0-9]+$', 'El teléfono solo debe contener números')],

@@ -142,15 +142,26 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                                 Editar
                             </a>
-                            <form action="{% url 'admin_usuarios_eliminar' pk=u.pk %}" method="POST" class="inline-block"
-                                onsubmit="return confirm('&iquest;Eliminar al usuario {{ u.usuNombreCompleto }}? Esta acci&oacute;n no se puede deshacer.');">
-                                {% csrf_token %}
-                                <button type="submit"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-900/10 text-red-400 border border-red-500/20 hover:bg-red-900/20 hover:text-red-300 transition">
+                            <!-- Zona de eliminación: se activa escribiendo "eliminar" -->
+                            <div class="inline-flex items-center gap-1.5">
+                                <button type="button" onclick="toggleDelInput({{ u.pk }})"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-900/10 text-red-400/50 border border-red-500/10 hover:bg-red-900/20 hover:text-red-400 hover:border-red-500/30 transition"
+                                    title="Haz clic para eliminar usuario">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-                                    Eliminar
                                 </button>
-                            </form>
+                                <input type="text" id="del-input-{{ u.pk }}"
+                                    placeholder="escribe eliminar"
+                                    oninput="checkEliminar(this, {{ u.pk }})"
+                                    autocomplete="off"
+                                    class="hidden w-28 text-xs bg-black/30 border border-red-500/30 rounded-lg px-2 py-1.5 text-red-300 placeholder-gray-600 focus:outline-none focus:border-red-500/60">
+                                <form action="{% url 'admin_usuarios_eliminar' pk=u.pk %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" id="del-btn-{{ u.pk }}"
+                                        class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600/20 text-red-300 border border-red-500/40 hover:bg-red-600/40 hover:text-white transition">
+                                        Confirmar
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -184,4 +195,30 @@
     {% if q %} para la b&uacute;squeda "{{ q }}"{% endif %}
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleDelInput(pk) {
+    const input = document.getElementById('del-input-' + pk);
+    const btn = document.getElementById('del-btn-' + pk);
+    const hidden = input.classList.contains('hidden');
+    input.classList.toggle('hidden');
+    if (hidden) {
+        input.focus();
+    } else {
+        input.value = '';
+        btn.classList.add('hidden');
+    }
+}
+
+function checkEliminar(input, pk) {
+    const btn = document.getElementById('del-btn-' + pk);
+    if (input.value.toLowerCase() === 'eliminar') {
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+</script>
 {% endblock %}

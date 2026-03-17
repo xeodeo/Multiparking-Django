@@ -18,7 +18,10 @@
       "Bash(venv/Scripts/python manage.py migrate)",
       "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS multiparking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
       "Bash(\"C:/xampp/mysql/bin/mysql.exe\" -u root -e \"CREATE DATABASE IF NOT EXISTS multiparking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
-      "Bash(venv/Scripts/python scripts/reiniciar_base_datos.py)"
+      "Bash(venv/Scripts/python scripts/reiniciar_base_datos.py)",
+      "Bash(pip show:*)",
+      "Bash(pip3 show:*)",
+      "Bash(source venv/Scripts/activate)"
     ]
   }
 }
