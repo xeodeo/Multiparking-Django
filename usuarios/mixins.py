@@ -2,6 +2,13 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 
+def _no_cache(response):
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+
 class AdminRequiredMixin:
     """Verifica que el usuario en sesión tenga rol ADMIN."""
 
@@ -12,7 +19,7 @@ class AdminRequiredMixin:
         if request.session.get('usuario_rol') != 'ADMIN':
             messages.error(request, 'No tienes permisos para acceder.')
             return redirect('dashboard')
-        return super().dispatch(request, *args, **kwargs)
+        return _no_cache(super().dispatch(request, *args, **kwargs))  # type: ignore[attr-defined]
 
 
 class VigilanteRequiredMixin:
@@ -25,4 +32,4 @@ class VigilanteRequiredMixin:
         if request.session.get('usuario_rol') not in ('ADMIN', 'VIGILANTE'):
             messages.error(request, 'No tienes permisos para acceder.')
             return redirect('dashboard')
-        return super().dispatch(request, *args, **kwargs)
+        return _no_cache(super().dispatch(request, *args, **kwargs))  # type: ignore[attr-defined]
