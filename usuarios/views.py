@@ -6,7 +6,9 @@ from django.core import signing
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import never_cache
 
 from multiparking import email_utils
 from .mixins import AdminRequiredMixin
@@ -32,6 +34,7 @@ def _redirect_by_rol(rol):
     return 'dashboard'
 
 
+@never_cache
 def home_view(request):
     # Si ya hay sesión activa, redirige directo al panel correspondiente según el rol
     if request.session.get('usuario_id'):
@@ -39,6 +42,7 @@ def home_view(request):
     return render(request, 'home.html')
 
 
+@never_cache
 def login_view(request):
     if request.session.get('usuario_id'):
         rol = request.session.get('usuario_rol')
@@ -187,6 +191,7 @@ def logout_view(request):
     return redirect('home')
 
 
+@never_cache
 def dashboard_view(request):
     """Dashboard para clientes/usuarios registrados"""
     usuario_id = request.session.get('usuario_id')
