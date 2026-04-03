@@ -1,0 +1,116 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido principal" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - complementary [ref=e3]:
+    - link "MultiParking" [ref=e5] [cursor=pointer]:
+      - /url: /admin-panel/
+    - navigation "Menú principal de administración" [ref=e6]:
+      - link "Panel Principal" [ref=e7] [cursor=pointer]:
+        - /url: /admin-panel/
+        - img [ref=e8]
+        - text: Panel Principal
+      - link "Reservas" [ref=e10] [cursor=pointer]:
+        - /url: /admin-panel/reservas/
+        - img [ref=e11]
+        - text: Reservas
+      - link "Vehículos" [ref=e13] [cursor=pointer]:
+        - /url: /admin-panel/vehiculos/
+        - img [ref=e14]
+        - text: Vehículos
+      - link "Pagos" [ref=e16] [cursor=pointer]:
+        - /url: /admin-panel/pagos/
+        - img [ref=e17]
+        - text: Pagos
+      - link "Tipos de Espacio" [ref=e19] [cursor=pointer]:
+        - /url: /admin-panel/tipos-espacio/
+        - img [ref=e20]
+        - text: Tipos de Espacio
+      - link "Espacios" [ref=e22] [cursor=pointer]:
+        - /url: /admin-panel/espacios/
+        - img [ref=e23]
+        - text: Espacios
+      - link "Pisos" [ref=e26] [cursor=pointer]:
+        - /url: /admin-panel/pisos/
+        - img [ref=e27]
+        - text: Pisos
+      - link "Inventario" [ref=e29] [cursor=pointer]:
+        - /url: /admin-panel/inventario/
+        - img [ref=e30]
+        - text: Inventario
+      - link "Tarifas" [ref=e32] [cursor=pointer]:
+        - /url: /admin-panel/tarifas/
+        - img [ref=e33]
+        - text: Tarifas
+      - link "Cupones" [ref=e35] [cursor=pointer]:
+        - /url: /admin-panel/cupones/
+        - img [ref=e36]
+        - text: Cupones
+      - link "Novedades" [ref=e38] [cursor=pointer]:
+        - /url: /admin-panel/novedades/
+        - img [ref=e39]
+        - text: Novedades
+      - link "Fidelidad" [ref=e41] [cursor=pointer]:
+        - /url: /admin-panel/fidelidad/
+        - img [ref=e42]
+        - text: Fidelidad
+      - link "Reportes" [ref=e44] [cursor=pointer]:
+        - /url: /admin-panel/reportes/
+        - img [ref=e45]
+        - text: Reportes
+      - link "Código QR" [ref=e47] [cursor=pointer]:
+        - /url: /admin-panel/qr/generar/
+        - img [ref=e48]
+        - text: Código QR
+      - link "Usuarios" [ref=e51] [cursor=pointer]:
+        - /url: /admin-panel/usuarios/
+        - img [ref=e52]
+        - text: Usuarios
+      - link "Prueba Correos" [ref=e54] [cursor=pointer]:
+        - /url: /admin-panel/test-email/
+        - img [ref=e55]
+        - text: Prueba Correos
+    - link "Cerrar Sesión" [ref=e58] [cursor=pointer]:
+      - /url: /logout/
+      - img [ref=e59]
+      - text: Cerrar Sesión
+  - generic [ref=e61]:
+    - banner [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]: MultiParking
+        - generic [ref=e65]: Panel de Administrador
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]: 04:27:04 p. m.
+          - generic [ref=e69]: viernes, 3 de abril de 2026
+        - generic [ref=e70]:
+          - paragraph [ref=e71]: Administrador Principal
+          - paragraph [ref=e72]: Administrador
+    - main [ref=e73]:
+      - generic [ref=e74]:
+        - heading "Programa de Fidelidad" [level=1] [ref=e75]
+        - paragraph [ref=e76]: Configura los stickers y bonos para clientes frecuentes
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - heading "Parámetros" [level=2] [ref=e79]
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: Meta de stickers para bono
+              - spinbutton [ref=e83]: "10"
+              - paragraph [ref=e84]: Número de stickers para reclamar el bono del 100%
+            - generic [ref=e85]:
+              - generic [ref=e86]: Días de validez del bono
+              - spinbutton [ref=e87]: "30"
+              - paragraph [ref=e88]: El cupón bono vence en N días desde que se reclama
+            - button "Guardar configuración" [ref=e89] [cursor=pointer]
+        - generic [ref=e90]:
+          - heading "¿Cómo funciona?" [level=2] [ref=e91]
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - generic [ref=e95]: "1"
+              - paragraph [ref=e96]: El cliente estaciona su vehículo más de 1 hora y gana un sticker automáticamente al salir.
+            - generic [ref=e97]:
+              - generic [ref=e99]: "2"
+              - paragraph [ref=e100]: Cuando acumula 10 stickers, puede reclamar un cupón de descuento del 100%.
+            - generic [ref=e101]:
+              - generic [ref=e103]: "3"
+              - paragraph [ref=e104]: El cupón es válido por 30 días y se destruye al ser usado. Los stickers se reinician.

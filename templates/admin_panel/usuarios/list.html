@@ -176,8 +176,30 @@
     </div>
 </div>
 
-<!-- Info: Total de registros -->
-{% if usuarios %}
+<!-- Paginación -->
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-mp-muted">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} &mdash; {{ page_obj.paginator.count }} usuarios</span>
+    <div class="flex gap-1">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&page={{ page_obj.previous_page_number }}"
+            class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página anterior">&larr;</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-3 py-1.5 rounded-lg bg-mp-purple text-white font-bold">{{ num }}</span>
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            <a href="?q={{ q }}&page={{ num }}"
+                class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href="?q={{ q }}&page={{ page_obj.next_page_number }}"
+            class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página siguiente">&rarr;</a>
+        {% endif %}
+    </div>
+</div>
+{% elif usuarios %}
 <div class="mt-4 text-center text-mp-muted text-xs">
     Mostrando {{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }}
     {% if q %} para la b&uacute;squeda "{{ q }}"{% endif %}

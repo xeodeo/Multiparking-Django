@@ -81,6 +81,11 @@
                     <td class="px-6 py-4 text-right">
                         {% if res.resEstado == 'CONFIRMADA' or res.resEstado == 'PENDIENTE' %}
                         <div class="flex justify-end gap-2">
+                            <a href="{% url 'admin_reservas_editar' res.pk %}"
+                                class="inline-flex items-center gap-1 bg-mp-purple/20 hover:bg-mp-purple/40 text-mp-purple-light px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                                Editar
+                            </a>
                             <form method="POST" action="{% url 'admin_reservas_finalizar' res.pk %}">
                                 {% csrf_token %}
                                 <button type="submit"
@@ -108,4 +113,28 @@
         </table>
     </div>
 </div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-mp-muted">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} &mdash; {{ page_obj.paginator.count }} reservas</span>
+    <div class="flex gap-1">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&estado={{ estado_sel }}&page={{ page_obj.previous_page_number }}"
+            class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página anterior">&larr;</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-3 py-1.5 rounded-lg bg-mp-purple text-white font-bold">{{ num }}</span>
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            <a href="?q={{ q }}&estado={{ estado_sel }}&page={{ num }}"
+                class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href="?q={{ q }}&estado={{ estado_sel }}&page={{ page_obj.next_page_number }}"
+            class="px-3 py-1.5 rounded-lg bg-mp-card border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página siguiente">&rarr;</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

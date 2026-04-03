@@ -128,6 +128,10 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             fkIdVehiculo=vehiculo
         )
 
+        # Bloquear el espacio para que nadie más lo reserve
+        espacio.espEstado = 'RESERVADO'
+        espacio.save()
+
         # Enviar correo de confirmación al cliente (en hilo separado, no bloquea)
         email_utils.enviar_confirmacion_reserva(nueva_reserva)
 
@@ -281,11 +285,16 @@ class ClienteCancelarReservaView(ClienteRequiredMixin, View):
             resEstado__in=['PENDIENTE', 'CONFIRMADA']
         )
 
-        # Cancelar la reserva (permitido en cualquier momento)
+        # Cancelar la reserva y liberar el espacio
         reserva.resEstado = 'CANCELADA'
         reserva.save()
 
-        messages.success(request, f'Reserva cancelada exitosamente.')
+        espacio = reserva.fkIdEspacio
+        if espacio.espEstado == 'RESERVADO':
+            espacio.espEstado = 'DISPONIBLE'
+            espacio.save()
+
+        messages.success(request, 'Reserva cancelada exitosamente.')
         return redirect('dashboard')
 
 

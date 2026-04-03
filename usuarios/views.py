@@ -3,6 +3,7 @@ import re
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.core import signing
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -368,9 +369,12 @@ class UsuarioListView(AdminRequiredMixin, View):
         clientes = usuarios.filter(rolTipoRol='CLIENTE').count()
         vigilantes = usuarios.filter(rolTipoRol='VIGILANTE').count()
 
+        page_obj = Paginator(usuarios, 20).get_page(request.GET.get('page'))
+
         return render(request, 'admin_panel/usuarios/list.html', {
             'active_page': 'usuarios',
-            'usuarios': usuarios,
+            'usuarios': page_obj,
+            'page_obj': page_obj,
             'total': total,
             'activos': activos,
             'inactivos': total - activos,

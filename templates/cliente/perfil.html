@@ -1,0 +1,102 @@
+{% extends "cliente/base.html" %}
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold">Mi Perfil</h1>
+    <p class="text-mp-muted text-sm mt-1">Tu información y programa de fidelidad</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Datos personales -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Datos personales</h2>
+        <dl class="space-y-3 text-sm">
+            <div class="flex justify-between">
+                <dt class="text-mp-muted">Nombre</dt>
+                <dd class="text-white font-medium">{{ usuario.usuNombreCompleto }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-mp-muted">Documento</dt>
+                <dd class="font-mono text-white">{{ usuario.usuDocumento }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-mp-muted">Correo</dt>
+                <dd class="text-white">{{ usuario.usuCorreo }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-mp-muted">Teléfono</dt>
+                <dd class="text-white">{{ usuario.usuTelefono|default:"—" }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-mp-muted">Rol</dt>
+                <dd>
+                    {% if usuario.rolTipoRol == 'ADMIN' %}
+                    <span class="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-xs font-bold">Administrador</span>
+                    {% elif usuario.rolTipoRol == 'VIGILANTE' %}
+                    <span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded text-xs font-bold">Vigilante</span>
+                    {% else %}
+                    <span class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-xs font-bold">Cliente</span>
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Stickers / Fidelidad -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-1">Programa de Fidelidad</h2>
+        <p class="text-mp-muted text-xs mb-5">Ganas un sticker por cada parqueo mayor a 1 hora</p>
+
+        <!-- Progreso -->
+        <div class="mb-4">
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-mp-muted">Stickers acumulados</span>
+                <span class="text-white font-bold">{{ stickers }} / {{ meta }}</span>
+            </div>
+            <div class="w-full bg-black/30 rounded-full h-3">
+                <div class="bg-gradient-to-r from-mp-purple to-pink-500 h-3 rounded-full transition-all duration-500"
+                    style="width: {{ progreso }}%"></div>
+            </div>
+            <p class="text-xs text-mp-muted mt-1">{{ progreso }}% completado</p>
+        </div>
+
+        <!-- Stickers visuales -->
+        <div class="flex flex-wrap gap-2 mb-5">
+            {% for i in "x"|ljust:meta %}
+            {% with forloop.counter as n %}
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-base
+                {% if n <= stickers %}bg-mp-purple text-white{% else %}bg-black/30 text-gray-600{% endif %}">
+                ⭐
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+
+        {% if puede_reclamar %}
+        <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
+            <p class="text-green-400 font-bold text-sm mb-1">¡Felicitaciones! Puedes reclamar tu bono</p>
+            <p class="text-green-300/70 text-xs">Recibirás un cupón del 100% de descuento en tu próximo parqueo.</p>
+        </div>
+        <form method="POST" action="{% url 'cliente_reclamar_bono' %}">
+            {% csrf_token %}
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-mp-purple to-pink-600 hover:opacity-90 text-white py-2.5 rounded-lg font-bold transition">
+                Reclamar Bono 100%
+            </button>
+        </form>
+        {% elif bono_activo %}
+        <div class="bg-mp-purple/10 border border-mp-purple/30 rounded-lg p-4">
+            <p class="text-mp-purple-light font-bold text-sm mb-1">Tienes un bono activo</p>
+            <p class="text-mp-muted text-xs">Código: <span class="font-mono text-white font-bold">{{ bono_activo.cupCodigo }}</span></p>
+            <p class="text-mp-muted text-xs">Válido hasta: {{ bono_activo.cupFechaFin|date:"d/m/Y" }}</p>
+        </div>
+        {% else %}
+        <p class="text-mp-muted text-sm text-center">
+            Te faltan <span class="text-white font-bold">{{ meta|add:"-"|add:stickers|stringformat:"d" }}</span> stickers para tu bono
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

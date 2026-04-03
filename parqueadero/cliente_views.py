@@ -11,6 +11,7 @@ from parqueadero.views import ClienteRequiredMixin
 from pagos.models import Pago
 from cupones.models import Cupon, CuponAplicado
 from tarifas.models import Tarifa
+from fidelidad.models import Sticker
 
 
 class ClienteSalidaView(ClienteRequiredMixin, View):
@@ -204,6 +205,14 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
             espacio = registro.fkIdEspacio
             espacio.espEstado = 'DISPONIBLE'
             espacio.save()
+
+            # Sticker de fidelidad: si estuvo más de 1 hora y es usuario registrado
+            usuario_vehiculo = registro.fkIdVehiculo.fkIdUsuario
+            if usuario_vehiculo and total_minutos >= 60:
+                Sticker.objects.get_or_create(
+                    fkIdParqueo=registro,
+                    defaults={'fkIdUsuario': usuario_vehiculo}
+                )
 
             email_utils.enviar_recibo_pago(pago, registro)
 

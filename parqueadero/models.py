@@ -36,6 +36,7 @@ class Espacio(models.Model):
     class EstadoChoices(models.TextChoices):
         DISPONIBLE = 'DISPONIBLE', 'Disponible'  # Libre para recibir vehículos
         OCUPADO = 'OCUPADO', 'Ocupado'            # Hay un vehículo estacionado
+        RESERVADO = 'RESERVADO', 'Reservado'      # Bloqueado por una reserva activa
         INACTIVO = 'INACTIVO', 'Inactivo'         # Fuera de servicio (mantenimiento, etc.)
 
     espNumero = models.CharField(max_length=10)  # Código único del puesto, ej. 'C1-01', 'M2-05'

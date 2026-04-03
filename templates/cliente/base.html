@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
@@ -5,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dashboard{% endblock %} - MultiParking</title>
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,6 +35,11 @@
 </head>
 
 <body class="text-white min-h-screen">
+    <!-- Skip to main content (WCAG keyboard navigation) -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-mp-purple focus:text-white focus:rounded-lg focus:font-medium">
+        Saltar al contenido principal
+    </a>
+
     <!-- Header -->
     <header class="bg-mp-card border-b border-mp-border sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 py-4">
@@ -47,6 +54,13 @@
                         <div class="text-mp-muted text-xs"></div>
                     </div>
                     <div class="flex items-center gap-3">
+                        <a href="{% url 'cliente_perfil' %}" aria-label="Mi perfil"
+                            class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span class="hidden sm:inline">Mi Perfil</span>
+                        </a>
                         <div class="text-right hidden sm:block">
                             <p class="text-white text-sm font-medium">{{ request.session.usuario_nombre }}</p>
                             <p class="text-mp-muted text-xs">
@@ -55,7 +69,7 @@
                                 {% else %}Cliente{% endif %}
                             </p>
                         </div>
-                        <a href="{% url 'logout' %}"
+                        <a href="{% url 'logout' %}" aria-label="Cerrar sesión"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
@@ -69,7 +83,7 @@
     </header>
 
     <!-- Content -->
-    <main class="container mx-auto px-4 sm:px-6 py-8">
+    <main id="main-content" class="container mx-auto px-4 sm:px-6 py-8">
         <!-- Messages -->
         <!-- Mensajes flash de Django: error=rojo, success=verde, otros=azul -->
         {% if messages %}

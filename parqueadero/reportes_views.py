@@ -270,18 +270,127 @@ class ReportesView(AdminRequiredMixin, View):
 
 
 class ExportarPDFReportesView(AdminRequiredMixin, View):
-    """
-    Exportar reportes a PDF
-    """
     def get(self, request):
-        # TODO: Implementar exportación PDF con ReportLab o WeasyPrint
-        return HttpResponse("Exportación PDF en desarrollo", content_type="text/plain")
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        import io
+
+        periodo = request.GET.get('periodo', 'mes')
+        now = timezone.now()
+        if periodo == 'semana':
+            fecha_inicio = now - timedelta(days=7)
+            label = 'última semana'
+        elif periodo == 'año':
+            fecha_inicio = now - timedelta(days=365)
+            label = 'último año'
+        else:
+            fecha_inicio = now - timedelta(days=30)
+            label = 'último mes'
+
+        pagos = Pago.objects.filter(
+            pagFechaPago__gte=fecha_inicio,
+            pagEstado='PAGADO'
+        ).select_related('fkIdParqueo__fkIdVehiculo', 'fkIdParqueo__fkIdEspacio')
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40, bottomMargin=40)
+        styles = getSampleStyleSheet()
+        elements = []
+
+        elements.append(Paragraph(f'Reporte de Ingresos — {label}', styles['Title']))
+        elements.append(Paragraph(f'Generado: {now.strftime("%d/%m/%Y %H:%M")}', styles['Normal']))
+        elements.append(Spacer(1, 20))
+
+        total = pagos.aggregate(t=Sum('pagMonto'))['t'] or 0
+        elements.append(Paragraph(f'<b>Total recaudado: ${float(total):,.0f} COP</b>', styles['Normal']))
+        elements.append(Spacer(1, 12))
+
+        data = [['Fecha', 'Placa', 'Espacio', 'Método', 'Monto COP']]
+        for p in pagos[:500]:
+            data.append([
+                p.pagFechaPago.strftime('%d/%m/%Y'),
+                p.fkIdParqueo.fkIdVehiculo.vehPlaca,
+                p.fkIdParqueo.fkIdEspacio.espNumero,
+                p.pagMetodo,
+                f'${float(p.pagMonto):,.0f}',
+            ])
+
+        t = Table(data, colWidths=[80, 70, 70, 70, 90])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6d28d9')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f9fafb'), colors.white]),
+            ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#d1d5db')),
+            ('ALIGN', (4, 0), (4, -1), 'RIGHT'),
+        ]))
+        elements.append(t)
+
+        doc.build(elements)
+        buffer.seek(0)
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="reporte_ingresos_{periodo}.pdf"'
+        return response
 
 
 class ExportarExcelReportesView(AdminRequiredMixin, View):
-    """
-    Exportar reportes a Excel
-    """
     def get(self, request):
-        # TODO: Implementar exportación Excel con openpyxl
-        return HttpResponse("Exportación Excel en desarrollo", content_type="text/plain")
+        import io
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+
+        periodo = request.GET.get('periodo', 'mes')
+        now = timezone.now()
+        if periodo == 'semana':
+            fecha_inicio = now - timedelta(days=7)
+            label = 'semana'
+        elif periodo == 'año':
+            fecha_inicio = now - timedelta(days=365)
+            label = 'anio'
+        else:
+            fecha_inicio = now - timedelta(days=30)
+            label = 'mes'
+
+        pagos = Pago.objects.filter(
+            pagFechaPago__gte=fecha_inicio,
+            pagEstado='PAGADO'
+        ).select_related('fkIdParqueo__fkIdVehiculo', 'fkIdParqueo__fkIdEspacio__fkIdPiso')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Ingresos'
+
+        header_fill = PatternFill(start_color='6D28D9', end_color='6D28D9', fill_type='solid')
+        header_font = Font(color='FFFFFF', bold=True)
+
+        headers = ['Fecha', 'Hora', 'Placa', 'Espacio', 'Piso', 'Método', 'Monto COP']
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+
+        for row, p in enumerate(pagos, 2):
+            ws.cell(row=row, column=1, value=p.pagFechaPago.strftime('%d/%m/%Y'))
+            ws.cell(row=row, column=2, value=p.pagFechaPago.strftime('%H:%M'))
+            ws.cell(row=row, column=3, value=p.fkIdParqueo.fkIdVehiculo.vehPlaca)
+            ws.cell(row=row, column=4, value=p.fkIdParqueo.fkIdEspacio.espNumero)
+            ws.cell(row=row, column=5, value=p.fkIdParqueo.fkIdEspacio.fkIdPiso.pisNombre)
+            ws.cell(row=row, column=6, value=p.pagMetodo)
+            ws.cell(row=row, column=7, value=float(p.pagMonto))
+
+        for col in ws.columns:
+            ws.column_dimensions[col[0].column_letter].width = 15
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        response = HttpResponse(
+            buffer,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="reporte_ingresos_{label}.xlsx"'
+        return response

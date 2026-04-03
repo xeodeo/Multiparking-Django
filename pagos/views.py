@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.db.models import Q, Sum, Count
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 from decimal import Decimal
 
 from usuarios.mixins import AdminRequiredMixin
@@ -63,8 +64,11 @@ class PagosListView(AdminRequiredMixin, View):
         ).count()
 
         # Procesar cada pago para agregar descuento
+        paginator = Paginator(pagos_qs, 20)
+        page_obj = paginator.get_page(request.GET.get('page'))
+
         pagos_list = []
-        for pago in pagos_qs:
+        for pago in page_obj:
             # Calcular descuento total aplicado
             descuento_total = CuponAplicado.objects.filter(
                 fkIdPago=pago
@@ -84,6 +88,7 @@ class PagosListView(AdminRequiredMixin, View):
         context = {
             'active_page': 'pagos',
             'pagos': pagos_list,
+            'page_obj': page_obj,
             'total_recaudado': total_recaudado,
             'pagos_realizados': pagos_realizados,
             'pagos_pendientes': pagos_pendientes,

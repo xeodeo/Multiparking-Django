@@ -79,7 +79,7 @@ CREATE TABLE espacios (
     espNumero       VARCHAR(10) NOT NULL,
     fkIdPiso        INT         NOT NULL,
     fkIdTipoEspacio INT         NOT NULL,
-    espEstado       ENUM('DISPONIBLE', 'OCUPADO', 'INACTIVO') NOT NULL DEFAULT 'DISPONIBLE',
+    espEstado       ENUM('DISPONIBLE', 'OCUPADO', 'INACTIVO', 'RESERVADO') NOT NULL DEFAULT 'DISPONIBLE',
 
     CONSTRAINT fk_espacio_piso         FOREIGN KEY (fkIdPiso)        REFERENCES pisos(id)         ON DELETE CASCADE,
     CONSTRAINT fk_espacio_tipo_espacio FOREIGN KEY (fkIdTipoEspacio) REFERENCES tipos_espacio(id) ON DELETE CASCADE,
@@ -183,9 +183,54 @@ CREATE TABLE reservas (
     CONSTRAINT fk_reserva_vehiculo FOREIGN KEY (fkIdVehiculo) REFERENCES vehiculos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ────────────────────────────────────────────────────────────
+-- 12. NOVEDADES (incidentes registrados por vigilantes)
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE novedades (
+    id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    novDescripcion        TEXT         NOT NULL,
+    novFoto               VARCHAR(100) NULL,
+    novEstado             ENUM('PENDIENTE', 'EN_PROCESO', 'RESUELTO') NOT NULL DEFAULT 'PENDIENTE',
+    novComentario         TEXT         NOT NULL DEFAULT '',
+    novFechaCreacion      DATETIME(6)  NOT NULL,
+    novFechaActualizacion DATETIME(6)  NOT NULL,
+    fkIdVehiculo          INT          NULL,
+    fkIdEspacio           INT          NULL,
+    fkIdReportador        INT          NULL,
+    fkIdResponsable       INT          NULL,
+
+    CONSTRAINT fk_novedad_vehiculo    FOREIGN KEY (fkIdVehiculo)   REFERENCES vehiculos(id)          ON DELETE SET NULL,
+    CONSTRAINT fk_novedad_espacio     FOREIGN KEY (fkIdEspacio)    REFERENCES espacios(id)            ON DELETE SET NULL,
+    CONSTRAINT fk_novedad_reportador  FOREIGN KEY (fkIdReportador) REFERENCES usuarios(id)            ON DELETE SET NULL,
+    CONSTRAINT fk_novedad_responsable FOREIGN KEY (fkIdResponsable) REFERENCES usuarios(id)           ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ────────────────────────────────────────────────────────────
+-- 13. FIDELIDAD — Configuración (singleton)
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE fidelidad_configuracion (
+    id                   INT AUTO_INCREMENT PRIMARY KEY,
+    metaStickers         INT UNSIGNED NOT NULL DEFAULT 10,
+    diasVencimientoBono  INT UNSIGNED NOT NULL DEFAULT 30
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ────────────────────────────────────────────────────────────
+-- 14. FIDELIDAD — Stickers acumulados por usuario
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE fidelidad_stickers (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    stkFecha     DATETIME(6) NOT NULL,
+    fkIdUsuario  INT         NOT NULL,
+    fkIdParqueo  INT         NOT NULL,
+
+    CONSTRAINT fk_sticker_usuario FOREIGN KEY (fkIdUsuario) REFERENCES usuarios(id)           ON DELETE CASCADE,
+    CONSTRAINT fk_sticker_parqueo FOREIGN KEY (fkIdParqueo) REFERENCES inventario_parqueo(id) ON DELETE CASCADE,
+    CONSTRAINT uq_sticker_parqueo UNIQUE (fkIdParqueo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- FIN DEL SCRIPT
--- 11 tablas creadas | 0 tablas de Django
+-- 14 tablas creadas | 0 tablas de Django
 -- ============================================================

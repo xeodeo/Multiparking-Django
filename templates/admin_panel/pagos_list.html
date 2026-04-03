@@ -166,5 +166,29 @@
             </tbody>
         </table>
     </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="px-6 py-4 border-t border-mp-border flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-mp-muted">
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} &mdash; {{ page_obj.paginator.count }} pagos</span>
+        <div class="flex gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?search={{ search_query }}&estado={{ estado_filter }}&page={{ page_obj.previous_page_number }}"
+                class="px-3 py-1.5 rounded-lg bg-black/20 border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página anterior">&larr;</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="px-3 py-1.5 rounded-lg bg-mp-purple text-white font-bold">{{ num }}</span>
+                {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                <a href="?search={{ search_query }}&estado={{ estado_filter }}&page={{ num }}"
+                    class="px-3 py-1.5 rounded-lg bg-black/20 border border-mp-border hover:border-mp-purple text-white transition">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a href="?search={{ search_query }}&estado={{ estado_filter }}&page={{ page_obj.next_page_number }}"
+                class="px-3 py-1.5 rounded-lg bg-black/20 border border-mp-border hover:border-mp-purple text-white transition" aria-label="Página siguiente">&rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

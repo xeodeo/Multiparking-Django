@@ -1,0 +1,116 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-4">
+    <a href="{% url 'admin_novedades' %}" class="text-mp-muted hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+    </a>
+    <div>
+        <h1 class="text-2xl font-bold">{{ title }}</h1>
+        <p class="text-mp-muted text-sm mt-0.5">{% if novedad %}Novedad #{{ novedad.pk }}{% else %}Nuevo incidente{% endif %}</p>
+    </div>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <form method="POST" enctype="multipart/form-data"
+            action="{% if novedad %}{% url 'admin_novedades_editar' pk=novedad.pk %}{% else %}{% url 'admin_novedades_crear' %}{% endif %}">
+            {% csrf_token %}
+
+            <!-- Descripción -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Descripción *</label>
+                <textarea name="descripcion" rows="3" required
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition text-sm resize-none">{{ novedad.novDescripcion|default:'' }}</textarea>
+            </div>
+
+            <!-- Vehículo -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Vehículo relacionado</label>
+                <select name="vehiculo_id"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition text-sm">
+                    <option value="">— Ninguno —</option>
+                    {% for v in vehiculos %}
+                    <option value="{{ v.pk }}"
+                        {% if novedad.fkIdVehiculo_id == v.pk %}selected
+                        {% elif not novedad and preselect_vehiculo == v.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ v.vehPlaca }}{% if v.fkIdUsuario %} — {{ v.fkIdUsuario.usuNombreCompleto }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Espacio -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Espacio relacionado</label>
+                <select name="espacio_id"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition text-sm">
+                    <option value="">— Ninguno —</option>
+                    {% for e in espacios %}
+                    <option value="{{ e.pk }}"
+                        {% if novedad.fkIdEspacio_id == e.pk %}selected
+                        {% elif not novedad and preselect_espacio == e.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ e.espNumero }} — {{ e.fkIdPiso.pisNombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Responsable -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Asignar responsable</label>
+                <select name="responsable_id"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition text-sm">
+                    <option value="">— Sin asignar —</option>
+                    {% for r in responsables %}
+                    <option value="{{ r.pk }}" {% if novedad.fkIdResponsable_id == r.pk %}selected{% endif %}>
+                        {{ r.usuNombreCompleto }} ({{ r.rolTipoRol }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if novedad %}
+            <!-- Estado (solo en edición) -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Estado</label>
+                <select name="estado"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition text-sm">
+                    <option value="PENDIENTE" {% if novedad.novEstado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+                    <option value="EN_PROCESO" {% if novedad.novEstado == 'EN_PROCESO' %}selected{% endif %}>En Proceso</option>
+                    <option value="RESUELTO" {% if novedad.novEstado == 'RESUELTO' %}selected{% endif %}>Resuelto</option>
+                </select>
+            </div>
+
+            <!-- Comentario de seguimiento -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Comentario / Acciones tomadas</label>
+                <textarea name="comentario" rows="3"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition text-sm resize-none"
+                    placeholder="Describe las acciones tomadas...">{{ novedad.novComentario }}</textarea>
+            </div>
+            {% endif %}
+
+            <!-- Foto -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Foto (opcional)</label>
+                {% if novedad.novFoto %}
+                <img src="{{ novedad.novFoto.url }}" class="h-24 rounded-lg mb-2 object-cover" alt="Foto novedad">
+                {% endif %}
+                <input type="file" name="foto" accept="image/*"
+                    class="w-full text-sm text-mp-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-mp-purple/20 file:text-mp-purple-light hover:file:bg-mp-purple/30 transition">
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit" class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition">
+                    {% if novedad %}Guardar cambios{% else %}Registrar Novedad{% endif %}
+                </button>
+                <a href="{% url 'admin_novedades' %}" class="border border-mp-border text-mp-muted hover:text-white px-6 py-2.5 rounded-lg font-medium transition">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

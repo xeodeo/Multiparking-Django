@@ -1,0 +1,190 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido principal" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "MultiParking" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard/
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]: 04:29:45 p. m.
+          - generic [ref=e10]: viernes, 3 de abril de 2026
+        - generic [ref=e11]:
+          - link "Mi perfil" [ref=e12] [cursor=pointer]:
+            - /url: /cliente/perfil/
+            - img [ref=e13]
+            - generic [ref=e15]: Mi Perfil
+          - generic [ref=e16]:
+            - paragraph [ref=e17]: Carlos Perez
+            - paragraph [ref=e18]: Cliente
+          - link "Cerrar sesión" [ref=e19] [cursor=pointer]:
+            - /url: /logout/
+            - img [ref=e20]
+            - generic [ref=e22]: Cerrar Sesión
+  - main [ref=e23]:
+    - generic [ref=e25]: Bienvenido, Carlos Perez.
+    - generic [ref=e26]:
+      - heading "¡Hola, Carlos Perez! 👋" [level=1] [ref=e27]
+      - paragraph [ref=e28]: Bienvenido de nuevo a tu panel de control de parqueadero
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - heading "Estado de Parqueo" [level=2] [ref=e31]:
+          - img [ref=e32]
+          - text: Estado de Parqueo
+        - generic [ref=e34]: Estacionado
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - img [ref=e38]
+          - generic [ref=e40]:
+            - paragraph [ref=e41]: Vehículo
+            - paragraph [ref=e42]: ABC-123
+            - paragraph [ref=e43]: Carro
+        - generic [ref=e44]:
+          - img [ref=e46]
+          - generic [ref=e49]:
+            - paragraph [ref=e50]: Espacio
+            - paragraph [ref=e51]: C1-01
+            - paragraph [ref=e52]: "Ingreso: 11:48 a.m."
+        - generic [ref=e53]:
+          - img [ref=e55]
+          - generic [ref=e57]:
+            - paragraph [ref=e58]: Tiempo transcurrido
+            - paragraph [ref=e59]: 4h 42m
+            - paragraph [ref=e60]: En curso
+        - generic [ref=e61]:
+          - img [ref=e63]
+          - generic [ref=e65]:
+            - paragraph [ref=e66]: Valor acumulado
+            - paragraph [ref=e67]: $23.500
+            - paragraph [ref=e68]: Tiempo real
+    - generic [ref=e69]:
+      - link "Ingresar Escanear QR" [ref=e70] [cursor=pointer]:
+        - /url: /parqueadero/escanear/
+        - generic [ref=e71]:
+          - img [ref=e73]
+          - generic [ref=e75]:
+            - heading "Ingresar" [level=3] [ref=e76]
+            - paragraph [ref=e77]: Escanear QR
+      - link "Vehículos Gestionar" [ref=e78] [cursor=pointer]:
+        - /url: "#vehiculos"
+        - generic [ref=e79]:
+          - img [ref=e81]
+          - generic [ref=e83]:
+            - heading "Vehículos" [level=3] [ref=e84]
+            - paragraph [ref=e85]: Gestionar
+      - link "Reservar Nueva reserva" [ref=e86] [cursor=pointer]:
+        - /url: /cliente/reservas/crear/
+        - generic [ref=e87]:
+          - img [ref=e89]
+          - generic [ref=e91]:
+            - heading "Reservar" [level=3] [ref=e92]
+            - paragraph [ref=e93]: Nueva reserva
+      - link "Salir Procesar pago" [ref=e94] [cursor=pointer]:
+        - /url: /parqueadero/salida/
+        - generic [ref=e95]:
+          - img [ref=e97]
+          - generic [ref=e99]:
+            - heading "Salir" [level=3] [ref=e100]
+            - paragraph [ref=e101]: Procesar pago
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - heading "Mis Vehículos" [level=2] [ref=e105]:
+            - img [ref=e106]
+            - text: Mis Vehículos
+          - link "Agregar" [ref=e108] [cursor=pointer]:
+            - /url: /cliente/vehiculos/crear/
+            - img [ref=e109]
+            - text: Agregar
+        - generic [ref=e111]:
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - img [ref=e116]
+              - generic [ref=e118]:
+                - heading "CL5-2231" [level=3] [ref=e119]
+                - paragraph [ref=e120]: Carro • Blanco Honda Civic
+            - generic [ref=e121]:
+              - generic [ref=e122]: Activo
+              - link [ref=e123] [cursor=pointer]:
+                - /url: /cliente/vehiculos/8/editar/
+                - img [ref=e124]
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e130]
+              - generic [ref=e132]:
+                - heading "CL5-9250" [level=3] [ref=e133]
+                - paragraph [ref=e134]: Carro • Blanco Honda Civic
+            - generic [ref=e135]:
+              - generic [ref=e136]: Activo
+              - link [ref=e137] [cursor=pointer]:
+                - /url: /cliente/vehiculos/7/editar/
+                - img [ref=e138]
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - img [ref=e144]
+              - generic [ref=e146]:
+                - heading "GHI-789" [level=3] [ref=e147]
+                - paragraph [ref=e148]: Moto • Negro Yamaha FZ250
+            - generic [ref=e149]:
+              - generic [ref=e150]: Activo
+              - link [ref=e151] [cursor=pointer]:
+                - /url: /cliente/vehiculos/3/editar/
+                - img [ref=e152]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - img [ref=e158]
+              - generic [ref=e160]:
+                - heading "DEF-456" [level=3] [ref=e161]
+                - paragraph [ref=e162]: Carro • Blanco Mazda 3
+            - generic [ref=e163]:
+              - generic [ref=e164]: Activo
+              - link [ref=e165] [cursor=pointer]:
+                - /url: /cliente/vehiculos/2/editar/
+                - img [ref=e166]
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - img [ref=e172]
+              - generic [ref=e174]:
+                - heading "ABC-123" [level=3] [ref=e175]
+                - paragraph [ref=e176]: Carro • Rojo Toyota Corolla
+            - generic [ref=e177]:
+              - generic [ref=e178]: Activo
+              - link [ref=e179] [cursor=pointer]:
+                - /url: /cliente/vehiculos/1/editar/
+                - img [ref=e180]
+      - generic [ref=e182]:
+        - heading "Mis Reservas" [level=2] [ref=e183]:
+          - img [ref=e184]
+          - text: Mis Reservas
+        - generic [ref=e187]:
+          - generic [ref=e189]:
+            - generic [ref=e190]:
+              - heading "DEF-456" [level=3] [ref=e191]
+              - img [ref=e192]
+            - text: Confirmada
+          - paragraph [ref=e195]:
+            - img [ref=e196]
+            - text: Reserva confirmada - Te esperamos
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - img [ref=e200]
+              - text: 2026-04-05
+            - generic [ref=e202]:
+              - img [ref=e203]
+              - text: "Llegada: 09:00 AM"
+            - generic [ref=e205]:
+              - img [ref=e206]
+              - text: "Piso 1 - Subsuelo - #C1-07"
+          - generic [ref=e209]:
+            - link "Editar" [ref=e210] [cursor=pointer]:
+              - /url: /cliente/reservas/1/editar/
+            - button "Cancelar" [ref=e212] [cursor=pointer]
+    - generic [ref=e213]:
+      - heading "Historial de Pagos" [level=2] [ref=e214]:
+        - img [ref=e215]
+        - text: Historial de Pagos
+      - generic [ref=e218]:
+        - img [ref=e219]
+        - paragraph [ref=e221]: No tienes historial de pagos
+  - contentinfo [ref=e222]:
+    - paragraph [ref=e224]: © 2026 MultiParking. Todos los derechos reservados.

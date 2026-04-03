@@ -32,12 +32,21 @@
     <div class="lg:col-span-2 bg-mp-card border border-mp-border rounded-xl p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 class="text-xl font-bold">Vista General de Pisos</h2>
+            <div class="flex items-center gap-3 flex-wrap">
+                <a href="{% url 'admin_novedades_crear' %}" aria-label="Reportar novedad"
+                    class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 rounded-lg text-xs font-medium transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                    </svg>
+                    Reportar Novedad
+                </a>
             <div class="flex items-center gap-4 text-sm flex-wrap">
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span><span class="text-mp-muted">Disponible</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-mp-muted">Ocupado</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span><span class="text-mp-muted">Salida pendiente</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500"></span><span class="text-mp-muted">Reservado (<2h)</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-600"></span><span class="text-mp-muted">Inactivo</span></div>
+            </div>
             </div>
         </div>
 
@@ -68,8 +77,15 @@
                     <div data-espacio-id="{{ espacio.pk }}"
                         onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {% if espacio.reserva_proxima %}'{{ espacio.reserva_proxima.pk }}'{% else %}null{% endif %}, {{ espacio.pago_pendiente|yesno:'true,false' }})"
                         class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.pago_pendiente %}bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space{% elif espacio.reserva_proxima %}bg-orange-500 border-orange-600 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20{% elif espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
-                        title="Espacio {{ espacio.espNumero }}{% if espacio.pago_pendiente %} - SALIDA PENDIENTE (Pago en caja){% elif espacio.reserva_proxima %} - Reservado{% endif %}">
+                        title="Espacio {{ espacio.espNumero }}{% if espacio.placa_actual %} — {{ espacio.placa_actual }}{% endif %}{% if espacio.pago_pendiente %} - SALIDA PENDIENTE (Pago en caja){% elif espacio.reserva_proxima %} - Reservado{% endif %}">
+                        {% if espacio.espEstado == 'OCUPADO' and espacio.placa_actual %}
+                        <span class="flex flex-col items-center leading-tight">
+                            <span>{{ espacio.espNumero }}</span>
+                            <span class="text-[9px] font-normal opacity-90 tracking-wide">{{ espacio.placa_actual }}</span>
+                        </span>
+                        {% else %}
                         {{ espacio.espNumero }}
+                        {% endif %}
                     </div>
                     {% if espacio.pago_pendiente %}
                     <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
@@ -136,6 +152,18 @@
                 <div>
                     <h3 class="font-bold text-white text-sm group-hover:text-amber-300 transition">Nuevo Cupón</h3>
                     <p class="text-xs text-mp-muted mt-0.5">Crear cupón de descuento</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_novedades_crear' %}" class="group flex items-start gap-4 p-4 bg-gradient-to-br from-amber-900/20 to-amber-900/5 border border-amber-500/20 rounded-xl hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-200">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/30 transition">
+                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm group-hover:text-amber-300 transition">Reportar Novedad</h3>
+                    <p class="text-xs text-mp-muted mt-0.5">Registrar incidente en el parqueadero</p>
                 </div>
             </a>
 
@@ -451,7 +479,16 @@
             <form action="{% url 'admin_registrar_salida' %}" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="espacio_id" id="exitModalEspacioId">
-                <div class="flex justify-end gap-3">
+                <div class="flex justify-between items-center gap-3 flex-wrap">
+                    <a id="exitNovedadLink" href="{% url 'admin_novedades_crear' %}"
+                        class="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition"
+                        aria-label="Reportar novedad sobre este espacio">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                        </svg>
+                        Reportar novedad
+                    </a>
+                    <div class="flex gap-3">
                     <button type="button" onclick="closeExitModal()" class="px-4 py-2.5 rounded-lg text-mp-muted hover:text-white transition">Cancelar</button>
                     <button type="submit" id="exitSubmitBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -459,6 +496,7 @@
                         </svg>
                         Cobrar y Registrar Salida
                     </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -774,6 +812,9 @@
         stopExitTimer();
         document.getElementById('exitModalEspacioId').value = id;
         document.getElementById('exitModalEspacioNum').textContent = num;
+        // Actualizar link de novedad con el espacio actual pre-seleccionado
+        const novedadLink = document.getElementById('exitNovedadLink');
+        if (novedadLink) novedadLink.href = '{% url "admin_novedades_crear" %}?espacio_id=' + id;
         document.getElementById('exitDetails').classList.add('hidden');
         document.getElementById('exitFooter').classList.add('hidden');
         document.getElementById('exitLoading').classList.remove('hidden');
@@ -791,6 +832,11 @@
                 if(data.found) {
                     document.getElementById('exitPlaca').textContent = data.placa;
                     document.getElementById('exitCliente').textContent = data.cliente;
+                    // Actualizar link de novedad con espacio_id Y vehiculo_id
+                    const novedadLink = document.getElementById('exitNovedadLink');
+                    if (novedadLink && data.vehiculo_id) {
+                        novedadLink.href = '{% url "admin_novedades_crear" %}?espacio_id=' + id + '&vehiculo_id=' + data.vehiculo_id;
+                    }
 
                     const badge = document.getElementById('exitTipoCliente');
                     if (data.tipo_cliente === 'USUARIO') {
@@ -936,7 +982,7 @@
                             if (pingDot) pingDot.remove();
                         } else if (esp.espEstado === 'OCUPADO') {
                             cls = 'bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20';
-                            title = `Espacio ${esp.espNumero}`;
+                            title = esp.placa_actual ? `Espacio ${esp.espNumero} — ${esp.placa_actual}` : `Espacio ${esp.espNumero}`;
                             if (pingDot) pingDot.remove();
                         } else {
                             cls = 'bg-gray-700 border-gray-600 text-gray-400';
@@ -949,9 +995,15 @@
                             `handleSpaceClick('${esp.pk}', '${esp.espNumero}', '${esp.espEstado}', '${piso.pisNombre}', ${esp.reserva_pk ? "'" + esp.reserva_pk + "'" : 'null'}, ${esp.pago_pendiente})`
                         );
 
-                        // Actualizar clases
+                        // Actualizar clases y contenido
                         spaceEl.className = `aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer ${cls}`;
                         spaceEl.title = title;
+                        // Mostrar placa en el tile cuando está OCUPADO
+                        if (esp.espEstado === 'OCUPADO' && esp.placa_actual) {
+                            spaceEl.innerHTML = `<span class="flex flex-col items-center leading-tight"><span>${esp.espNumero}</span><span class="text-[9px] font-normal opacity-90 tracking-wide">${esp.placa_actual}</span></span>`;
+                        } else {
+                            spaceEl.textContent = esp.espNumero;
+                        }
                     });
                 });
             })

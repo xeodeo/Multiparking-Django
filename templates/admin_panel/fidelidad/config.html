@@ -1,0 +1,59 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Configuración Fidelidad{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold">Programa de Fidelidad</h1>
+    <p class="text-mp-muted text-sm mt-1">Configura los stickers y bonos para clientes frecuentes</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Config -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">Parámetros</h2>
+        <form method="POST" action="{% url 'admin_fidelidad' %}">
+            {% csrf_token %}
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Meta de stickers para bono</label>
+                <input type="number" name="meta_stickers" min="1" value="{{ config.metaStickers }}" required
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+                <p class="text-xs text-mp-muted mt-1">Número de stickers para reclamar el bono del 100%</p>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Días de validez del bono</label>
+                <input type="number" name="dias_vencimiento" min="1" value="{{ config.diasVencimientoBono }}" required
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+                <p class="text-xs text-mp-muted mt-1">El cupón bono vence en N días desde que se reclama</p>
+            </div>
+            <button type="submit" class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition">
+                Guardar configuración
+            </button>
+        </form>
+    </div>
+
+    <!-- Explicación -->
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <h2 class="text-lg font-bold mb-4">¿Cómo funciona?</h2>
+        <div class="space-y-4 text-sm text-mp-muted">
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-full bg-mp-purple/20 flex items-center justify-center flex-shrink-0">
+                    <span class="text-mp-purple-light font-bold text-xs">1</span>
+                </div>
+                <p>El cliente estaciona su vehículo <span class="text-white font-medium">más de 1 hora</span> y gana un sticker automáticamente al salir.</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-full bg-mp-purple/20 flex items-center justify-center flex-shrink-0">
+                    <span class="text-mp-purple-light font-bold text-xs">2</span>
+                </div>
+                <p>Cuando acumula <span class="text-white font-medium">{{ config.metaStickers }} stickers</span>, puede reclamar un cupón de descuento del <span class="text-white font-medium">100%</span>.</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-full bg-mp-purple/20 flex items-center justify-center flex-shrink-0">
+                    <span class="text-mp-purple-light font-bold text-xs">3</span>
+                </div>
+                <p>El cupón es válido por <span class="text-white font-medium">{{ config.diasVencimientoBono }} días</span> y se destruye al ser usado. Los stickers se reinician.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

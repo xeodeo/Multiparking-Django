@@ -26,6 +26,8 @@ from pagos.models import Pago
 from cupones.models import Cupon, CuponAplicado
 from reservas.models import Reserva
 from usuarios.models import Usuario
+from novedades.models import Novedad
+from fidelidad.models import ConfiguracionFidelidad, Sticker
 
 print("=" * 60)
 print(">> LIMPIANDO Y REGENERANDO BASE DE DATOS")
@@ -33,6 +35,8 @@ print("=" * 60)
 
 # ── 1. LIMPIAR TODO ─────────────────────────────────────────
 print("\n[1/9] Limpiando base de datos...")
+Sticker.objects.all().delete()
+Novedad.objects.all().delete()
 CuponAplicado.objects.all().delete()
 Cupon.objects.all().delete()
 Reserva.objects.all().delete()
@@ -44,6 +48,7 @@ TipoEspacio.objects.all().delete()
 Piso.objects.all().delete()
 Vehiculo.objects.all().delete()
 Usuario.objects.all().delete()
+ConfiguracionFidelidad.objects.all().delete()
 print("  [OK] Base de datos limpiada completamente")
 
 # ── 2. USUARIOS ─────────────────────────────────────────────
@@ -339,6 +344,92 @@ for espacio in espacios_inactivar:
 
 print(f"  [OK] {len(espacios_inactivar)} espacios en mantenimiento (INACTIVO)")
 
+# ── 10. RESERVAS DEMO ───────────────────────────────────────
+print("\n[10/12] Creando reservas de prueba...")
+
+espacios_libres = list(Espacio.objects.filter(espEstado='DISPONIBLE')[:3])
+hoy = date.today()
+
+if len(espacios_libres) >= 2:
+    # Reserva futura para cliente1
+    r1 = Reserva.objects.create(
+        fkIdVehiculo=vehiculos[1],  # DEF-456 Carlos
+        fkIdEspacio=espacios_libres[0],
+        resFechaReserva=hoy + timedelta(days=2),
+        resHoraInicio=datetime.strptime('09:00', '%H:%M').time(),
+        resHoraFin=datetime.strptime('18:00', '%H:%M').time(),
+        resEstado='CONFIRMADA',
+    )
+    espacios_libres[0].espEstado = 'RESERVADO'
+    espacios_libres[0].save()
+    print(f"  [OK] Reserva CONFIRMADA: DEF-456 en {espacios_libres[0].espNumero} ({hoy + timedelta(days=2)})")
+
+    # Reserva pendiente para cliente2
+    r2 = Reserva.objects.create(
+        fkIdVehiculo=vehiculos[3],  # JKL-012 Maria
+        fkIdEspacio=espacios_libres[1],
+        resFechaReserva=hoy + timedelta(days=1),
+        resHoraInicio=datetime.strptime('14:00', '%H:%M').time(),
+        resHoraFin=datetime.strptime('20:00', '%H:%M').time(),
+        resEstado='PENDIENTE',
+    )
+    print(f"  [OK] Reserva PENDIENTE: JKL-012 en {espacios_libres[1].espNumero} ({hoy + timedelta(days=1)})")
+
+    # Reserva completada (histórico)
+    r3 = Reserva.objects.create(
+        fkIdVehiculo=vehiculos[0],  # ABC-123 Carlos
+        fkIdEspacio=espacios_libres[2] if len(espacios_libres) > 2 else espacios_libres[1],
+        resFechaReserva=hoy - timedelta(days=5),
+        resHoraInicio=datetime.strptime('08:00', '%H:%M').time(),
+        resHoraFin=datetime.strptime('17:00', '%H:%M').time(),
+        resEstado='COMPLETADA',
+    )
+    print(f"  [OK] Reserva COMPLETADA (histórico): ABC-123")
+
+print(f"  [OK] {Reserva.objects.count()} reservas creadas")
+
+# ── 11. NOVEDADES DEMO ──────────────────────────────────────
+print("\n[11/12] Creando novedades de prueba...")
+
+espacio_nov = Espacio.objects.filter(espEstado='OCUPADO').first()
+Novedad.objects.create(
+    novDescripcion='Vehículo ABC-123 reporta rayón en puerta lateral izquierda. Cliente fue notificado.',
+    novEstado='RESUELTO',
+    novComentario='Se tomaron fotos y se notificó al cliente. Caso cerrado.',
+    fkIdVehiculo=vehiculos[0],
+    fkIdEspacio=espacio_nov,
+    fkIdReportador=vigilante,
+    fkIdResponsable=vigilante,
+)
+print("  [OK] Novedad RESUELTA: rayón en ABC-123")
+
+Novedad.objects.create(
+    novDescripcion='Fuga de aceite detectada en espacio. Requiere limpieza inmediata.',
+    novEstado='EN_PROCESO',
+    novComentario='Se está limpiando el área.',
+    fkIdEspacio=Espacio.objects.filter(espEstado='DISPONIBLE').first(),
+    fkIdReportador=vigilante,
+    fkIdResponsable=vigilante,
+)
+print("  [OK] Novedad EN PROCESO: fuga de aceite")
+
+Novedad.objects.create(
+    novDescripcion='Cliente reporta que no encuentra su vehículo MNO-345. Se verificó y está en Piso 1.',
+    novEstado='PENDIENTE',
+    fkIdVehiculo=vehiculos[4],
+    fkIdReportador=vigilante,
+)
+print("  [OK] Novedad PENDIENTE: vehículo no encontrado")
+
+# ── 12. CONFIGURACIÓN FIDELIDAD ─────────────────────────────
+print("\n[12/12] Inicializando configuración de fidelidad...")
+
+config = ConfiguracionFidelidad.get()
+config.metaStickers = 10
+config.diasVencimientoBono = 30
+config.save()
+print(f"  [OK] Meta: {config.metaStickers} stickers | Bono válido: {config.diasVencimientoBono} días")
+
 # ── RESUMEN FINAL ───────────────────────────────────────────
 print("\n" + "=" * 60)
 print(">> BASE DE DATOS REGENERADA EXITOSAMENTE")
@@ -350,10 +441,14 @@ print(f"""
   Espacios:    {Espacio.objects.count()} total
     Disponible:  {Espacio.objects.filter(espEstado='DISPONIBLE').count()}
     Ocupado:     {Espacio.objects.filter(espEstado='OCUPADO').count()}
+    Reservado:   {Espacio.objects.filter(espEstado='RESERVADO').count()}
     Inactivo:    {Espacio.objects.filter(espEstado='INACTIVO').count()}
   Tarifas:     {Tarifa.objects.filter(activa=True).count()} activas + {Tarifa.objects.filter(activa=False).count()} desactivadas
   Vehiculos:   {Vehiculo.objects.count()}
   Cupones:     {Cupon.objects.filter(cupActivo=True).count()} activos + {Cupon.objects.filter(cupActivo=False).count()} desactivados
+  Reservas:    {Reserva.objects.count()}
+  Novedades:   {Novedad.objects.count()}
+  Fidelidad:   meta={config.metaStickers} stickers
 """)
 
 print("=" * 60)
@@ -386,5 +481,3 @@ print("""
   FINDE50       -> 50% descuento
   VIPPREMIUM    -> 30% descuento
 """)
-
-print("[INFO] Para generar pagos demo: python scripts/mantener_datos_demo.py")

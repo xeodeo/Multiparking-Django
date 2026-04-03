@@ -32,7 +32,9 @@ from tarifas.views import (
 from cupones.views import (
     CuponListView, CuponCreateView, CuponUpdateView, CuponDeleteView
 )
-from reservas.views import ReservaListView, ReservaFinalizarView, ReservaCancelarView
+from reservas.views import ReservaListView, ReservaFinalizarView, ReservaCancelarView, ReservaEditarView
+from novedades.views import NovedadListView, NovedadCreateView, NovedadUpdateView, NovedadDeleteView
+from fidelidad.views import FidelidadConfigView, PerfilClienteView, ReclamarBonoView
 from vehiculos.views import (
     VehiculoListView, VehiculoCreateView, VehiculoUpdateView, VehiculoDeleteView
 )
@@ -111,6 +113,16 @@ urlpatterns = [
     path('admin-panel/reservas/', ReservaListView.as_view(), name='admin_reservas'),
     path('admin-panel/reservas/<int:pk>/finalizar/', ReservaFinalizarView.as_view(), name='admin_reservas_finalizar'),
     path('admin-panel/reservas/<int:pk>/cancelar/', ReservaCancelarView.as_view(), name='admin_reservas_cancelar'),
+    path('admin-panel/reservas/<int:pk>/editar/', ReservaEditarView.as_view(), name='admin_reservas_editar'),
+    # Novedades
+    path('admin-panel/novedades/', NovedadListView.as_view(), name='admin_novedades'),
+    path('admin-panel/novedades/crear/', NovedadCreateView.as_view(), name='admin_novedades_crear'),
+    path('admin-panel/novedades/<int:pk>/editar/', NovedadUpdateView.as_view(), name='admin_novedades_editar'),
+    path('admin-panel/novedades/<int:pk>/eliminar/', NovedadDeleteView.as_view(), name='admin_novedades_eliminar'),
+    # Fidelidad
+    path('admin-panel/fidelidad/', FidelidadConfigView.as_view(), name='admin_fidelidad'),
+    path('cliente/perfil/', PerfilClienteView.as_view(), name='cliente_perfil'),
+    path('cliente/perfil/reclamar-bono/', ReclamarBonoView.as_view(), name='cliente_reclamar_bono'),
 
     # Inventario
     path('admin-panel/inventario/', InventarioListView.as_view(), name='admin_inventario'),

@@ -1,0 +1,79 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Editar Reserva{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-4">
+    <a href="{% url 'admin_reservas' %}"
+        class="text-mp-muted hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+    </a>
+    <div>
+        <h1 class="text-2xl font-bold">Editar Reserva #{{ reserva.pk }}</h1>
+        <p class="text-mp-muted text-sm mt-0.5">Modifica los datos de la reserva</p>
+    </div>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-6">
+        <form method="POST" action="{% url 'admin_reservas_editar' pk=reserva.pk %}">
+            {% csrf_token %}
+
+            <!-- Vehículo -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Vehículo</label>
+                <select name="vehiculo_id" required
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+                    {% for v in vehiculos %}
+                    <option value="{{ v.pk }}" {% if v.pk == reserva.fkIdVehiculo.pk %}selected{% endif %}>
+                        {{ v.vehPlaca }}{% if v.fkIdUsuario %} — {{ v.fkIdUsuario.usuNombreCompleto }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Espacio -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Espacio</label>
+                <select name="espacio_id" required
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+                    {% for e in espacios %}
+                    <option value="{{ e.pk }}" {% if e.pk == reserva.fkIdEspacio.pk %}selected{% endif %}>
+                        {{ e.espNumero }} — {{ e.fkIdPiso.pisNombre }}
+                        {% if e.espEstado == 'RESERVADO' %}(Reservado){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Fecha</label>
+                <input type="date" name="fecha" required
+                    value="{{ reserva.resFechaReserva|date:'Y-m-d' }}"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+            </div>
+
+            <!-- Hora inicio -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-mp-muted mb-2">Hora de inicio</label>
+                <input type="time" name="hora_inicio" required
+                    value="{{ reserva.resHoraInicio|time:'H:i' }}"
+                    class="w-full bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition">
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit"
+                    class="bg-mp-purple hover:bg-mp-purple-dark text-white px-6 py-2.5 rounded-lg font-medium transition">
+                    Guardar cambios
+                </button>
+                <a href="{% url 'admin_reservas' %}"
+                    class="border border-mp-border text-mp-muted hover:text-white hover:border-white/30 px-6 py-2.5 rounded-lg font-medium transition">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

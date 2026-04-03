@@ -17,6 +17,7 @@ from usuarios.mixins import VigilanteRequiredMixin
 from vehiculos.models import Vehiculo
 
 from multiparking import email_utils
+from fidelidad.models import Sticker
 from .models import Espacio, InventarioParqueo, Piso
 
 
@@ -339,6 +340,16 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
                 )
                 if not registro.fkIdVehiculo.es_visitante:
                     email_utils.enviar_recibo_pago(nuevo_pago, registro)
+
+        # Sticker de fidelidad: si estuvo más de 1 hora y es usuario registrado
+        usuario_vehiculo = registro.fkIdVehiculo.fkIdUsuario
+        if usuario_vehiculo:
+            duracion_min = int((ahora - registro.parHoraEntrada).total_seconds()) // 60
+            if duracion_min >= 60:
+                Sticker.objects.get_or_create(
+                    fkIdParqueo=registro,
+                    defaults={'fkIdUsuario': usuario_vehiculo}
+                )
 
         # Liberar el espacio para nuevos ingresos
         espacio.espEstado = 'DISPONIBLE'

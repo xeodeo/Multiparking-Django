@@ -1,0 +1,126 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Novedades{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Novedades</h1>
+        <p class="text-mp-muted text-sm mt-1">Incidentes y eventos asociados a vehículos o espacios</p>
+    </div>
+    <a href="{% url 'admin_novedades_crear' %}"
+        class="bg-mp-purple hover:bg-mp-purple-dark text-white px-4 py-2.5 rounded-lg transition flex items-center gap-2 font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Registrar Novedad
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <p class="text-mp-muted text-xs uppercase font-bold">Pendientes</p>
+        <p class="text-2xl font-bold text-yellow-400">{{ pendientes }}</p>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <p class="text-mp-muted text-xs uppercase font-bold">En Proceso</p>
+        <p class="text-2xl font-bold text-blue-400">{{ en_proceso }}</p>
+    </div>
+    <div class="bg-mp-card border border-mp-border rounded-xl p-4">
+        <p class="text-mp-muted text-xs uppercase font-bold">Resueltos</p>
+        <p class="text-2xl font-bold text-green-400">{{ resueltos }}</p>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-mp-card border border-mp-border rounded-xl p-4 mb-6">
+    <form method="GET" class="flex gap-3">
+        <div class="relative flex-1">
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar en descripción..."
+                class="w-full bg-black/20 border border-mp-border rounded-lg pl-4 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition text-sm">
+        </div>
+        <select name="estado"
+            class="bg-black/20 border border-mp-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-mp-purple transition text-sm">
+            <option value="">Todos los estados</option>
+            <option value="PENDIENTE" {% if estado_sel == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+            <option value="EN_PROCESO" {% if estado_sel == 'EN_PROCESO' %}selected{% endif %}>En Proceso</option>
+            <option value="RESUELTO" {% if estado_sel == 'RESUELTO' %}selected{% endif %}>Resuelto</option>
+        </select>
+        <button type="submit" class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-2.5 rounded-lg transition font-medium text-sm">Filtrar</button>
+        {% if q or estado_sel %}
+        <a href="{% url 'admin_novedades' %}" class="border border-mp-border text-mp-muted hover:text-white px-4 py-2.5 rounded-lg transition text-sm">Limpiar</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-black/20 text-mp-muted text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-4 font-medium">#</th>
+                    <th class="px-6 py-4 font-medium">Descripción</th>
+                    <th class="px-6 py-4 font-medium">Vehículo</th>
+                    <th class="px-6 py-4 font-medium">Espacio</th>
+                    <th class="px-6 py-4 font-medium">Reportado por</th>
+                    <th class="px-6 py-4 text-center font-medium">Estado</th>
+                    <th class="px-6 py-4 font-medium">Fecha</th>
+                    <th class="px-6 py-4 text-right font-medium">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-mp-border text-sm">
+                {% for nov in novedades %}
+                <tr class="hover:bg-white/5 transition">
+                    <td class="px-6 py-4 text-mp-muted font-mono">{{ nov.pk }}</td>
+                    <td class="px-6 py-4 max-w-xs">
+                        <p class="text-white truncate">{{ nov.novDescripcion }}</p>
+                        {% if nov.novComentario %}
+                        <p class="text-mp-muted text-xs mt-0.5 truncate">{{ nov.novComentario }}</p>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if nov.fkIdVehiculo %}
+                        <span class="font-mono text-white">{{ nov.fkIdVehiculo.vehPlaca }}</span>
+                        {% else %}<span class="text-mp-muted">—</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if nov.fkIdEspacio %}
+                        <span class="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-xs font-bold">{{ nov.fkIdEspacio.espNumero }}</span>
+                        {% else %}<span class="text-mp-muted">—</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-mp-muted">{{ nov.fkIdReportador.usuNombreCompleto|default:"—" }}</td>
+                    <td class="px-6 py-4 text-center">
+                        {% if nov.novEstado == 'PENDIENTE' %}
+                        <span class="bg-yellow-500/20 text-yellow-400 px-2.5 py-0.5 rounded-full text-xs font-bold">Pendiente</span>
+                        {% elif nov.novEstado == 'EN_PROCESO' %}
+                        <span class="bg-blue-500/20 text-blue-400 px-2.5 py-0.5 rounded-full text-xs font-bold">En Proceso</span>
+                        {% else %}
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded-full text-xs font-bold">Resuelto</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-mp-muted text-xs">{{ nov.novFechaCreacion|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{% url 'admin_novedades_editar' pk=nov.pk %}"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-mp-purple/10 text-mp-purple-light border border-mp-purple/20 hover:bg-mp-purple/20 hover:text-white transition">
+                                Gestionar
+                            </a>
+                            <form action="{% url 'admin_novedades_eliminar' pk=nov.pk %}" method="POST" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('¿Eliminar esta novedad?')"
+                                    class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-900/10 text-red-400 border border-red-500/20 hover:bg-red-900/20 transition">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-mp-muted">No hay novedades registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

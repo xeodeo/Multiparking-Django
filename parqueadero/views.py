@@ -80,6 +80,17 @@ class AdminDashboardView(AdminRequiredMixin, View):
 
                 espacio.reserva_proxima = reserva_proxima
                 espacio.pago_pendiente = pago_pendiente
+
+                # Obtener placa del vehículo actualmente ocupando el espacio
+                espacio.placa_actual = None
+                if espacio.espEstado == 'OCUPADO':
+                    registro_activo = InventarioParqueo.objects.filter(
+                        fkIdEspacio=espacio,
+                        parHoraSalida__isnull=True
+                    ).select_related('fkIdVehiculo').first()
+                    if registro_activo:
+                        espacio.placa_actual = registro_activo.fkIdVehiculo.vehPlaca
+
                 espacios_list.append(espacio)
 
             piso.espacios_list = espacios_list
@@ -204,6 +215,7 @@ class AdminDashboardDataView(AdminRequiredMixin, View):
                         reserva_proxima = reserva
                         break
 
+                placa_actual = None
                 if espacio.espEstado == 'OCUPADO':
                     pago_pendiente = Pago.objects.filter(
                         fkIdParqueo__fkIdEspacio=espacio,
@@ -211,6 +223,12 @@ class AdminDashboardDataView(AdminRequiredMixin, View):
                         pagEstado='PENDIENTE',
                         pagMetodo='EFECTIVO'
                     ).exists()
+                    registro_activo = InventarioParqueo.objects.filter(
+                        fkIdEspacio=espacio,
+                        parHoraSalida__isnull=True
+                    ).select_related('fkIdVehiculo').first()
+                    if registro_activo:
+                        placa_actual = registro_activo.fkIdVehiculo.vehPlaca
 
                 espacios_data.append({
                     'pk': espacio.pk,
@@ -218,6 +236,7 @@ class AdminDashboardDataView(AdminRequiredMixin, View):
                     'espEstado': espacio.espEstado,
                     'pago_pendiente': pago_pendiente,
                     'reserva_pk': reserva_proxima.pk if reserva_proxima else None,
+                    'placa_actual': placa_actual,
                 })
 
             pisos_data.append({
@@ -780,6 +799,7 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
 
             response_data = {
                 'found': True,
+                'vehiculo_id': vehiculo.pk,
                 'placa': vehiculo.vehPlaca,
                 'tipo_vehiculo': vehiculo.vehTipo,
                 'tipo_espacio': espacio.fkIdTipoEspacio.nombre,

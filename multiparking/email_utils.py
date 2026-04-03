@@ -130,6 +130,38 @@ def enviar_confirmacion_entrada(registro):
     _send_async(msg)
 
 
+def enviar_novedad(novedad):
+    """
+    Notifica al usuario afectado cuando se crea o actualiza una novedad.
+    Busca el usuario en el vehículo asociado o en la reserva del espacio.
+    """
+    usuario = None
+    if novedad.fkIdVehiculo and novedad.fkIdVehiculo.fkIdUsuario:
+        usuario = novedad.fkIdVehiculo.fkIdUsuario
+    if not usuario:
+        return
+    msg = _build_msg(
+        subject=f"Novedad en tu vehículo — Multiparking",
+        template_html="emails/novedad.html",
+        context={"novedad": novedad, "usuario": usuario},
+        to_email=usuario.usuCorreo,
+    )
+    _send_async(msg)
+
+
+def enviar_bono_stickers(usuario, cupon):
+    """
+    Notifica al usuario que ha acumulado suficientes stickers y tiene un bono disponible.
+    """
+    msg = _build_msg(
+        subject="¡Tienes un bono del 100%! — Multiparking",
+        template_html="emails/bono_stickers.html",
+        context={"usuario": usuario, "cupon": cupon},
+        to_email=usuario.usuCorreo,
+    )
+    _send_async(msg)
+
+
 def enviar_reset_clave(usuario, token, request):
     """
     Envía el correo de restablecimiento de contraseña con el enlace firmado.
