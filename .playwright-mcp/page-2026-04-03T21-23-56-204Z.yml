@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Bienvenido a MultiParking" [level=1] [ref=e4]:
+        - text: Bienvenido a
+        - text: MultiParking
+      - paragraph [ref=e5]: Parqueadero inteligente hecho simple. Gestiona tu espacio, reserva con anticipación, ingresa con QR y paga digitalmente.
+      - generic [ref=e6]:
+        - button "Iniciar Sesión" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+          - text: Iniciar Sesión
+        - button "Crear Cuenta" [ref=e10] [cursor=pointer]:
+          - img [ref=e11]
+          - text: Crear Cuenta
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - heading "Sistema de Entrada QR" [level=3] [ref=e19]
+        - paragraph [ref=e20]: Entra y sale con códigos QR seguros generados instantáneamente.
+      - generic [ref=e21]:
+        - img [ref=e23]
+        - heading "Seguimiento de Vehículos" [level=3] [ref=e26]
+        - paragraph [ref=e27]: Monitorea en tiempo real de todos los vehículos en el parqueadero.
+      - generic [ref=e28]:
+        - img [ref=e30]
+        - heading "Pagos Digitales" [level=3] [ref=e32]
+        - paragraph [ref=e33]: Facturación automática y procesamiento de pagos digitales.
+      - generic [ref=e34]:
+        - img [ref=e36]
+        - heading "Acceso por Roles" [level=3] [ref=e38]
+        - paragraph [ref=e39]: Permisos personalizados para administradores, guardias y residentes.
+  - contentinfo [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - heading "MultiParking" [level=4] [ref=e43]
+        - paragraph [ref=e44]: Sistema revolucionario de gestión de parqueaderos para complejos residenciales en Bogotá, Colombia.
+      - generic [ref=e45]:
+        - heading "Contacto" [level=4] [ref=e46]
+        - list [ref=e47]:
+          - listitem [ref=e48]: "Email: soporte@multiparking.co"
+          - listitem [ref=e49]: "Teléfono: +57 1 234 5678"
+          - listitem [ref=e50]: Bogotá, Colombia
+      - generic [ref=e51]:
+        - heading "Legal" [level=4] [ref=e52]
+        - list [ref=e53]:
+          - listitem [ref=e54]:
+            - link "Política de Privacidad" [ref=e55] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e56]:
+            - link "Términos de Servicio" [ref=e57] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e58]:
+            - link "Protección de Datos" [ref=e59] [cursor=pointer]:
+              - /url: "#"
+    - paragraph [ref=e61]: © 2026 MultiParking. Todos los derechos reservados.

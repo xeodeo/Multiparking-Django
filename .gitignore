@@ -1,7 +1,4 @@
 .env
 __pycache__
 .mcp.json
-.claude/
-.agents/
-.playwright-mcp/
 venv/
