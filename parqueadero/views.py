@@ -806,7 +806,7 @@ class ObtenerDetalleOcupacionView(AdminRequiredMixin, View):
                 'hora_entrada': timezone.localtime(entrada).strftime('%d/%m/%Y %I:%M %p'),
                 'tiempo_estadia': duracion_str,
                 'usuario_nombre': usuario.usuNombreCompleto if usuario else None,
-                'usuario_correo': usuario.usuCorreo if usuario else None,
+                'usuario_rol': usuario.get_rolTipoRol_display() if usuario else None,
                 'contacto_nombre': vehiculo.nombre_contacto if not usuario else None,
                 'contacto_telefono': vehiculo.telefono_contacto if not usuario else None,
                 'tarifa_info': tarifa_info,
@@ -978,7 +978,8 @@ class ClienteRequiredMixin:
         if not request.session.get('usuario_id'):
             messages.error(request, 'Debes iniciar sesión.')
             return redirect('home')
-        return super().dispatch(request, *args, **kwargs)
+        from usuarios.mixins import _no_cache
+        return _no_cache(super().dispatch(request, *args, **kwargs))
 
 
 class EntradaParqueaderoView(ClienteRequiredMixin, View):
