@@ -13,18 +13,28 @@ class ConfiguracionFidelidad(models.Model):
         default=30,
         help_text='Días de validez del cupón bono generado al canjear stickers.'
     )
+    porcentajeBono = models.PositiveIntegerField(
+        default=100,
+        help_text='Porcentaje de descuento del bono generado al canjear stickers.'
+    )
 
     class Meta:
         db_table = 'fidelidad_configuracion'
         verbose_name = 'Configuración de Fidelidad'
 
     def save(self, *args, **kwargs):
-        # Singleton: solo existe un registro
+        # Patrón singleton: forzamos pk=1 en cada save() para que Django siempre
+        # haga UPDATE en lugar de INSERT. Si alguien crea una segunda instancia con
+        # ConfiguracionFidelidad() y llama save(), sobreescribirá la configuración
+        # existente en lugar de crear un duplicado. No usar objects.create() directamente.
         self.pk = 1
         super().save(*args, **kwargs)
 
     @classmethod
     def get(cls):
+        # get_or_create garantiza que el registro pk=1 exista desde la primera consulta,
+        # sin necesidad de un fixture o data migration de inicialización.
+        # El segundo valor (created) se descarta intencionalmente.
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 

@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timedelta
 
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,54 +20,8 @@ from vehiculos.models import Vehiculo
 from multiparking import email_utils
 from fidelidad.models import Sticker
 from .models import Espacio, InventarioParqueo, Piso
-
-
-def _calcular_pisos_data(now):
-    """Comparte la lógica de Vista General de Pisos con el admin dashboard."""
-    # Ventana de 2 horas para detectar reservas próximas en el mapa
-    limite_2h = now + timedelta(hours=2)
-    pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
-        'espacios', 'espacios__reservas'
-    ).order_by('pisNombre')
-
-    pisos_list = []
-    for piso in pisos:
-        total_piso = piso.espacios.count()
-        ocupados_piso = piso.espacios.filter(espEstado='OCUPADO').count()
-        # Porcentaje de ocupación del piso (0 si no tiene espacios)
-        piso.ocupacion_pct = int((ocupados_piso / total_piso) * 100) if total_piso > 0 else 0
-        piso.total_espacios = total_piso
-        piso.ocupados_espacios = ocupados_piso
-
-        espacios_list = []
-        for espacio in piso.espacios.all():
-            reserva_proxima = None
-            pago_pendiente = False
-
-            # Busca si hay una reserva que inicia en los próximos 2 horas
-            for reserva in espacio.reservas.filter(resEstado__in=['PENDIENTE', 'CONFIRMADA']):
-                fhr = datetime.combine(reserva.resFechaReserva, reserva.resHoraInicio)
-                fhr = timezone.make_aware(fhr)
-                if now <= fhr <= limite_2h:
-                    reserva_proxima = reserva
-                    break
-
-            # Si el espacio está ocupado, verifica si tiene cobro pendiente en efectivo
-            if espacio.espEstado == 'OCUPADO':
-                pago_pendiente = Pago.objects.filter(
-                    fkIdParqueo__fkIdEspacio=espacio,
-                    fkIdParqueo__parHoraSalida__isnull=True,
-                    pagEstado='PENDIENTE',
-                    pagMetodo='EFECTIVO',
-                ).exists()
-
-            espacio.reserva_proxima = reserva_proxima
-            espacio.pago_pendiente = pago_pendiente
-            espacios_list.append(espacio)
-
-        piso.espacios_list = espacios_list
-        pisos_list.append(piso)
-    return pisos_list
+from .services import calcular_costo_parqueo, STICKER_MIN_MINUTOS
+from .utils import _calcular_pisos_data
 
 
 # ── Dashboard ────────────────────────────────────────────────────
@@ -149,16 +104,9 @@ class VigilanteDashboardView(VigilanteRequiredMixin, View):
                 reg.costo_estimado = float(reg.pago_pendiente_obj.pagMonto)
             else:
                 # Si no hay pago previo, calcular en tiempo real según la tarifa activa
-                tarifa = Tarifa.objects.filter(
-                    fkIdTipoEspacio=reg.fkIdEspacio.fkIdTipoEspacio, activa=True
-                ).first()
+                tarifa = Tarifa.get_active_for(reg.fkIdEspacio.fkIdTipoEspacio)
                 if tarifa:
-                    # Redondea los segundos hacia arriba al minuto más cercano, mínimo 1 min
-                    total_minutos = max((int((now - reg.parHoraEntrada).total_seconds()) + 59) // 60, 1)
-                    es_visitante = reg.fkIdVehiculo.es_visitante
-                    # Usa tarifa visitante si aplica
-                    precio = float(tarifa.precioHoraVisitante) if es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
-                    reg.costo_estimado = math.ceil((precio / 60) * total_minutos)
+                    reg.costo_estimado = calcular_costo_parqueo(reg.parHoraEntrada, tarifa, reg.fkIdVehiculo)
                 else:
                     reg.costo_estimado = 0
             reg.costo_display = f"${reg.costo_estimado:,.0f}"
@@ -191,89 +139,88 @@ class VigilanteRegistrarIngresoView(VigilanteRequiredMixin, View):
     def post(self, request):
         reserva_id = request.POST.get('reserva_id')
 
-        if reserva_id:
-            # ── Flujo 1: Entrada desde una reserva existente ──────────
-            reserva = get_object_or_404(Reserva, pk=reserva_id)
-            vehiculo = reserva.fkIdVehiculo
-            espacio = reserva.fkIdEspacio
+        with transaction.atomic():
+            if reserva_id:
+                # ── Flujo 1: Entrada desde una reserva existente ──────────
+                reserva = get_object_or_404(Reserva, pk=reserva_id)
+                vehiculo = reserva.fkIdVehiculo
+                espacio = reserva.fkIdEspacio
 
-            # Verifica que el espacio no haya sido ocupado por otro vehículo
-            if espacio.espEstado != 'DISPONIBLE':
-                messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
-                return redirect('guardia_dashboard')
+                # Verifica que el espacio no haya sido ocupado por otro vehículo
+                if espacio.espEstado != 'DISPONIBLE':
+                    messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
+                    return redirect('guardia_dashboard')
 
-            # Evita doble ingreso del mismo vehículo
-            if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
-                messages.error(request, f'El vehículo {vehiculo.vehPlaca} ya tiene un ingreso activo.')
-                return redirect('guardia_dashboard')
+                # Evita doble ingreso del mismo vehículo
+                if InventarioParqueo.objects.select_for_update().filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
+                    messages.error(request, f'El vehículo {vehiculo.vehPlaca} ya tiene un ingreso activo.')
+                    return redirect('guardia_dashboard')
 
-            # Crea el registro de parqueo, ocupa el espacio y cierra la reserva
-            nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
-            email_utils.enviar_confirmacion_entrada(nuevo_registro)
-            espacio.espEstado = 'OCUPADO'
-            espacio.save()
-            reserva.resEstado = 'COMPLETADA'
-            reserva.save()
-            messages.success(request, f'Entrada permitida: {vehiculo.vehPlaca} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')
-        else:
-            # ── Flujo 2: Ingreso rápido (visitante o usuario sin reserva) ──
-            placa = request.POST.get('placa', '').upper().strip()
-            espacio_id = request.POST.get('espacio_id', '').strip()
-            nombre = request.POST.get('nombre', '').strip()
-            telefono = request.POST.get('telefono', '').strip()
-
-            # Campos obligatorios
-            if not placa or not espacio_id:
-                messages.error(request, 'Placa y espacio son obligatorios.')
-                return redirect('guardia_dashboard')
-
-            # Validaciones de formato
-            if not re.match(r'^[A-Za-z0-9-]+$', placa):
-                messages.error(request, 'La placa solo acepta letras, números y guiones.')
-                return redirect('guardia_dashboard')
-
-            if nombre and not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
-                messages.error(request, 'El nombre solo debe contener letras.')
-                return redirect('guardia_dashboard')
-
-            if telefono and not re.match(r'^[0-9]+$', telefono):
-                messages.error(request, 'El teléfono solo debe contener números.')
-                return redirect('guardia_dashboard')
-
-            espacio = get_object_or_404(Espacio, pk=espacio_id)
-            if espacio.espEstado != 'DISPONIBLE':
-                messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
-                return redirect('guardia_dashboard')
-
-            # Busca el vehículo en BD; si no existe, lo crea como visitante (sin usuario)
-            vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
-            if not vehiculo:
-                vehiculo = Vehiculo.objects.create(
-                    vehPlaca=placa,
-                    vehTipo='Carro',
-                    nombre_contacto=nombre,
-                    telefono_contacto=telefono,
-                )
+                # Crea el registro de parqueo, ocupa el espacio y cierra la reserva
+                nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+                email_utils.enviar_confirmacion_entrada(nuevo_registro)
+                espacio.ocupar()
+                reserva.resEstado = 'COMPLETADA'
+                reserva.save()
+                messages.success(request, f'Entrada permitida: {vehiculo.vehPlaca} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')
             else:
-                # Si el vehículo es visitante y se ingresaron datos de contacto, actualizarlos
-                if vehiculo.es_visitante and (nombre or telefono):
-                    if nombre:
-                        vehiculo.nombre_contacto = nombre
-                    if telefono:
-                        vehiculo.telefono_contacto = telefono
-                    vehiculo.save()
+                # ── Flujo 2: Ingreso rápido (visitante o usuario sin reserva) ──
+                placa = request.POST.get('placa', '').upper().strip()
+                espacio_id = request.POST.get('espacio_id', '').strip()
+                nombre = request.POST.get('nombre', '').strip()
+                telefono = request.POST.get('telefono', '').strip()
 
-            # Evita doble ingreso
-            if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
-                messages.error(request, f'El vehículo {placa} ya tiene un ingreso activo.')
-                return redirect('guardia_dashboard')
+                # Campos obligatorios
+                if not placa or not espacio_id:
+                    messages.error(request, 'Placa y espacio son obligatorios.')
+                    return redirect('guardia_dashboard')
 
-            # Crea el registro de parqueo y ocupa el espacio
-            nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
-            email_utils.enviar_confirmacion_entrada(nuevo_registro)
-            espacio.espEstado = 'OCUPADO'
-            espacio.save()
-            messages.success(request, f'Ingreso registrado: {placa} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')
+                # Validaciones de formato
+                if not re.match(r'^[A-Za-z0-9-]+$', placa):
+                    messages.error(request, 'La placa solo acepta letras, números y guiones.')
+                    return redirect('guardia_dashboard')
+
+                if nombre and not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
+                    messages.error(request, 'El nombre solo debe contener letras.')
+                    return redirect('guardia_dashboard')
+
+                if telefono and not re.match(r'^[0-9]+$', telefono):
+                    messages.error(request, 'El teléfono solo debe contener números.')
+                    return redirect('guardia_dashboard')
+
+                espacio = get_object_or_404(Espacio, pk=espacio_id)
+                if espacio.espEstado != 'DISPONIBLE':
+                    messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
+                    return redirect('guardia_dashboard')
+
+                # Busca el vehículo en BD; si no existe, lo crea como visitante (sin usuario)
+                vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
+                if not vehiculo:
+                    vehiculo = Vehiculo.objects.create(
+                        vehPlaca=placa,
+                        vehTipo='Carro',
+                        nombre_contacto=nombre,
+                        telefono_contacto=telefono,
+                    )
+                else:
+                    # Si el vehículo es visitante y se ingresaron datos de contacto, actualizarlos
+                    if vehiculo.es_visitante and (nombre or telefono):
+                        if nombre:
+                            vehiculo.nombre_contacto = nombre
+                        if telefono:
+                            vehiculo.telefono_contacto = telefono
+                        vehiculo.save()
+
+                # Evita doble ingreso
+                if InventarioParqueo.objects.select_for_update().filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
+                    messages.error(request, f'El vehículo {placa} ya tiene un ingreso activo.')
+                    return redirect('guardia_dashboard')
+
+                # Crea el registro de parqueo y ocupa el espacio
+                nuevo_registro = InventarioParqueo.objects.create(fkIdVehiculo=vehiculo, fkIdEspacio=espacio)
+                email_utils.enviar_confirmacion_entrada(nuevo_registro)
+                espacio.ocupar()
+                messages.success(request, f'Ingreso registrado: {placa} → {espacio.fkIdPiso.pisNombre} #{espacio.espNumero}.')
 
         return redirect('guardia_dashboard')
 
@@ -285,79 +232,71 @@ class VigilanteRegistrarSalidaView(VigilanteRequiredMixin, View):
         registro_id = request.POST.get('registro_id')
         espacio_id = request.POST.get('espacio_id')
 
-        # Acepta identificar el registro por ID de inventario o por ID de espacio
-        if registro_id:
-            registro = get_object_or_404(InventarioParqueo, pk=registro_id, parHoraSalida__isnull=True)
-            espacio = registro.fkIdEspacio
-        elif espacio_id:
-            espacio = get_object_or_404(Espacio, pk=espacio_id)
-            # Busca el registro activo (sin hora de salida) de este espacio
-            registro = InventarioParqueo.objects.filter(
-                fkIdEspacio=espacio, parHoraSalida__isnull=True
-            ).first()
-            if not registro:
-                # No hay registro activo; liberar el espacio de todas formas
-                espacio.espEstado = 'DISPONIBLE'
-                espacio.save()
-                messages.warning(request, f'Espacio {espacio.espNumero} liberado (sin registro activo).')
+        with transaction.atomic():
+            # Acepta identificar el registro por ID de inventario o por ID de espacio
+            if registro_id:
+                registro = get_object_or_404(InventarioParqueo, pk=registro_id, parHoraSalida__isnull=True)
+                espacio = registro.fkIdEspacio
+            elif espacio_id:
+                espacio = get_object_or_404(Espacio, pk=espacio_id)
+                # Busca el registro activo (sin hora de salida) de este espacio
+                registro = InventarioParqueo.objects.filter(
+                    fkIdEspacio=espacio, parHoraSalida__isnull=True
+                ).first()
+                if not registro:
+                    # No hay registro activo; liberar el espacio de todas formas
+                    espacio.liberar()
+                    messages.warning(request, f'Espacio {espacio.espNumero} liberado (sin registro activo).')
+                    return redirect('guardia_dashboard')
+            else:
+                messages.error(request, 'Datos inválidos.')
                 return redirect('guardia_dashboard')
-        else:
-            messages.error(request, 'Datos inválidos.')
-            return redirect('guardia_dashboard')
 
-        # Registra la hora de salida
-        ahora = timezone.now()
-        registro.parHoraSalida = ahora
-        registro.save()
+            # Registra la hora de salida
+            ahora = timezone.now()
+            registro.parHoraSalida = ahora
+            registro.save()
 
-        # ── Cobro ────────────────────────────────────────────────────
-        pago_existente = Pago.objects.filter(fkIdParqueo=registro, pagEstado='PENDIENTE').first()
-        if pago_existente:
-            # Ya existe un pago pre-calculado (ej: generado al momento del ingreso); solo confirmarlo
-            pago_existente.pagEstado = 'PAGADO'
-            pago_existente.save()
-            monto = pago_existente.pagMonto
-            if not registro.fkIdVehiculo.es_visitante:
-                email_utils.enviar_recibo_pago(pago_existente, registro)
-        else:
-            # Calcular el cobro ahora según la tarifa activa del tipo de espacio
-            tarifa = Tarifa.objects.filter(
-                fkIdTipoEspacio=espacio.fkIdTipoEspacio, activa=True
-            ).first()
-            monto = 0
-            if tarifa:
-                # Minutos redondeados hacia arriba (ej: 61 min → 62, mínimo 1)
-                total_minutos = max((int((ahora - registro.parHoraEntrada).total_seconds()) + 59) // 60, 1)
-                vehiculo = registro.fkIdVehiculo
-                # Visitantes pagan tarifa diferencial si está configurada
-                precio = tarifa.precioHoraVisitante if vehiculo.es_visitante and tarifa.precioHoraVisitante > 0 else tarifa.precioHora
-                monto = math.ceil((float(precio) / 60) * total_minutos)
-                nuevo_pago = Pago.objects.create(
-                    pagMonto=monto,
-                    pagMetodo='EFECTIVO',
-                    pagEstado='PAGADO',
-                    fkIdParqueo=registro,
-                )
+            # ── Cobro ────────────────────────────────────────────────────
+            pago_existente = Pago.objects.filter(fkIdParqueo=registro, pagEstado='PENDIENTE').first()
+            if pago_existente:
+                # Ya existe un pago pre-calculado (ej: generado al momento del ingreso); solo confirmarlo
+                pago_existente.pagEstado = 'PAGADO'
+                pago_existente.save()
+                monto = pago_existente.pagMonto
                 if not registro.fkIdVehiculo.es_visitante:
-                    email_utils.enviar_recibo_pago(nuevo_pago, registro)
+                    email_utils.enviar_recibo_pago(pago_existente, registro)
+            else:
+                # Calcular el cobro ahora según la tarifa activa del tipo de espacio
+                tarifa = Tarifa.get_active_for(espacio.fkIdTipoEspacio)
+                monto = 0
+                if tarifa:
+                    monto = calcular_costo_parqueo(registro.parHoraEntrada, tarifa, registro.fkIdVehiculo, ahora)
+                    nuevo_pago = Pago.objects.create(
+                        pagMonto=monto,
+                        pagMetodo='EFECTIVO',
+                        pagEstado='PAGADO',
+                        fkIdParqueo=registro,
+                    )
+                    if not registro.fkIdVehiculo.es_visitante:
+                        email_utils.enviar_recibo_pago(nuevo_pago, registro)
 
-        # Sticker de fidelidad: si estuvo más de 1 hora y es usuario registrado
-        usuario_vehiculo = registro.fkIdVehiculo.fkIdUsuario
-        if usuario_vehiculo:
-            duracion_min = int((ahora - registro.parHoraEntrada).total_seconds()) // 60
-            if duracion_min >= 60:
-                Sticker.objects.get_or_create(
-                    fkIdParqueo=registro,
-                    defaults={'fkIdUsuario': usuario_vehiculo}
-                )
+            # Sticker de fidelidad: si estuvo más de 1 hora y es usuario registrado
+            usuario_vehiculo = registro.fkIdVehiculo.fkIdUsuario
+            if usuario_vehiculo:
+                duracion_min = int((ahora - registro.parHoraEntrada).total_seconds()) // 60
+                if duracion_min >= STICKER_MIN_MINUTOS:
+                    Sticker.objects.get_or_create(
+                        fkIdParqueo=registro,
+                        defaults={'fkIdUsuario': usuario_vehiculo}
+                    )
 
-        # Liberar el espacio para nuevos ingresos
-        espacio.espEstado = 'DISPONIBLE'
-        espacio.save()
-        messages.success(
-            request,
-            f'Salida autorizada: {registro.fkIdVehiculo.vehPlaca}. Cobro: ${float(monto):,.0f} COP'
-        )
+            # Liberar el espacio para nuevos ingresos
+            espacio.liberar()
+            messages.success(
+                request,
+                f'Salida autorizada: {registro.fkIdVehiculo.vehPlaca}. Cobro: ${float(monto):,.0f} COP'
+            )
         return redirect('guardia_dashboard')
 
 
@@ -429,38 +368,22 @@ class VigilanteObtenerDetalleView(VigilanteRequiredMixin, View):
 
             now = timezone.now()
             entrada = registro.parHoraEntrada
-            # Minutos transcurridos redondeados hacia arriba, mínimo 1
-            total_minutos = max((int((now - entrada).total_seconds()) + 59) // 60, 1)
-
-            # Convierte el total de minutos a formato legible: "1d 2h 30m"
-            dias = total_minutos // 1440
-            horas = (total_minutos % 1440) // 60
-            minutos = total_minutos % 60
-            partes = []
-            if dias:
-                partes.append(f'{dias}d')
-            if horas:
-                partes.append(f'{horas}h')
-            partes.append(f'{minutos}m')
-            duracion_str = ' '.join(partes)
+            duracion_str = registro.duracion_str(now)
 
             # Verifica si ya hay un pago pendiente pre-calculado
             pago_pendiente = Pago.objects.filter(
                 fkIdParqueo=registro, pagEstado='PENDIENTE'
             ).first()
 
-            tarifa = Tarifa.objects.filter(
-                fkIdTipoEspacio=espacio.fkIdTipoEspacio, activa=True
-            ).first()
+            tarifa = Tarifa.get_active_for(espacio.fkIdTipoEspacio)
 
             subtotal = 0
             tarifa_info = 'Sin tarifa configurada'
             precio_hora_num = 0
             if tarifa:
                 vehiculo = registro.fkIdVehiculo
-                # Selecciona precio normal o de visitante
                 precio_hora_num = float(tarifa.precioHoraVisitante) if vehiculo.es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
-                subtotal = math.ceil((precio_hora_num / 60) * total_minutos)
+                subtotal = calcular_costo_parqueo(entrada, tarifa, vehiculo, now)
                 tarifa_info = f'${precio_hora_num:,.0f} / Hora' + (' (Visitante)' if vehiculo.es_visitante else '')
 
             # Si ya hay pago calculado, usar ese monto; si no, usar el estimado en tiempo real
@@ -548,6 +471,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                         break
 
                 # Detecta si el espacio ocupado tiene cobro pendiente
+                placa_actual = None
                 if espacio.espEstado == 'OCUPADO':
                     pago_pendiente = Pago.objects.filter(
                         fkIdParqueo__fkIdEspacio=espacio,
@@ -555,6 +479,12 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                         pagEstado='PENDIENTE',
                         pagMetodo='EFECTIVO',
                     ).exists()
+                    registro_activo = InventarioParqueo.objects.filter(
+                        fkIdEspacio=espacio,
+                        parHoraSalida__isnull=True
+                    ).select_related('fkIdVehiculo').first()
+                    if registro_activo:
+                        placa_actual = registro_activo.fkIdVehiculo.vehPlaca
 
                 espacios_data.append({
                     'pk': espacio.pk,
@@ -562,6 +492,7 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                     'espEstado': espacio.espEstado,
                     'pago_pendiente': pago_pendiente,
                     'reserva_pk': reserva_proxima.pk if reserva_proxima else None,
+                    'placa_actual': placa_actual,
                 })
 
             pisos_data.append({
@@ -609,13 +540,9 @@ class VigilanteDashboardDataView(VigilanteRequiredMixin, View):
                 costo = float(pago.pagMonto)
             else:
                 # Calcular estimado en tiempo real si no hay pago pre-calculado
-                tarifa = Tarifa.objects.filter(
-                    fkIdTipoEspacio=reg.fkIdEspacio.fkIdTipoEspacio, activa=True
-                ).first()
+                tarifa = Tarifa.get_active_for(reg.fkIdEspacio.fkIdTipoEspacio)
                 if tarifa:
-                    total_min = max((int((now - reg.parHoraEntrada).total_seconds()) + 59) // 60, 1)
-                    precio = float(tarifa.precioHoraVisitante) if v.es_visitante and tarifa.precioHoraVisitante > 0 else float(tarifa.precioHora)
-                    costo = math.ceil((precio / 60) * total_min)
+                    costo = calcular_costo_parqueo(reg.parHoraEntrada, tarifa, v)
                 else:
                     costo = 0
             solicitudes_salida_data.append({

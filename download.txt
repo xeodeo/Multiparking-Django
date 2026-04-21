@@ -1,0 +1,15 @@
+Disparador del Trigger 1:
+
+INSERT INTO reservas (resHoraInicio,resHoraFin,fkIdEspacio,fkIdVehiculo)
+VALUES ('2025-09-10 10:00:00','2025-09-10 12:00:00',1,1);
+
+Disparador del Trigger 2:
+INSERT INTO parqueos (parHoraEntrada,fkIdVehiculo,fkIdTarifa,fkIdEspacio)
+VALUES (NOW(),1,1,1);
+
+
+Disparador del Trigger 3:
+UPDATE parqueos 
+SET parHoraSalida = NOW()
+WHERE idParqueo = 123;  -- uno que estaba abierto
+claude --resume "solid-practices-multiparking-django"

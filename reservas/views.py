@@ -2,12 +2,13 @@ from datetime import datetime, date, timedelta
 
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 from django.http import JsonResponse
 
-from usuarios.mixins import AdminRequiredMixin
+from usuarios.mixins import AdminRequiredMixin, VigilanteRequiredMixin
 from parqueadero.models import Espacio
 from vehiculos.models import Vehiculo
 
@@ -53,12 +54,8 @@ class ReservaFinalizarView(AdminRequiredMixin, View):
     def post(self, request, pk):
         reserva = get_object_or_404(Reserva, pk=pk)
         if reserva.resEstado in ('PENDIENTE', 'CONFIRMADA'):
-            reserva.resEstado = 'COMPLETADA'
-            reserva.save()
-            espacio = reserva.fkIdEspacio
-            if espacio.espEstado == 'RESERVADO':
-                espacio.espEstado = 'DISPONIBLE'
-                espacio.save()
+            with transaction.atomic():
+                reserva.cerrar('COMPLETADA')
             messages.success(request, f'Reserva #{reserva.pk} finalizada.')
         else:
             messages.error(request, 'Esta reserva no se puede finalizar.')
@@ -69,13 +66,8 @@ class ReservaCancelarView(AdminRequiredMixin, View):
     def post(self, request, pk):
         reserva = get_object_or_404(Reserva, pk=pk)
         if reserva.resEstado in ('PENDIENTE', 'CONFIRMADA'):
-            reserva.resEstado = 'CANCELADA'
-            reserva.save()
-            # Si el espacio estaba en estado RESERVADO, lo libera al cancelar
-            espacio = reserva.fkIdEspacio
-            if espacio.espEstado == 'RESERVADO':
-                espacio.espEstado = 'DISPONIBLE'
-                espacio.save()
+            with transaction.atomic():
+                reserva.cerrar('CANCELADA')
             messages.success(request, f'Reserva #{reserva.pk} cancelada.')
         else:
             messages.error(request, 'Esta reserva no se puede cancelar.')
@@ -137,27 +129,26 @@ class ReservaEditarView(AdminRequiredMixin, View):
             messages.error(request, 'El espacio ya está reservado en ese horario.')
             return redirect('admin_reservas_editar', pk=pk)
 
-        # Si cambia el espacio, liberar el anterior y bloquear el nuevo
-        espacio_anterior = reserva.fkIdEspacio
-        if espacio_anterior.pk != nuevo_espacio.pk:
-            if espacio_anterior.espEstado == 'RESERVADO':
-                espacio_anterior.espEstado = 'DISPONIBLE'
-                espacio_anterior.save()
-            if nuevo_espacio.espEstado == 'DISPONIBLE':
-                nuevo_espacio.espEstado = 'RESERVADO'
-                nuevo_espacio.save()
+        with transaction.atomic():
+            # Si cambia el espacio, liberar el anterior y bloquear el nuevo
+            espacio_anterior = reserva.fkIdEspacio
+            if espacio_anterior.pk != nuevo_espacio.pk:
+                if espacio_anterior.espEstado == 'RESERVADO':
+                    espacio_anterior.liberar()
+                if nuevo_espacio.espEstado == 'DISPONIBLE':
+                    nuevo_espacio.reservar()
 
-        reserva.fkIdEspacio = nuevo_espacio
-        reserva.fkIdVehiculo = vehiculo
-        reserva.resFechaReserva = fecha_obj
-        reserva.resHoraInicio = hora_obj
-        reserva.save()
+            reserva.fkIdEspacio = nuevo_espacio
+            reserva.fkIdVehiculo = vehiculo
+            reserva.resFechaReserva = fecha_obj
+            reserva.resHoraInicio = hora_obj
+            reserva.save()
 
         messages.success(request, f'Reserva #{reserva.pk} actualizada.')
         return redirect('admin_reservas')
 
 
-class ReservaDetallesAPIView(View):
+class ReservaDetallesAPIView(VigilanteRequiredMixin, View):
     """API endpoint para obtener detalles de una reserva"""
     def get(self, request, pk):
         try:

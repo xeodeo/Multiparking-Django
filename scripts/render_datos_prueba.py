@@ -29,6 +29,8 @@ from pagos.models import Pago
 from cupones.models import Cupon, CuponAplicado
 from reservas.models import Reserva
 from usuarios.models import Usuario
+from novedades.models import Novedad
+from fidelidad.models import ConfiguracionFidelidad, Sticker
 
 print("=" * 60)
 print("  CARGANDO DATOS DE PRUEBA - MultiParking (Render)")
@@ -37,6 +39,8 @@ print("=" * 60)
 # ── 1. LIMPIAR TODO ─────────────────────────────────────────
 print("\n[1/11] Limpiando base de datos...")
 # Se elimina en orden para respetar las restricciones de FK (dependientes primero)
+Sticker.objects.all().delete()
+Novedad.objects.all().delete()
 CuponAplicado.objects.all().delete()
 Cupon.objects.all().delete()
 Reserva.objects.all().delete()
@@ -48,6 +52,7 @@ TipoEspacio.objects.all().delete()
 Piso.objects.all().delete()
 Vehiculo.objects.all().delete()
 Usuario.objects.all().delete()
+ConfiguracionFidelidad.objects.all().delete()
 print("  [OK] Base de datos limpiada completamente")
 
 # ── 2. USUARIOS ─────────────────────────────────────────────
@@ -410,6 +415,14 @@ if tarifa:
             pagos_creados += 1
 
 print(f"  [OK] {pagos_creados} pagos generados (5 dias x 3 pagos)")
+
+# ── CONFIGURACIÓN FIDELIDAD ──────────────────────────────────
+print("\n[12/12] Inicializando configuración de fidelidad...")
+config = ConfiguracionFidelidad.get()
+config.metaStickers = 10
+config.diasVencimientoBono = 30
+config.save()
+print(f"  [OK] Meta: {config.metaStickers} stickers | Bono válido: {config.diasVencimientoBono} días")
 
 # ── RESUMEN FINAL ───────────────────────────────────────────
 print("\n" + "=" * 60)

@@ -2,6 +2,7 @@ import secrets
 from datetime import date, timedelta
 
 from django.contrib import messages
+from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views import View
 
@@ -93,19 +94,18 @@ class ReclamarBonoView(View):
         hoy = date.today()
         vencimiento = hoy + timedelta(days=config.diasVencimientoBono)
 
-        cupon = Cupon.objects.create(
-            cupNombre=f'Bono Fidelidad — {usuario.usuNombreCompleto}',
-            cupCodigo=codigo,
-            cupTipo='PORCENTAJE',
-            cupValor=100,
-            cupDescripcion=f'Bono 100% canjeado por {config.metaStickers} stickers acumulados.',
-            cupFechaInicio=hoy,
-            cupFechaFin=vencimiento,
-            cupActivo=True,
-        )
-
-        # Eliminar los stickers consumidos
-        Sticker.objects.filter(fkIdUsuario=usuario).delete()
+        with transaction.atomic():
+            cupon = Cupon.objects.create(
+                cupNombre=f'Bono Fidelidad — {usuario.usuNombreCompleto}',
+                cupCodigo=codigo,
+                cupTipo='PORCENTAJE',
+                cupValor=config.porcentajeBono,
+                cupDescripcion=f'Bono {config.porcentajeBono}% canjeado por {config.metaStickers} stickers acumulados.',
+                cupFechaInicio=hoy,
+                cupFechaFin=vencimiento,
+                cupActivo=True,
+            )
+            Sticker.objects.filter(fkIdUsuario=usuario).delete()
 
         # Notificar al usuario
         email_utils.enviar_bono_stickers(usuario, cupon)

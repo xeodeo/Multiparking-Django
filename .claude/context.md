@@ -2,29 +2,29 @@
 
 ## Descripción General
 
-Sistema web para la gestión integral de un parqueadero desarrollado en
-
-Django.
+Sistema web para la gestión integral de un parqueadero desarrollado en Django 6.0 (Python 3.12+).
 
 Permite administrar:
 
-- Usuarios
-- Vehículos
-- Pisos
-- Espacios
+- Usuarios (Admin, Vigilante, Cliente)
+- Vehículos (registrados y visitantes)
+- Pisos y espacios de parqueo
 - Tipos de espacio
-- Tarifas
+- Tarifas (con precio diferenciado visitante)
 - Ingresos y salidas
-- Reservas
+- Reservas (admin y cliente)
 - Pagos
-- Cupones
+- Cupones de descuento
+- Novedades / Incidentes
+- Programa de fidelidad (stickers)
 - Control en tiempo real
+- Reportes PDF y Excel
 
-El sistema debe ser:
+El sistema es:
 
-- Seguro
+- Seguro (CSP, no-cache, PBKDF2, recuperación por email)
 - Escalable
-- Modular
+- Modular (9 apps Django)
 - Corporativo
 - Operación en tiempo real
 
@@ -34,18 +34,25 @@ El sistema debe ser:
 
 ## Backend
 
-- Django
+- Django 6.0.2
 - Django REST Framework
-- Arquitectura REST
-- Autenticación por Sesión o JWT
-- MySQL / PostgreSQL
+- Arquitectura MVT + class-based views
+- Autenticación por Sesión personalizada (sin django.contrib.auth.User)
+- MySQL 8.0 en desarrollo / PostgreSQL en producción (Render.com)
+- dj-database-url para DATABASE_URL en producción
+- SendGrid (django-sendgrid-v5) para emails
 
 ## Frontend
 
 - Django Templates
-- Tailwind CSS
+- Tailwind CSS (CDN)
 - Responsive
-- Panel administrativo moderno
+- Panel administrativo moderno Dark Mode
+
+## Exportaciones
+
+- reportlab → PDF
+- openpyxl → Excel
 
 ---
 
@@ -60,30 +67,31 @@ Apps:
 - pagos
 - cupones
 - reservas
+- novedades
+- fidelidad
 
-Separación:
+Separación de vistas:
 
-- models → estructura
-- serializers → validación
-- views/viewsets → endpoints
-- services → reglas complejas
-- urls → rutas
+- `views.py` → vistas admin/principal
+- `vigilante_views.py` → vistas exclusivas del guardia (parqueadero)
+- `cliente_views.py` → self-service del cliente (vehiculos, reservas, parqueadero)
+- `reportes_views.py` → exportaciones PDF/Excel (parqueadero)
 
 Reglas:
 
-- CRUD REST
-- Validaciones en serializers
-- Manejo centralizado de errores
+- CRUD con class-based views (no DRF ViewSets)
+- Validación directa en views (no Django Forms)
+- Manejo de errores vía messages framework
 
 ---
 
 # ROLES (ENUM rolTipoRol)
 
-- ADMIN → control total
-- VIGILANTE → operación diaria
-- CLIENTE → gestión propia
+- ADMIN → control total del panel admin
+- VIGILANTE → panel guardia: registrar ingresos/salidas
+- CLIENTE → dashboard propio, vehículos, reservas, perfil fidelidad
 
-No existe tabla de roles.
+No existe tabla de roles separada — el ENUM está en el modelo Usuario.
 
 ---
 
@@ -91,11 +99,13 @@ No existe tabla de roles.
 
 ## Usuarios
 
-Documento, Nombre, Email, Teléfono, Clave hash, Rol, Estado.
+Documento, Nombre, Apellido, Email, Teléfono, Clave hash, Rol, Estado.
+Recuperación de contraseña vía email (SendGrid, token de un solo uso).
 
 ## Vehículos
 
 Placa única. Un vehículo no puede tener más de un parqueo activo.
+Soporta visitantes (fkIdUsuario null + nombre_visitante + telefono_contacto).
 
 ## Pisos
 
@@ -107,169 +117,46 @@ Clasificación física y asociación de tarifas.
 
 ## Espacios
 
-Estado: - DISPONIBLE - OCUPADO - INACTIVO
+Estado: DISPONIBLE / OCUPADO / RESERVADO / INACTIVO
 
 ## Tarifas
 
 Una tarifa pertenece a un TipoEspacio. Solo una activa por tipo y fecha.
+Tiene precioHora (usuario registrado) y precioHoraVisitante (visitante sin cuenta).
 
 ## Inventario Parqueo
 
-Si parHoraSalida IS NULL → vehículo activo. Salida → calcular valor →
-
-liberar espacio.
+Si parHoraSalida IS NULL → vehículo activo. Salida → calcular valor → liberar espacio.
+El cálculo usa precioHoraVisitante para vehículos de visitantes.
 
 ## Reservas
 
 Bloquean espacios durante rango horario.
+Gestionadas por admin y por el propio cliente.
 
 ## Pagos
 
-Generados automáticamente al salir.
+Generados automáticamente al registrar salida.
 
 ## Cupones
 
 Validar vigencia antes de aplicar.
+Identificados por código único (cupCodigo).
+
+## Novedades
+
+Incidentes o eventos asociados a un vehículo y/o espacio.
+Estados: PENDIENTE, EN_PROCESO, RESUELTO.
+Soporta foto adjunta.
+
+## Fidelidad
+
+Sistema de stickers: un sticker por parqueo > 1 hora (usuarios registrados).
+Al alcanzar la meta (metaStickers), el cliente puede reclamar un cupón de 100% con vigencia configurable.
+ConfiguracionFidelidad es un singleton (pk=1).
 
 ---
 
 # OBJETIVO
 
-Sistema robusto para control eficiente, trazabilidad y escalabilidad.
-
-# ESTRUCTURA DE BASE DE DATOS
-
-## 1. usuarios
-
-- idUsuario (PK)
-- usuDocumento
-- usuNombreCompleto
-- usuCorreo
-- usuTelefono
-- usuClaveHash
-- rolTipoRol (ADMIN, VIGILANTE, CLIENTE)
-- usuEstado
-- usuFechaRegistro
-
-Relación: Usuario → N Vehículos
-
----
-
-## 2. vehiculos
-
-- idVehiculo (PK)
-- vehPlaca (única)
-- vehTipo
-- vehColor
-- vehMarca
-- vehModelo
-- fkIdUsuario
-
-Regla: Un vehículo no puede tener más de un parqueo activo.
-
----
-
-## 3. pisos
-
-- idPiso (PK)
-- pisNombre
-- pisEstado
-
----
-
-## 4. tipos_espacio
-
-- idTipoEspacio (PK)
-- nombre
-
----
-
-## 5. espacios
-
-- idEspacio (PK)
-- espNumero
-- fkIdPiso
-- fkIdTipoEspacio
-- espEstado (DISPONIBLE, OCUPADO, INACTIVO)
-
----
-
-## 6. inventario_parqueo
-
-- idParqueo (PK)
-- parHoraEntrada
-- parHoraSalida
-- fkIdVehiculo
-- fkIdEspacio
-
-Regla: parHoraSalida NULL → activo.
-
----
-
-## 7. reservas
-
-- idReserva (PK)
-- resFechaReserva
-- resHoraInicio
-- resHoraFin
-- resEstado
-- fkIdEspacio
-- fkIdVehiculo
-
----
-
-## 8. tarifas
-
-- idTarifa (PK)
-- nombre
-- fkIdTipoEspacio
-- precioHora
-- precioDia
-- precioMensual
-- activa
-- fechaInicio
-- fechaFin
-
-Regla: Una tarifa activa por tipo y fecha.
-
----
-
-## 9. pagos
-
-- idPago (PK)
-- pagFechaPago
-- pagMonto
-- pagMetodo
-- pagEstado
-- fkIdParqueo
-
----
-
-## 10. cupones
-
-- idCupon
-- cupNombre
-- cupTipo
-- cupValor
-- cupDescripcion
-- cupFechaInicio
-- cupFechaFin
-- cupActivo
-
----
-
-## 11. cupones_aplicados
-
-- idCuponAplicado
-- fkIdPago
-- fkIdCupon
-- montoDescontado
-
----
-
-# REGLAS GLOBALES
-
-1. No ingreso si vehículo ya activo.
-2. No asignar espacio ocupado.
-3. Salida → calcular tarifa → registrar pago → liberar espacio.
-4. Validar vigencia de cupones.
+Sistema robusto para control eficiente, trazabilidad y escalabilidad de parqueaderos multinivel.

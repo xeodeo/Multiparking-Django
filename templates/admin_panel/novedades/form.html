@@ -100,8 +100,17 @@
                 {% if novedad.novFoto %}
                 <img src="{{ novedad.novFoto.url }}" class="h-24 rounded-lg mb-2 object-cover" alt="Foto novedad">
                 {% endif %}
-                <input type="file" name="foto" accept="image/*"
-                    class="w-full text-sm text-mp-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-mp-purple/20 file:text-mp-purple-light hover:file:bg-mp-purple/30 transition">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <span id="foto-btn" class="inline-flex items-center gap-2 bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light border border-mp-purple/30 rounded-lg px-4 py-2 text-xs font-medium transition whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5V19a1 1 0 001 1h16a1 1 0 001-1v-2.5M16 9l-4-4-4 4M12 5v11"/>
+                        </svg>
+                        Elegir imagen
+                    </span>
+                    <span id="foto-nombre" class="text-sm text-mp-muted truncate">Sin archivo seleccionado</span>
+                    <input type="file" name="foto" accept="image/*" id="foto-input" class="sr-only"
+                        onchange="document.getElementById('foto-nombre').textContent = this.files[0] ? this.files[0].name : 'Sin archivo seleccionado'">
+                </label>
             </div>
 
             <div class="flex gap-3">

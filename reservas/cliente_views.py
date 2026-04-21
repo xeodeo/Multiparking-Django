@@ -3,24 +3,17 @@ Vistas para que los clientes creen y gestionen sus reservas
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
 from django.views import View
 from django.utils import timezone
 from datetime import datetime, date, timedelta
 
 from multiparking import email_utils
+from usuarios.mixins import ClienteRequiredMixin
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 from parqueadero.models import Espacio, Piso
 from reservas.models import Reserva
-
-
-class ClienteRequiredMixin:
-    """Mixin para requerir que el usuario sea un cliente autenticado"""
-    def dispatch(self, request, *args, **kwargs):
-        if not request.session.get('usuario_id'):
-            messages.error(request, 'Debes iniciar sesión.')
-            return redirect('home')
-        return super().dispatch(request, *args, **kwargs)
 
 
 class ClienteCrearReservaView(ClienteRequiredMixin, View):
@@ -33,7 +26,6 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         # Obtener vehículos activos del usuario
         vehiculos = Vehiculo.objects.filter(
             fkIdUsuario=usuario,
-            fkIdUsuario__isnull=False,
             vehEstado=True
         )
 
@@ -119,18 +111,15 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             messages.error(request, 'El espacio ya está reservado en ese horario.')
             return self.get(request)
 
-        # Crear la reserva (sin hora de fin)
-        nueva_reserva = Reserva.objects.create(
-            resFechaReserva=fecha_inicio,
-            resHoraInicio=hora_inicio_obj,
-            resEstado='PENDIENTE',
-            fkIdEspacio=espacio,
-            fkIdVehiculo=vehiculo
-        )
-
-        # Bloquear el espacio para que nadie más lo reserve
-        espacio.espEstado = 'RESERVADO'
-        espacio.save()
+        with transaction.atomic():
+            nueva_reserva = Reserva.objects.create(
+                resFechaReserva=fecha_inicio,
+                resHoraInicio=hora_inicio_obj,
+                resEstado='PENDIENTE',
+                fkIdEspacio=espacio,
+                fkIdVehiculo=vehiculo
+            )
+            espacio.reservar()
 
         # Enviar correo de confirmación al cliente (en hilo separado, no bloquea)
         email_utils.enviar_confirmacion_reserva(nueva_reserva)
@@ -166,7 +155,6 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
         # Obtener vehículos activos del usuario
         vehiculos = Vehiculo.objects.filter(
             fkIdUsuario=usuario,
-            fkIdUsuario__isnull=False,
             vehEstado=True
         )
 
@@ -260,12 +248,12 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
             messages.error(request, 'El espacio ya está reservado en ese horario.')
             return self.get(request, pk)
 
-        # Actualizar la reserva (sin hora de fin)
-        reserva.fkIdVehiculo = vehiculo
-        reserva.fkIdEspacio = espacio
-        reserva.resFechaReserva = fecha_inicio
-        reserva.resHoraInicio = hora_inicio_obj
-        reserva.save()
+        with transaction.atomic():
+            reserva.fkIdVehiculo = vehiculo
+            reserva.fkIdEspacio = espacio
+            reserva.resFechaReserva = fecha_inicio
+            reserva.resHoraInicio = hora_inicio_obj
+            reserva.save()
 
         messages.success(request, f'Reserva actualizada exitosamente.')
         return redirect('dashboard')
@@ -285,14 +273,8 @@ class ClienteCancelarReservaView(ClienteRequiredMixin, View):
             resEstado__in=['PENDIENTE', 'CONFIRMADA']
         )
 
-        # Cancelar la reserva y liberar el espacio
-        reserva.resEstado = 'CANCELADA'
-        reserva.save()
-
-        espacio = reserva.fkIdEspacio
-        if espacio.espEstado == 'RESERVADO':
-            espacio.espEstado = 'DISPONIBLE'
-            espacio.save()
+        with transaction.atomic():
+            reserva.cerrar('CANCELADA')
 
         messages.success(request, 'Reserva cancelada exitosamente.')
         return redirect('dashboard')

@@ -1,0 +1,615 @@
+/*M!999999\- enable the sandbox mode */ 
+-- MariaDB dump 10.19-11.5.2-MariaDB, for Win64 (AMD64)
+--
+-- Host: localhost    Database: multiparking
+-- ------------------------------------------------------
+-- Server version	11.5.2-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
+
+--
+-- Table structure for table `descuentos`
+--
+
+DROP TABLE IF EXISTS `descuentos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `descuentos` (
+  `idDescuento` int(11) NOT NULL AUTO_INCREMENT,
+  `desNombre` varchar(100) NOT NULL,
+  `desTipo` enum('porcentaje','valor_fijo') NOT NULL,
+  `desValor` decimal(10,2) NOT NULL,
+  `desDescripcion` text DEFAULT NULL,
+  `desCondicion` varchar(255) DEFAULT NULL,
+  `desFechaInicio` date DEFAULT NULL,
+  `desFechaFin` date DEFAULT NULL,
+  `desActivo` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`idDescuento`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `descuentos`
+--
+
+
+/*!40000 ALTER TABLE `descuentos` DISABLE KEYS */;
+INSERT INTO `descuentos` VALUES
+(1,'Descuento 10%','porcentaje',10.00,'10% general','*','2025-09-01','2025-09-30',1),
+(2,'Promo Festiva','valor_fijo',2000.00,'Días festivos','*','2025-09-01','2025-09-30',1),
+(3,'Cliente Frecuente','porcentaje',15.00,'Más de 10 visitas','frecuente','2025-09-01','2025-09-30',1),
+(4,'Moto Amiga','valor_fijo',1000.00,'Solo motos','moto','2025-09-01','2025-09-30',1),
+(5,'Convenio Empresa','porcentaje',20.00,'Aliados empresariales','empresa','2025-09-01','2025-09-30',1);
+/*!40000 ALTER TABLE `descuentos` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `descuentos_aplicados`
+--
+
+DROP TABLE IF EXISTS `descuentos_aplicados`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `descuentos_aplicados` (
+  `idDescuentoAplicado` int(11) NOT NULL AUTO_INCREMENT,
+  `fkIdPago` int(11) NOT NULL,
+  `fkIdDescuento` int(11) NOT NULL,
+  `montoDescontado` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`idDescuentoAplicado`),
+  KEY `fkIdPago` (`fkIdPago`),
+  KEY `fkIdDescuento` (`fkIdDescuento`),
+  CONSTRAINT `descuentos_aplicados_ibfk_1` FOREIGN KEY (`fkIdPago`) REFERENCES `pagos` (`idPago`),
+  CONSTRAINT `descuentos_aplicados_ibfk_2` FOREIGN KEY (`fkIdDescuento`) REFERENCES `descuentos` (`idDescuento`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `descuentos_aplicados`
+--
+
+
+/*!40000 ALTER TABLE `descuentos_aplicados` DISABLE KEYS */;
+INSERT INTO `descuentos_aplicados` VALUES
+(1,1,1,500.00),
+(2,2,2,2000.00),
+(3,3,3,1050.00),
+(4,4,4,1000.00),
+(5,5,5,1840.00);
+/*!40000 ALTER TABLE `descuentos_aplicados` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `espacios`
+--
+
+DROP TABLE IF EXISTS `espacios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `espacios` (
+  `idEspacio` int(11) NOT NULL AUTO_INCREMENT,
+  `espNumero` varchar(25) NOT NULL,
+  `espPiso` varchar(25) NOT NULL,
+  `espTipo` varchar(50) NOT NULL,
+  `espEstado` enum('DISPONIBLE','OCUPADO','INACTIVO','RESERVADO') NOT NULL,
+  `fkIdTarifa` int(11) NOT NULL,
+  PRIMARY KEY (`idEspacio`),
+  KEY `fk_espacios_tarifas` (`fkIdTarifa`),
+  CONSTRAINT `fk_espacios_tarifas` FOREIGN KEY (`fkIdTarifa`) REFERENCES `tarifas` (`idTarifa`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `espacios`
+--
+
+/*!40000 ALTER TABLE `espacios` DISABLE KEYS */;
+INSERT INTO `espacios` VALUES
+(1,'C1','1','Carro','DISPONIBLE',1),
+(2,'M1','1','Moto','DISPONIBLE',2),
+(3,'B1','2','Bicicleta','DISPONIBLE',3),
+(4,'C2','2','Carro','OCUPADO',1),
+(5,'E1','3','Eléctrico','RESERVADO',5);
+/*!40000 ALTER TABLE `espacios` ENABLE KEYS */;
+
+--
+-- Table structure for table `logs`
+--
+
+DROP TABLE IF EXISTS `logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs` (
+  `idLog` int(11) NOT NULL AUTO_INCREMENT,
+  `logFechaHora` timestamp NULL DEFAULT current_timestamp(),
+  `fkIdUsuario` int(11) DEFAULT NULL,
+  `logAccion` varchar(100) NOT NULL,
+  `logTabla` varchar(100) DEFAULT NULL,
+  `logIdRegistro` varchar(100) DEFAULT NULL,
+  `logDescripcion` text DEFAULT NULL,
+  `logDatosPrevios` text DEFAULT NULL,
+  `logDatosNuevos` text DEFAULT NULL,
+  PRIMARY KEY (`idLog`),
+  KEY `fk_logs_usuarios` (`fkIdUsuario`),
+  CONSTRAINT `fk_logs_usuarios` FOREIGN KEY (`fkIdUsuario`) REFERENCES `usuarios` (`idUsuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `logs`
+--
+
+/*!40000 ALTER TABLE `logs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs` ENABLE KEYS */;
+
+--
+-- Table structure for table `pagos`
+--
+
+DROP TABLE IF EXISTS `pagos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pagos` (
+  `idPago` int(11) NOT NULL AUTO_INCREMENT,
+  `pagFechaPago` timestamp NOT NULL DEFAULT current_timestamp(),
+  `pagMonto` decimal(10,2) DEFAULT NULL,
+  `pagMetodo` varchar(100) DEFAULT NULL,
+  `pagEstado` varchar(100) DEFAULT NULL,
+  `fkIdParqueo` int(11) NOT NULL,
+  PRIMARY KEY (`idPago`),
+  KEY `fkIdParqueo` (`fkIdParqueo`),
+  CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`fkIdParqueo`) REFERENCES `parqueos` (`idParqueo`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pagos`
+--
+
+/*!40000 ALTER TABLE `pagos` DISABLE KEYS */;
+INSERT INTO `pagos` VALUES
+(1,'2025-09-02 15:10:00',5000.00,'Efectivo','Pagado',1),
+(2,'2025-09-02 14:15:00',2000.00,'Nequi','Pendiente',2),
+(3,'2025-09-01 14:40:00',7000.00,'Tarjeta','Pagado',3),
+(4,'2025-09-02 18:15:00',1500.00,'Daviplata','Pagado',4),
+(5,'2025-09-02 17:30:00',3000.00,'Efectivo','Pendiente',5);
+/*!40000 ALTER TABLE `pagos` ENABLE KEYS */;
+
+--
+-- Table structure for table `parqueos`
+--
+
+DROP TABLE IF EXISTS `parqueos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `parqueos` (
+  `idParqueo` int(11) NOT NULL AUTO_INCREMENT,
+  `parHoraEntrada` timestamp NOT NULL DEFAULT current_timestamp(),
+  `parHoraSalida` timestamp NULL DEFAULT NULL,
+  `fkIdVehiculo` int(11) NOT NULL,
+  `fkIdEspacio` int(11) DEFAULT NULL,
+  PRIMARY KEY (`idParqueo`),
+  KEY `fkIdVehiculo` (`fkIdVehiculo`),
+  KEY `fk_parqueos_espacios` (`fkIdEspacio`),
+  CONSTRAINT `fk_parqueos_espacios` FOREIGN KEY (`fkIdEspacio`) REFERENCES `espacios` (`idEspacio`) ON UPDATE CASCADE,
+  CONSTRAINT `parqueos_ibfk_1` FOREIGN KEY (`fkIdVehiculo`) REFERENCES `vehiculos` (`idVehiculo`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `parqueos`
+--
+
+/*!40000 ALTER TABLE `parqueos` DISABLE KEYS */;
+INSERT INTO `parqueos` VALUES
+(1,'2025-09-02 13:00:00','2025-09-02 15:00:00',1,1),
+(2,'2025-09-02 14:00:00',NULL,2,2),
+(3,'2025-09-01 12:30:00','2025-09-01 14:30:00',3,4),
+(4,'2025-09-02 16:00:00','2025-09-02 18:00:00',4,2),
+(5,'2025-09-02 17:00:00',NULL,5,1),
+(11,'2025-09-02 17:00:00','2025-09-02 19:00:00',6,5),
+(12,'2025-09-05 16:00:00','2025-09-05 18:00:00',3,4),
+(13,'2025-09-06 13:00:00','2025-09-06 15:00:00',7,3);
+/*!40000 ALTER TABLE `parqueos` ENABLE KEYS */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_uca1400_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_parqueos_ai_ins_ocupar
+AFTER INSERT ON parqueos
+FOR EACH ROW
+BEGIN
+  IF NEW.fkIdEspacio IS NOT NULL THEN
+    UPDATE espacios SET espEstado='OCUPADO'
+    WHERE idEspacio=NEW.fkIdEspacio;
+  END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_uca1400_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_parqueos_au_upd_liberar
+AFTER UPDATE ON parqueos
+FOR EACH ROW
+BEGIN
+  IF OLD.parHoraSalida IS NULL AND NEW.parHoraSalida IS NOT NULL
+     AND NEW.fkIdEspacio IS NOT NULL THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM parqueos p
+      WHERE p.fkIdEspacio=NEW.fkIdEspacio
+        AND p.parHoraSalida IS NULL
+    ) THEN
+      UPDATE espacios SET espEstado='DISPONIBLE'
+      WHERE idEspacio=NEW.fkIdEspacio;
+    END IF;
+  END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `reservas`
+--
+
+DROP TABLE IF EXISTS `reservas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reservas` (
+  `idReserva` int(11) NOT NULL AUTO_INCREMENT,
+  `resFechaReserva` date NOT NULL,
+  `resHoraInicio` datetime NOT NULL,
+  `resHoraFin` datetime NOT NULL,
+  `resEstado` enum('RESERVADO','CANCELADO','FINALIZADO') DEFAULT 'RESERVADO',
+  `fkIdEspacio` int(11) DEFAULT NULL,
+  `fkIdVehiculo` int(11) DEFAULT NULL,
+  PRIMARY KEY (`idReserva`),
+  KEY `idx_reservas_espacio` (`fkIdEspacio`),
+  KEY `idx_reservas_fechas` (`resHoraInicio`,`resHoraFin`),
+  KEY `idx_reservas_vehiculo` (`fkIdVehiculo`),
+  CONSTRAINT `fk_reservas_espacios` FOREIGN KEY (`fkIdEspacio`) REFERENCES `espacios` (`idEspacio`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_reservas_vehiculos` FOREIGN KEY (`fkIdVehiculo`) REFERENCES `vehiculos` (`idVehiculo`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reservas`
+--
+
+/*!40000 ALTER TABLE `reservas` DISABLE KEYS */;
+INSERT INTO `reservas` VALUES
+(1,'2025-09-02','2025-09-02 12:00:00','2025-09-02 14:00:00','RESERVADO',5,6),
+(2,'2025-09-03','2025-09-03 09:00:00','2025-09-03 11:00:00','CANCELADO',2,2),
+(3,'2025-09-04','2025-09-04 10:00:00','2025-09-04 12:00:00','FINALIZADO',1,5),
+(4,'2025-09-05','2025-09-05 11:00:00','2025-09-05 13:00:00','RESERVADO',4,3),
+(5,'2025-09-06','2025-09-06 08:00:00','2025-09-06 10:00:00','FINALIZADO',3,7);
+/*!40000 ALTER TABLE `reservas` ENABLE KEYS */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_uca1400_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_reservas_bi_ins_validar
+BEFORE INSERT ON reservas
+FOR EACH ROW
+BEGIN
+  IF NEW.resHoraInicio >= NEW.resHoraFin THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='HoraInicio debe ser menor que HoraFin';
+  END IF;
+  SET NEW.resFechaReserva = DATE(NEW.resHoraInicio);
+  IF NEW.resEstado IS NULL THEN
+    SET NEW.resEstado = 'RESERVADO';
+  END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `roles`
+--
+
+DROP TABLE IF EXISTS `roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `roles` (
+  `idRol` int(11) NOT NULL AUTO_INCREMENT,
+  `rolTipoRol` varchar(100) NOT NULL,
+  `rolDescripcion` text DEFAULT NULL,
+  PRIMARY KEY (`idRol`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `roles`
+--
+
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES
+(1,'ADMINISTRADOR','Acceso total al sistema'),
+(2,'CLIENTE','Usuario que reserva y paga parqueaderos'),
+(3,'PORTERO','Control de accesos en el parqueadero');
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+
+--
+-- Table structure for table `tarifas`
+--
+
+DROP TABLE IF EXISTS `tarifas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tarifas` (
+  `idTarifa` int(11) NOT NULL AUTO_INCREMENT,
+  `tarTipoEspacio` varchar(50) DEFAULT NULL,
+  `tarValorHora` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`idTarifa`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tarifas`
+--
+
+
+/*!40000 ALTER TABLE `tarifas` DISABLE KEYS */;
+INSERT INTO `tarifas` VALUES
+(1,'Carro',2500.00),
+(2,'Moto',1000.00),
+(3,'Bicicleta',500.00),
+(4,'Camioneta',3500.00),
+(5,'Eléctrico',2000.00);
+/*!40000 ALTER TABLE `tarifas` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `usuarios`
+--
+
+DROP TABLE IF EXISTS `usuarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `usuarios` (
+  `idUsuario` int(11) NOT NULL AUTO_INCREMENT,
+  `usuDocumento` varchar(50) NOT NULL,
+  `usuNombreCompleto` varchar(255) NOT NULL,
+  `usuCorreo` varchar(255) DEFAULT NULL,
+  `usuTelefono` varchar(50) DEFAULT NULL,
+  `usuEstado` ENUM ('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+  `usuContraseña` varchar(255) DEFAULT NULL,
+  `usuFechaRegistro` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `fkIdRol` int(11) NOT NULL,
+  PRIMARY KEY (`idUsuario`),
+  UNIQUE KEY `usuDocumento` (`usuDocumento`),
+  KEY `fkIdRol` (`fkIdRol`),
+  CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`fkIdRol`) REFERENCES `roles` (`idRol`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usuarios`
+--
+
+
+/*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
+INSERT INTO `usuarios` VALUES
+(1,'100000001','Juan Pérez','juanp@ejemplo.com','3001234567', 'ACTIVO','hash123','2025-09-02 15:26:01',1),
+(2,'100000002','Ana Gómez','ana.g@ejemplo.com','3102345678','ACTIVO','hash123','2025-09-02 15:26:01',2),
+(3,'100000003','Carlos Ruiz','carlosr@ejemplo.com','3203456789','ACTIVO','hash123','2025-09-02 15:26:01',2),
+(4,'100000004','Luisa Martínez','luisa.m@ejemplo.com','3019876543','ACTIVO','hash123','2025-09-02 15:26:01',3),
+(5,'100000005','Jorge Ramírez','jorger@ejemplo.com','3118765432','ACTIVO','hash123','2025-09-02 15:26:01',3);
+/*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
+
+
+--
+-- Temporary table structure for view `v_espacios_disponibles`
+--
+
+DROP TABLE IF EXISTS `v_espacios_disponibles`;
+/*!50001 DROP VIEW IF EXISTS `v_espacios_disponibles`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `v_espacios_disponibles` AS SELECT
+ 1 AS `Piso`,
+  1 AS `Espacio`,
+  1 AS `Estado`,
+  1 AS `Tipo Vehiculo`,
+  1 AS `Valor por Hora` */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `v_pagos_descuentos`
+--
+
+DROP TABLE IF EXISTS `v_pagos_descuentos`;
+/*!50001 DROP VIEW IF EXISTS `v_pagos_descuentos`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `v_pagos_descuentos` AS SELECT
+ 1 AS `Fecha Pago`,
+  1 AS `Pago Inicial`,
+  1 AS `Valor Descontado`,
+  1 AS `Nombre Descuento`,
+  1 AS `Pago Final` */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `v_reservas_vehiculo`
+--
+
+DROP TABLE IF EXISTS `v_reservas_vehiculo`;
+/*!50001 DROP VIEW IF EXISTS `v_reservas_vehiculo`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `v_reservas_vehiculo` AS SELECT
+ 1 AS `Hora Inicio`,
+  1 AS `Hora Fin`,
+  1 AS `Estado Reserva`,
+  1 AS `Piso`,
+  1 AS `Espacio Reservado`,
+  1 AS `Tipo Vehiculo`,
+  1 AS `Placa Vehiculo` */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `v_usuarios_rol`
+--
+
+DROP TABLE IF EXISTS `v_usuarios_rol`;
+/*!50001 DROP VIEW IF EXISTS `v_usuarios_rol`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `v_usuarios_rol` AS SELECT
+ 1 AS `Nombre`,
+  1 AS `Correo`,
+  1 AS `ROL` */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `vehiculos`
+--
+
+DROP TABLE IF EXISTS `vehiculos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vehiculos` (
+  `idVehiculo` int(11) NOT NULL AUTO_INCREMENT,
+  `vehPlaca` varchar(50) NOT NULL,
+  `vehTipo` varchar(50) DEFAULT NULL,
+  `vehColor` varchar(50) DEFAULT NULL,
+  `vehMarca` varchar(50) DEFAULT NULL,
+  `vehModelo` varchar(50) DEFAULT NULL,
+  `fkIdUsuario` int(11) NOT NULL,
+  PRIMARY KEY (`idVehiculo`),
+  UNIQUE KEY `vehPlaca` (`vehPlaca`),
+  KEY `fkIdUsuario` (`fkIdUsuario`),
+  CONSTRAINT `vehiculos_ibfk_1` FOREIGN KEY (`fkIdUsuario`) REFERENCES `usuarios` (`idUsuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vehiculos`
+--
+
+
+/*!40000 ALTER TABLE `vehiculos` DISABLE KEYS */;
+INSERT INTO `vehiculos` VALUES
+(1,'ABC123','Carro','Rojo','Chevrolet','Sail',1),
+(2,'XYZ789','Moto','Negro','Yamaha','FZ',2),
+(3,'LMN456','Carro','Blanco','Renault','Logan',3),
+(4,'QWE234','Moto','Gris','Honda','CB190',4),
+(5,'ZXC098','Carro','Azul','Mazda','3',5),
+(6,'ELE123','Eléctrico','Verde','BYD','Dolphin',1),
+(7,'BIC001','Bicicleta','Negro','GW','Alloy',2);
+/*!40000 ALTER TABLE `vehiculos` ENABLE KEYS */;
+
+
+--
+-- Final view structure for view `v_espacios_disponibles`
+--
+
+/*!50001 DROP VIEW IF EXISTS `v_espacios_disponibles`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_uca1400_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_espacios_disponibles` AS select `e`.`espPiso` AS `Piso`,`e`.`espNumero` AS `Espacio`,`e`.`espEstado` AS `Estado`,`e`.`espTipo` AS `Tipo Vehiculo`,`t`.`tarValorHora` AS `Valor por Hora` from (`espacios` `e` left join `tarifas` `t` on(`t`.`idTarifa` = `e`.`fkIdTarifa`)) where `e`.`espEstado` = 'DISPONIBLE' */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_pagos_descuentos`
+--
+
+/*!50001 DROP VIEW IF EXISTS `v_pagos_descuentos`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_uca1400_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_pagos_descuentos` AS select `p`.`pagFechaPago` AS `Fecha Pago`,`p`.`pagMonto` AS `Pago Inicial`,`da`.`montoDescontado` AS `Valor Descontado`,`d`.`desNombre` AS `Nombre Descuento`,`p`.`pagMonto` - `da`.`montoDescontado` AS `Pago Final` from ((`descuentos_aplicados` `da` join `pagos` `p` on(`p`.`idPago` = `da`.`fkIdPago`)) join `descuentos` `d` on(`d`.`idDescuento` = `da`.`fkIdDescuento`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_reservas_vehiculo`
+--
+
+/*!50001 DROP VIEW IF EXISTS `v_reservas_vehiculo`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_uca1400_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_reservas_vehiculo` AS select `r`.`resHoraInicio` AS `Hora Inicio`,`r`.`resHoraFin` AS `Hora Fin`,`r`.`resEstado` AS `Estado Reserva`,`e`.`espPiso` AS `Piso`,`e`.`espNumero` AS `Espacio Reservado`,coalesce(`v`.`vehTipo`,`e`.`espTipo`) AS `Tipo Vehiculo`,`v`.`vehPlaca` AS `Placa Vehiculo` from ((`reservas` `r` left join `espacios` `e` on(`e`.`idEspacio` = `r`.`fkIdEspacio`)) left join `vehiculos` `v` on(`v`.`idVehiculo` = `r`.`fkIdVehiculo`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_usuarios_rol`
+--
+
+/*!50001 DROP VIEW IF EXISTS `v_usuarios_rol`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_uca1400_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_usuarios_rol` AS select `u`.`usuNombreCompleto` AS `Nombre`,`u`.`usuCorreo` AS `Correo`,`r`.`rolTipoRol` AS `ROL` from (`usuarios` `u` join `roles` `r` on(`r`.`idRol` = `u`.`fkIdRol`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+
+-- Dump completed on 2025-09-23 14:25:25

@@ -300,7 +300,14 @@
                     {% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20
                     {% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"
                     title="Espacio {{ espacio.espNumero }}{% if espacio.pago_pendiente %} — Salida pendiente{% elif espacio.reserva_proxima %} — Reservado{% endif %}">
+                    {% if espacio.espEstado == 'OCUPADO' and espacio.placa_actual %}
+                    <span class="flex flex-col items-center leading-tight">
+                        <span>{{ espacio.espNumero }}</span>
+                        <span class="text-[9px] font-normal opacity-90 tracking-wide">{{ espacio.placa_actual }}</span>
+                    </span>
+                    {% else %}
                     {{ espacio.espNumero }}
+                    {% endif %}
                 </div>
                 <!-- Punto pulsante encima del cuadrito cuando hay pago en efectivo pendiente -->
                 {% if espacio.pago_pendiente %}
@@ -819,6 +826,11 @@ function refreshDashboard() {
                     );
                     spaceEl.className = `aspect-square rounded-lg flex items-center justify-center text-xs font-bold border transition-transform hover:scale-105 cursor-pointer ${cls}`;
                     spaceEl.title = title;
+                    if (esp.espEstado === 'OCUPADO' && esp.placa_actual) {
+                        spaceEl.innerHTML = `<span class="flex flex-col items-center leading-tight"><span>${esp.espNumero}</span><span style="font-size:9px;font-weight:400;opacity:0.9;letter-spacing:0.05em">${esp.placa_actual}</span></span>`;
+                    } else {
+                        spaceEl.textContent = esp.espNumero;
+                    }
                 });
             });
         })

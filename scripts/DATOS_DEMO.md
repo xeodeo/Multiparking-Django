@@ -92,7 +92,7 @@ python manage.py runserver
    d) Configurar acción:
       - Acción: "Iniciar un programa"
       - Programa: Buscar `ejecutar_mantenimiento.bat`
-      - Directorio: `C:\Users\xeodeo\Desktop\Gemini - copia`
+      - Directorio: `C:\Users\xeodeo\Desktop\Multiparking-Django`
 
    e) Guardar la tarea
 

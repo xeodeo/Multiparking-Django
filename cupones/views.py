@@ -1,11 +1,11 @@
 import re
-from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from usuarios.mixins import AdminRequiredMixin
+from multiparking.validators import validar_decimal_positivo as _validar_decimal_positivo
 
 from .models import Cupon
 
@@ -66,13 +66,9 @@ class CuponCreateView(AdminRequiredMixin, View):
             messages.error(request, 'El código solo acepta letras mayúsculas y números.')
             return render(request, 'admin_panel/cupones/form.html', ctx)
 
-        try:
-            valor_decimal = Decimal(valor)
-            if valor_decimal < 0:
-                messages.error(request, 'El valor no puede ser negativo.')
-                return render(request, 'admin_panel/cupones/form.html', ctx)
-        except (InvalidOperation, ValueError):
-            messages.error(request, 'El valor debe ser un número válido.')
+        _, err = _validar_decimal_positivo(valor)
+        if err:
+            messages.error(request, err)
             return render(request, 'admin_panel/cupones/form.html', ctx)
 
         if Cupon.objects.filter(cupCodigo__iexact=codigo).exists():  # iexact = insensible a mayúsculas/minúsculas
@@ -128,13 +124,9 @@ class CuponUpdateView(AdminRequiredMixin, View):
             messages.error(request, 'El código solo acepta letras mayúsculas y números.')
             return render(request, 'admin_panel/cupones/form.html', edit_ctx)
 
-        try:
-            valor_decimal = Decimal(str(cupon.cupValor))
-            if valor_decimal < 0:
-                messages.error(request, 'El valor no puede ser negativo.')
-                return render(request, 'admin_panel/cupones/form.html', edit_ctx)
-        except (InvalidOperation, ValueError):
-            messages.error(request, 'El valor debe ser un número válido.')
+        _, err = _validar_decimal_positivo(cupon.cupValor)
+        if err:
+            messages.error(request, err)
             return render(request, 'admin_panel/cupones/form.html', edit_ctx)
 
         # Verificar que el código no exista en otro cupón

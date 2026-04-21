@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -9,6 +10,16 @@ from vehiculos.models import Vehiculo
 from parqueadero.models import Espacio
 
 from .models import Novedad
+
+
+def _validar_foto(foto):
+    """Valida tipo y tamaño de la foto. Devuelve (True, None) o (False, msg_error)."""
+    allowed_types = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+    if foto.content_type not in allowed_types:
+        return False, 'Solo se permiten imágenes (JPG, PNG, GIF, WEBP).'
+    if foto.size > 5 * 1024 * 1024:
+        return False, 'La imagen no puede superar 5 MB.'
+    return True, None
 
 
 class NovedadListView(AdminRequiredMixin, View):
@@ -25,15 +36,19 @@ class NovedadListView(AdminRequiredMixin, View):
         if q:
             novedades = novedades.filter(novDescripcion__icontains=q)
 
+        counts = {
+            item['novEstado']: item['c']
+            for item in Novedad.objects.values('novEstado').annotate(c=Count('pk'))
+        }
         return render(request, 'admin_panel/novedades/list.html', {
             'active_page': 'novedades',
             'novedades': novedades,
             'estado_sel': estado,
             'q': q,
             'total': novedades.count(),
-            'pendientes': Novedad.objects.filter(novEstado='PENDIENTE').count(),
-            'en_proceso': Novedad.objects.filter(novEstado='EN_PROCESO').count(),
-            'resueltos': Novedad.objects.filter(novEstado='RESUELTO').count(),
+            'pendientes': counts.get('PENDIENTE', 0),
+            'en_proceso': counts.get('EN_PROCESO', 0),
+            'resueltos': counts.get('RESUELTO', 0),
         })
 
 
@@ -67,6 +82,12 @@ class NovedadCreateView(AdminRequiredMixin, View):
         if not descripcion:
             messages.error(request, 'La descripción es obligatoria.')
             return redirect('admin_novedades_crear')
+
+        if foto:
+            ok, err = _validar_foto(foto)
+            if not ok:
+                messages.error(request, err)
+                return redirect('admin_novedades_crear')
 
         reportador = Usuario.objects.filter(pk=request.session.get('usuario_id')).first()
 
@@ -120,6 +141,12 @@ class NovedadUpdateView(AdminRequiredMixin, View):
         espacio_id = request.POST.get('espacio_id') or None
         responsable_id = request.POST.get('responsable_id') or None
         foto = request.FILES.get('foto')
+
+        if foto:
+            ok, err = _validar_foto(foto)
+            if not ok:
+                messages.error(request, err)
+                return redirect('admin_novedades_editar', pk=pk)
 
         novedad.fkIdVehiculo_id = vehiculo_id
         novedad.fkIdEspacio_id = espacio_id

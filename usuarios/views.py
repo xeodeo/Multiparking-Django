@@ -1,3 +1,4 @@
+import math
 import re
 
 from django.contrib import messages
@@ -7,23 +8,14 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import never_cache
 
 from multiparking import email_utils
-from .mixins import AdminRequiredMixin
+from .mixins import AdminRequiredMixin, ROL_REDIRECT_URL, _is_ajax
 from .models import Usuario
 
-# Patrones compilados a nivel de módulo para reutilizarlos sin recompilar en cada request
-RE_SOLO_NUMEROS = re.compile(r'^[0-9]+$')
-RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
-RE_CORREO = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$')
-
-
-def _is_ajax(request):
-    # Las peticiones AJAX desde el frontend envían este header manualmente
-    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+from .validators import RE_SOLO_NUMEROS, RE_SOLO_LETRAS, RE_CORREO, validar_datos_usuario
 
 
 def _redirect_by_rol(rol):
@@ -48,13 +40,7 @@ def login_view(request):
     if request.session.get('usuario_id'):
         rol = request.session.get('usuario_rol')
         if _is_ajax(request):
-            if rol == 'ADMIN':
-                redir = '/admin-panel/'
-            elif rol == 'VIGILANTE':
-                redir = '/guardia/'
-            else:
-                redir = '/dashboard/'
-            return JsonResponse({'ok': True, 'redirect': redir})
+            return JsonResponse({'ok': True, 'redirect': ROL_REDIRECT_URL.get(rol, '/dashboard/')})
         return redirect(_redirect_by_rol(rol))
 
     if request.method == 'POST':
@@ -76,12 +62,17 @@ def login_view(request):
             messages.error(request, msg)
             return render(request, 'auth/login.html', {'correo': correo})
 
-        if not check_password(clave, usuario.usuClaveHash):  # Verifica la clave contra el hash almacenado
+        # check_password de django.contrib.auth.hashers verifica la clave contra
+        # el hash PBKDF2 almacenado. NO se usa django.contrib.auth.authenticate()
+        # porque el modelo Usuario no está registrado como auth backend de Django.
+        if not check_password(clave, usuario.usuClaveHash):
             if _is_ajax(request):
                 return JsonResponse({'ok': False, 'error': 'Correo o contraseña incorrectos.'})
             messages.error(request, 'Correo o contraseña incorrectos.')
             return render(request, 'auth/login.html', {'correo': correo})
 
+        # Rota el session ID al autenticar para prevenir session fixation attacks
+        request.session.cycle_key()
         # Guarda los datos del usuario en la sesión — estas claves se leen en mixins y templates
         request.session['usuario_id'] = usuario.pk
         request.session['usuario_nombre'] = usuario.usuNombreCompleto
@@ -89,13 +80,7 @@ def login_view(request):
         request.session['usuario_correo'] = usuario.usuCorreo
 
         if _is_ajax(request):
-            if usuario.rolTipoRol == 'ADMIN':
-                redir = '/admin-panel/'
-            elif usuario.rolTipoRol == 'VIGILANTE':
-                redir = '/guardia/'
-            else:
-                redir = '/dashboard/'
-            return JsonResponse({'ok': True, 'redirect': redir})
+            return JsonResponse({'ok': True, 'redirect': ROL_REDIRECT_URL.get(usuario.rolTipoRol, '/dashboard/')})
         messages.success(request, f'Bienvenido, {usuario.usuNombreCompleto}.')
         return redirect(_redirect_by_rol(usuario.rolTipoRol))
 
@@ -133,29 +118,12 @@ def register_view(request):
                 }
             })
 
-        if not all([documento, nombre, apellido, correo, clave]):
+        if not clave:
             return _err('Todos los campos obligatorios deben estar llenos.')
 
-        if len(documento) < 6:
-            return _err('El documento debe tener al menos 6 caracteres.')
-
-        if clave != clave_confirm:
-            return _err('Las contraseñas no coinciden.')
-
-        if len(clave) < 6:
-            return _err('La contraseña debe tener al menos 6 caracteres.')
-
-        # Validar formato de campos
-        if not RE_SOLO_NUMEROS.match(documento):
-            return _err('El documento solo debe contener números.')
-        if not RE_SOLO_LETRAS.match(nombre):
-            return _err('El nombre solo debe contener letras.')
-        if not RE_SOLO_LETRAS.match(apellido):
-            return _err('El apellido solo debe contener letras.')
-        if telefono and not RE_SOLO_NUMEROS.match(telefono):
-            return _err('El teléfono solo debe contener números.')
-        if not RE_CORREO.match(correo):
-            return _err('Ingresa un correo válido (ej: usuario@dominio.com).')
+        ok, msg = validar_datos_usuario(documento, nombre, apellido, correo, telefono, clave, clave_confirm)
+        if not ok:
+            return _err(msg)
 
         # Validar documento duplicado
         if Usuario.objects.filter(usuDocumento=documento).exists():
@@ -200,6 +168,10 @@ def dashboard_view(request):
         messages.error(request, 'Debes iniciar sesión para acceder.')
         return redirect('home')
 
+    # Imports locales para evitar importación circular:
+    # usuarios es la app base importada por vehiculos, reservas, pagos, parqueadero.
+    # Si se importan al tope del archivo, Python entra en un ciclo de importación
+    # al cargar el servidor. Mover estas importaciones aquí rompe el ciclo.
     from vehiculos.models import Vehiculo
     from reservas.models import Reserva
     from pagos.models import Pago
@@ -219,17 +191,8 @@ def dashboard_view(request):
 
     now = timezone.now()
 
-    # Auto-cancela reservas PENDIENTES cuya hora de inicio es en 15 minutos o menos (no fueron confirmadas a tiempo)
-    reservas_pendientes = Reserva.objects.filter(
-        resEstado='PENDIENTE'
-    )
-    for res in reservas_pendientes:
-        fecha_hora_res = datetime.combine(res.resFechaReserva, res.resHoraInicio)
-        fecha_hora_res = timezone.make_aware(fecha_hora_res)
-        tiempo_restante = fecha_hora_res - now
-        if tiempo_restante <= timedelta(minutes=15):
-            res.resEstado = 'CANCELADA'
-            res.save()
+    # Auto-cancela reservas PENDIENTES cuya hora de inicio es en 15 minutos o menos
+    Reserva.cancelar_vencidas()
 
     reservas_raw = Reserva.objects.filter(
         fkIdVehiculo__fkIdUsuario=usuario,
@@ -262,7 +225,6 @@ def dashboard_view(request):
         })
 
     # Estado de parqueo actual (vehículo estacionado)
-    import math
     from tarifas.models import Tarifa
     registro_activo = InventarioParqueo.objects.filter(
         fkIdVehiculo__fkIdUsuario=usuario,
@@ -277,32 +239,17 @@ def dashboard_view(request):
     parqueo_activo = None
     if registro_activo:
         entrada = registro_activo.parHoraEntrada
-        duracion = now - entrada
-        total_seconds = int(duracion.total_seconds())
-        total_minutos = max((total_seconds + 59) // 60, 1)
-        d = total_minutos // 1440
-        h = (total_minutos % 1440) // 60
-        m = total_minutos % 60
-        dur_str = ""
-        if d > 0:
-            dur_str += f"{d}d "
-        if h > 0:
-            dur_str += f"{h}h "
-        dur_str += f"{m}m"
+        dur_str = registro_activo.duracion_str()
 
-        tarifa_activa = Tarifa.objects.filter(
-            fkIdTipoEspacio=registro_activo.fkIdEspacio.fkIdTipoEspacio,
-            activa=True
-        ).first()
+        tarifa_activa = Tarifa.get_active_for(registro_activo.fkIdEspacio.fkIdTipoEspacio)
 
         precio_hora = 0
         valor_acumulado = 0
         if tarifa_activa:
             es_vis = registro_activo.fkIdVehiculo.es_visitante
-            # Usa precioHoraVisitante si el vehículo es de un visitante y la tarifa lo tiene definido
             precio_hora = float(tarifa_activa.precioHoraVisitante) if es_vis and tarifa_activa.precioHoraVisitante > 0 else float(tarifa_activa.precioHora)
-            # Costo acumulado: (precio/hora ÷ 60) × minutos, sin redondear al múltiplo de 100
-            valor_acumulado = math.ceil((precio_hora / 60) * total_minutos)
+            from parqueadero.services import calcular_costo_parqueo
+            valor_acumulado = calcular_costo_parqueo(entrada, tarifa_activa, registro_activo.fkIdVehiculo)
 
         parqueo_activo = {
             'vehiculo': registro_activo.fkIdVehiculo,
@@ -418,36 +365,9 @@ class UsuarioCreateView(AdminRequiredMixin, View):
             },
         }
 
-        if not all([documento, nombre, apellido, correo, clave]):
-            messages.error(request, 'Documento, nombre, apellido, correo y contraseña son obligatorios.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if len(documento) < 6:
-            messages.error(request, 'El documento debe tener al menos 6 caracteres.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_NUMEROS.match(documento):
-            messages.error(request, 'El documento solo debe contener números.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_LETRAS.match(nombre):
-            messages.error(request, 'El nombre solo debe contener letras.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_LETRAS.match(apellido):
-            messages.error(request, 'El apellido solo debe contener letras.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if telefono and not RE_SOLO_NUMEROS.match(telefono):
-            messages.error(request, 'El teléfono solo debe contener números.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_CORREO.match(correo):
-            messages.error(request, 'Ingresa un correo válido (ej: usuario@dominio.com).')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if len(clave) < 6:
-            messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+        ok, msg = validar_datos_usuario(documento, nombre, apellido, correo, telefono, clave)
+        if not ok:
+            messages.error(request, msg)
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         if Usuario.objects.filter(usuDocumento=documento).exists():
@@ -502,32 +422,9 @@ class UsuarioUpdateView(AdminRequiredMixin, View):
             'editing': True,
         }
 
-        if not all([documento, nombre, apellido, correo]):
-            messages.error(request, 'Documento, nombre, apellido y correo son obligatorios.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if len(documento) < 6:
-            messages.error(request, 'El documento debe tener al menos 6 caracteres.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_NUMEROS.match(documento):
-            messages.error(request, 'El documento solo debe contener números.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_LETRAS.match(nombre):
-            messages.error(request, 'El nombre solo debe contener letras.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_SOLO_LETRAS.match(apellido):
-            messages.error(request, 'El apellido solo debe contener letras.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if telefono and not RE_SOLO_NUMEROS.match(telefono):
-            messages.error(request, 'El teléfono solo debe contener números.')
-            return render(request, 'admin_panel/usuarios/form.html', ctx)
-
-        if not RE_CORREO.match(correo):
-            messages.error(request, 'Ingresa un correo válido (ej: usuario@dominio.com).')
+        ok, msg = validar_datos_usuario(documento, nombre, apellido, correo, telefono)
+        if not ok:
+            messages.error(request, msg)
             return render(request, 'admin_panel/usuarios/form.html', ctx)
 
         # Validar duplicados excluyendo el usuario actual
@@ -605,8 +502,12 @@ class PasswordResetRequestView(View):
         correo = request.POST.get('correo', '').strip()
         try:
             usuario = Usuario.objects.get(usuCorreo=correo, usuEstado=True)
-            # Token firmado con signing: expira en 1 hora (verificado en la vista confirm)
-            token = signing.dumps({'id': usuario.pk}, salt='mp-password-reset')
+            # Token firmado con signing: expira en 1 hora.
+            # Incluye un fragmento del hash actual — al cambiar la clave el token queda inválido (single-use).
+            token = signing.dumps(
+                {'id': usuario.pk, 'ph': usuario.usuClaveHash[-8:]},
+                salt='mp-password-reset'
+            )
             email_utils.enviar_reset_clave(usuario, token, request)
         except Usuario.DoesNotExist:
             pass  # No se revela si el correo existe por seguridad
@@ -645,6 +546,13 @@ class PasswordResetConfirmView(View):
             messages.error(request, 'El enlace es inválido o ha expirado.')
             return redirect('password_reset')
 
+        usuario = get_object_or_404(Usuario, pk=data['id'])
+
+        # Verifica que el fragmento del hash coincida — si la clave ya fue cambiada el token es inválido
+        if usuario.usuClaveHash[-8:] != data.get('ph', ''):
+            messages.error(request, 'El enlace ya fue utilizado o ha expirado.')
+            return redirect('password_reset')
+
         if not clave or len(clave) < 6:
             messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
             return render(request, 'auth/password_reset_confirm.html', {
@@ -657,7 +565,6 @@ class PasswordResetConfirmView(View):
                 'token': token_post, 'token_valido': True,
             })
 
-        usuario = get_object_or_404(Usuario, pk=data['id'])
         usuario.usuClaveHash = make_password(clave)
         usuario.save()
         messages.success(request, 'Contraseña actualizada exitosamente. Ya puedes iniciar sesión.')

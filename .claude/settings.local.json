@@ -57,12 +57,46 @@
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_type",
       "mcp__playwright__browser_click",
-      "mcp__playwright__browser_evaluate"
+      "mcp__playwright__browser_evaluate",
+      "Bash(node -e \"require\\('./lib/helpers'\\).detectDevServers\\(\\).then\\(s => console.log\\(JSON.stringify\\(s\\)\\)\\)\")",
+      "Bash(node run.js \"C:/tmp/pentest.js\")",
+      "Bash(node run.js ':*)",
+      "Bash(gws drive:*)",
+      "Bash(gws docs:*)",
+      "Bash(del \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\\\\doc_optica.docx\")",
+      "Bash(powershell -Command ':*)",
+      "Bash(powershell -ExecutionPolicy Bypass -Command ':*)",
+      "Bash(mv \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\"/chunk_*.json \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\\\\gws_tmp/\")",
+      "Bash(mv \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\"/doc_batch_*.json \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\\\\gws_tmp/\")",
+      "Bash(mv \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\"/text_chunk_*.json \"C:\\\\Users\\\\xeodeo\\\\Desktop\\\\Multiparking-Django\\\\gws_tmp/\")",
+      "Bash(gws schema:*)",
+      "Read(//c/Users/xeodeo/.claude/plugins/cache/playwright-skill/playwright-skill/4.1.0/skills/playwright-skill/**)",
+      "Bash(node -e \"require\\(''./lib/helpers''\\).detectDevServers\\(\\).then\\(s => console.log\\(JSON.stringify\\(s\\)\\)\\)\")",
+      "Bash(node -e \"const {chromium} = require\\(''playwright''\\); console.log\\(''playwright OK''\\)\")",
+      "Bash(npx @playwright/mcp@latest --version)",
+      "Skill(update-config)",
+      "Bash(node run.js \"C:\\\\tmp\\\\regression-multiparking.js\")",
+      "Bash(sed -n '48,100p' parqueadero/views.py)",
+      "Bash(sed -n '224,235p' usuarios/views.py)",
+      "Bash(sed -n '96,105p' fidelidad/views.py)",
+      "Bash(sed -n '52,82p' reservas/views.py)",
+      "Bash(sed -n '71,79p' novedades/views.py)",
+      "Bash(venv/Scripts/python.exe manage.py migrate fidelidad)",
+      "Bash(taskkill:*)",
+      "Bash(cmd.exe /c \"taskkill /F /IM python.exe\" 2>&1)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :8000\" 2>&1)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr LISTENING | findstr :8000\")",
+      "Bash(cmd.exe /c \"tasklist | findstr python\")"
     ],
     "additionalDirectories": [
       "C:\\tmp",
       "\\tmp",
-      "C:\\Users\\xeodeo\\Desktop"
+      "C:\\Users\\xeodeo\\Desktop",
+      "C:\\Users\\xeodeo\\Desktop\\Multiparking-Django"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright",
+    "trello"
+  ]
 }

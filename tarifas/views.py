@@ -1,12 +1,11 @@
-from decimal import Decimal, InvalidOperation
-
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from parqueadero.models import TipoEspacio
-from usuarios.mixins import AdminRequiredMixin
+from usuarios.mixins import AdminRequiredMixin, _is_ajax
+from multiparking.validators import validar_decimal_positivo as _validar_decimal_positivo
 
 from .models import Tarifa
 
@@ -65,19 +64,17 @@ class TarifaCreateView(AdminRequiredMixin, View):
             messages.error(request, 'Todos los campos obligatorios deben estar llenos.')
             return render(request, 'admin_panel/tarifas/form.html', ctx)
 
-        try:
-            # Decimal(str(...)) convierte el string de forma segura; evita errores de float con valores grandes
-            for campo, valor_str in [('Precio hora', precio_hora), ('Precio día', precio_dia),
-                                      ('Precio mensual', precio_mensual)]:
-                if Decimal(str(valor_str)) < 0:
-                    messages.error(request, f'{campo} no puede ser negativo.')
-                    return render(request, 'admin_panel/tarifas/form.html', ctx)
-            if precio_hora_visitante and Decimal(str(precio_hora_visitante)) < 0:
-                messages.error(request, 'Precio hora visitante no puede ser negativo.')
+        for campo, valor_str in [('Precio hora', precio_hora), ('Precio día', precio_dia),
+                                  ('Precio mensual', precio_mensual)]:
+            _, err = _validar_decimal_positivo(valor_str, campo)
+            if err:
+                messages.error(request, err)
                 return render(request, 'admin_panel/tarifas/form.html', ctx)
-        except (InvalidOperation, ValueError):
-            messages.error(request, 'Los precios deben ser números válidos.')
-            return render(request, 'admin_panel/tarifas/form.html', ctx)
+        if precio_hora_visitante:
+            _, err = _validar_decimal_positivo(precio_hora_visitante, 'Precio hora visitante')
+            if err:
+                messages.error(request, err)
+                return render(request, 'admin_panel/tarifas/form.html', ctx)
 
         Tarifa.objects.create(
             nombre=nombre,
@@ -132,18 +129,17 @@ class TarifaUpdateView(AdminRequiredMixin, View):
             'tarifa': tarifa,
             'tipos': TipoEspacio.objects.order_by('nombre'),
         }
-        try:
-            for campo, val in [('Precio hora', tarifa.precioHora), ('Precio día', tarifa.precioDia),
-                                ('Precio mensual', tarifa.precioMensual)]:
-                if Decimal(str(val)) < 0:
-                    messages.error(request, f'{campo} no puede ser negativo.')
-                    return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
-            if tarifa.precioHoraVisitante and Decimal(str(tarifa.precioHoraVisitante)) < 0:
-                messages.error(request, 'Precio hora visitante no puede ser negativo.')
+        for campo, val in [('Precio hora', tarifa.precioHora), ('Precio día', tarifa.precioDia),
+                            ('Precio mensual', tarifa.precioMensual)]:
+            _, err = _validar_decimal_positivo(val, campo)
+            if err:
+                messages.error(request, err)
                 return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
-        except (InvalidOperation, ValueError):
-            messages.error(request, 'Los precios deben ser números válidos.')
-            return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
+        if tarifa.precioHoraVisitante:
+            _, err = _validar_decimal_positivo(tarifa.precioHoraVisitante, 'Precio hora visitante')
+            if err:
+                messages.error(request, err)
+                return render(request, 'admin_panel/tarifas/form.html', edit_ctx)
 
         tarifa.save()
         messages.success(request, 'Tarifa actualizada.')
@@ -154,9 +150,14 @@ class TarifaToggleView(AdminRequiredMixin, View):
     """Activar/desactivar tarifa vía POST (AJAX o normal)."""
     def post(self, request, pk):
         tarifa = get_object_or_404(Tarifa, pk=pk)
-        tarifa.activa = not tarifa.activa
-        tarifa.save()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if tarifa.activa:
+            # Desactivar: asignación directa porque activar() solo sirve para activar
+            tarifa.activa = False
+            tarifa.save()
+        else:
+            # Activar: usa activar() para desactivar todas las otras del mismo TipoEspacio
+            tarifa.activar()
+        if _is_ajax(request):
             return JsonResponse({'ok': True, 'activa': tarifa.activa})
         messages.success(request, f'Tarifa {"activada" if tarifa.activa else "desactivada"}.')
         return redirect('admin_tarifas')

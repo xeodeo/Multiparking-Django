@@ -1,9 +1,6 @@
 from django.shortcuts import render
 from django.views import View
-from django.http import JsonResponse
-from django.db.models import Q, Sum, Count
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from decimal import Decimal
 
@@ -27,7 +24,7 @@ class PagosListView(AdminRequiredMixin, View):
             'fkIdParqueo',
             'fkIdParqueo__fkIdVehiculo',
             'fkIdParqueo__fkIdEspacio'
-        ).order_by('-pagFechaPago')
+        ).prefetch_related('cupones_aplicados').order_by('-pagFechaPago')
 
         # Filtro por estado
         if estado_filter != 'TODOS':
@@ -69,12 +66,9 @@ class PagosListView(AdminRequiredMixin, View):
 
         pagos_list = []
         for pago in page_obj:
-            # Calcular descuento total aplicado
-            descuento_total = CuponAplicado.objects.filter(
-                fkIdPago=pago
-            ).aggregate(
-                total=Sum('montoDescontado')
-            )['total'] or Decimal('0')
+            descuento_total = sum(
+                ca.montoDescontado for ca in pago.cupones_aplicados.all()
+            ) or Decimal('0')
 
             pagos_list.append({
                 'id': f'pay{pago.pk}',

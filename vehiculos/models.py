@@ -50,8 +50,11 @@ class Vehiculo(models.Model):
 
     @property
     def es_visitante(self):
-        # Propiedad calculada — NO es columna de BD
-        # True cuando el vehículo no tiene usuario registrado asociado
+        # Propiedad calculada — NO es columna de BD.
+        # True cuando el vehículo no tiene un usuario registrado (entrada de visita).
+        # Se accede a fkIdUsuario_id (el PK FK en memoria) en lugar de fkIdUsuario
+        # (el objeto relacionado) para evitar una query adicional a la tabla usuarios
+        # cuando solo se necesita saber si es visitante.
         return self.fkIdUsuario_id is None
 
     class Meta:

@@ -8,3 +8,5 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 # python scripts/cargar_datos_iniciales.py
+
+#SI

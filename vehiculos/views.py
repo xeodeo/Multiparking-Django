@@ -1,5 +1,3 @@
-import re
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
@@ -7,14 +5,8 @@ from django.db.models import Q
 
 from usuarios.mixins import AdminRequiredMixin
 from .models import Vehiculo
+from .validators import validar_datos_vehiculo, RE_SOLO_LETRAS, RE_SOLO_NUMEROS
 from usuarios.models import Usuario
-
-# Patrones compilados a nivel de módulo para reutilizarlos sin recompilar en cada request
-RE_PLACA = re.compile(r'^[A-Za-z0-9-]+$')
-RE_SOLO_LETRAS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$')
-RE_LETRAS_NUMEROS = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$')
-RE_MODELO = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.\-]+$')
-RE_SOLO_NUMEROS = re.compile(r'^[0-9]+$')
 
 
 class VehiculoListView(AdminRequiredMixin, View):
@@ -76,32 +68,10 @@ class VehiculoCreateView(AdminRequiredMixin, View):
             },
         }
 
-        if not all([placa, tipo]):
-            messages.error(request, 'Placa y tipo son obligatorios.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if not RE_PLACA.match(placa):
-            messages.error(request, 'La placa solo acepta letras, números y guiones.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if color and not RE_SOLO_LETRAS.match(color):
-            messages.error(request, 'El color solo debe contener letras.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if marca and not RE_LETRAS_NUMEROS.match(marca):
-            messages.error(request, 'La marca solo acepta letras y números.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if modelo and not RE_MODELO.match(modelo):
-            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if nombre_contacto and not RE_SOLO_LETRAS.match(nombre_contacto):
-            messages.error(request, 'El nombre de contacto solo debe contener letras.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if telefono_contacto and not RE_SOLO_NUMEROS.match(telefono_contacto):
-            messages.error(request, 'El teléfono de contacto solo debe contener números.')
+        err = validar_datos_vehiculo(placa, tipo, color, marca, modelo,
+                                    nombre_contacto, telefono_contacto)
+        if err:
+            messages.error(request, err)
             return render(request, 'admin_panel/vehiculos/form.html', ctx)
 
         if Vehiculo.objects.filter(vehPlaca=placa).exists():
@@ -152,32 +122,11 @@ class VehiculoUpdateView(AdminRequiredMixin, View):
             'usuarios': Usuario.objects.filter(usuEstado=True).order_by('usuNombre', 'usuApellido'),
         }
 
-        if not all([placa, vehiculo.vehTipo]):
-            messages.error(request, 'Placa y tipo son obligatorios.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if not RE_PLACA.match(placa):
-            messages.error(request, 'La placa solo acepta letras, números y guiones.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if vehiculo.vehColor and not RE_SOLO_LETRAS.match(vehiculo.vehColor):
-            messages.error(request, 'El color solo debe contener letras.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if vehiculo.vehMarca and not RE_LETRAS_NUMEROS.match(vehiculo.vehMarca):
-            messages.error(request, 'La marca solo acepta letras y números.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if vehiculo.vehModelo and not RE_MODELO.match(vehiculo.vehModelo):
-            messages.error(request, 'El modelo solo acepta letras, números y puntos.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if vehiculo.nombre_contacto and not RE_SOLO_LETRAS.match(vehiculo.nombre_contacto):
-            messages.error(request, 'El nombre de contacto solo debe contener letras.')
-            return render(request, 'admin_panel/vehiculos/form.html', ctx)
-
-        if vehiculo.telefono_contacto and not RE_SOLO_NUMEROS.match(vehiculo.telefono_contacto):
-            messages.error(request, 'El teléfono de contacto solo debe contener números.')
+        err = validar_datos_vehiculo(placa, vehiculo.vehTipo, vehiculo.vehColor,
+                                    vehiculo.vehMarca, vehiculo.vehModelo,
+                                    vehiculo.nombre_contacto, vehiculo.telefono_contacto)
+        if err:
+            messages.error(request, err)
             return render(request, 'admin_panel/vehiculos/form.html', ctx)
 
         if Vehiculo.objects.filter(vehPlaca=placa).exclude(pk=pk).exists():
