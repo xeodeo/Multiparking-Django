@@ -71,9 +71,9 @@
                 </p>
             </div>
             {% if piso.espacios_list %}
-            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 espacios-grid">
+            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 espacios-grid" style="grid-auto-rows:1fr; align-items:start;">
                 {% for espacio in piso.espacios_list %}
-                <div class="relative group">
+                <div class="relative group" style="align-self:start;">
                     <div data-espacio-id="{{ espacio.pk }}"
                         onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {% if espacio.reserva_proxima %}'{{ espacio.reserva_proxima.pk }}'{% else %}null{% endif %}, {{ espacio.pago_pendiente|yesno:'true,false' }})"
                         class="aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-transform hover:scale-105 cursor-pointer {% if espacio.pago_pendiente %}bg-yellow-500 border-yellow-600 text-black hover:bg-yellow-600 shadow-lg shadow-yellow-900/20 animate-pulse-space{% elif espacio.reserva_proxima %}bg-orange-500 border-orange-600 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20{% elif espacio.espEstado == 'DISPONIBLE' %}bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-lg shadow-green-900/20{% elif espacio.espEstado == 'OCUPADO' %}bg-red-500 border-red-600 text-white hover:bg-red-600 shadow-lg shadow-red-900/20{% else %}bg-gray-700 border-gray-600 text-gray-400{% endif %}"

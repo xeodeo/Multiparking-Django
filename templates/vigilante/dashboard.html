@@ -286,10 +286,10 @@
             {{ piso.ocupados_espacios }} ocupados de {{ piso.total_espacios }} ({{ piso.ocupacion_pct }}% ocupación)
         </p>
         {% if piso.espacios_list %}
-        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5 espacios-grid">
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5 espacios-grid" style="grid-auto-rows:1fr; align-items:start;">
             {% for espacio in piso.espacios_list %}
             <!-- Cuadrito del espacio: color según estado -->
-            <div class="relative group">
+            <div class="relative group" style="align-self:start;">
                 <!-- amarillo=pago pendiente, naranja=reservado próximo, verde=libre, rojo=ocupado, gris=inactivo -->
                 <div data-espacio-id="{{ espacio.pk }}"
                     onclick="handleSpaceClick('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ espacio.espEstado }}', '{{ piso.pisNombre }}', {{ espacio.pago_pendiente|yesno:'true,false' }})"

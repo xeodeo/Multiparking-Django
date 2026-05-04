@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recibo #{{ pago.pk }} — MultiParking</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
+
+  /* ── acciones (ocultas al imprimir) ── */
+  .actions { display: flex; gap: 12px; margin-bottom: 28px; }
+  .btn { display: inline-flex; align-items: center; gap-8px; gap: 8px; padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: opacity .15s; }
+  .btn:hover { opacity: .85; }
+  .btn-print  { background: #7c3aed; color: #fff; }
+  .btn-back   { background: rgba(255,255,255,.08); color: #a78bfa; border: 1px solid rgba(124,58,237,.3); }
+
+  /* ── recibo ── */
+  .receipt { background: #12121f; border: 1px solid #1e1e3a; border-radius: 20px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,.6); }
+
+  /* header */
+  .receipt-header { background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 60%, #a78bfa 100%); padding: 28px 32px 24px; text-align: center; position: relative; }
+  .receipt-header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 20px; background: #12121f; clip-path: ellipse(55% 100% at 50% 100%); }
+  .brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+  .brand span { color: #ddd6fe; }
+  .receipt-title { font-size: 13px; color: rgba(255,255,255,.75); margin-top: 4px; letter-spacing: 2px; text-transform: uppercase; }
+  .receipt-num { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 6px; font-family: monospace; }
+
+  /* monto */
+  .amount-section { padding: 28px 32px 20px; text-align: center; }
+  .amount-label { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .amount { font-size: 44px; font-weight: 800; color: #4ade80; line-height: 1; }
+  .amount-currency { font-size: 14px; color: #6b7280; margin-top: 4px; }
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 12px; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .status-pagado  { background: rgba(74,222,128,.15); color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
+  .status-pendiente { background: rgba(234,179,8,.15); color: #facc15; border: 1px solid rgba(234,179,8,.3); }
+  .status-anulado { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.3); }
+
+  /* divider */
+  .divider { margin: 0 32px; border: none; border-top: 1px dashed #1e1e3a; }
+
+  /* rows */
+  .detail-section { padding: 20px 32px; }
+  .section-title { font-size: 10px; color: #7c3aed; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 12px; }
+  .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .row:last-child { margin-bottom: 0; }
+  .row-label { font-size: 13px; color: #9ca3af; }
+  .row-value { font-size: 13px; color: #e5e7eb; text-align: right; font-weight: 500; max-width: 220px; }
+  .row-value.mono { font-family: monospace; font-size: 14px; color: #fff; font-weight: 700; letter-spacing: 1px; }
+  .row-value.highlight { color: #a78bfa; }
+  .row-value.discount { color: #f87171; }
+  .row-value.total { color: #4ade80; font-weight: 800; font-size: 15px; }
+
+  /* tear */
+  .tear { height: 20px; background: repeating-linear-gradient(90deg, #0a0a14 0px, #0a0a14 12px, transparent 12px, transparent 20px); border-top: 1px dashed #1e1e3a; border-bottom: 1px dashed #1e1e3a; }
+
+  /* footer */
+  .receipt-footer { padding: 16px 32px 24px; text-align: center; }
+  .footer-text { font-size: 11px; color: #4b5563; line-height: 1.6; }
+  .footer-brand { font-size: 12px; color: #7c3aed; font-weight: 700; margin-top: 8px; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .actions { display: none !important; }
+    .receipt { border: 1px solid #e5e7eb; box-shadow: none; border-radius: 12px; max-width: 100%; background: #fff; }
+    .receipt-header { background: #5b21b6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .receipt-header::after { background: #fff; }
+    .amount { color: #16a34a; }
+    .status-pagado { background: #dcfce7; color: #16a34a; border-color: #86efac; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .status-pendiente { background: #fef9c3; color: #a16207; border-color: #fde047; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .amount-currency, .footer-text { color: #6b7280; }
+    .row-label { color: #6b7280; }
+    .row-value { color: #111; }
+    .row-value.mono { color: #000; }
+    .row-value.highlight { color: #7c3aed; }
+    .row-value.total { color: #16a34a; }
+    .divider { border-color: #e5e7eb; }
+    .section-title { color: #7c3aed; }
+    .tear { background: repeating-linear-gradient(90deg,#fff 0px,#fff 12px,transparent 12px,transparent 20px); border-color: #e5e7eb; }
+    .footer-brand { color: #7c3aed; }
+    .receipt-footer .footer-text { color: #9ca3af; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Botones de acción -->
+<div class="actions no-print">
+  <button class="btn btn-print" onclick="window.print()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.056 48.056 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-6 0h.008v.008H12V10.5zm-3.75 0h.008v.008H8.25V10.5z"/></svg>
+    Imprimir
+  </button>
+  <a class="btn btn-back" href="{{ back_url }}">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+    Volver
+  </a>
+</div>
+
+<!-- Recibo -->
+<div class="receipt">
+
+  <!-- Header -->
+  <div class="receipt-header">
+    <div class="brand"><span>Multi</span>Parking</div>
+    <div class="receipt-title">Recibo de Pago</div>
+    <div class="receipt-num">N° {{ pago.pk|stringformat:"06d" }} &nbsp;·&nbsp; {{ pago.pagFechaPago|date:"d/m/Y, g:i a" }}</div>
+  </div>
+
+  <!-- Monto -->
+  <div class="amount-section">
+    <div class="amount-label">Total pagado</div>
+    <div class="amount">${{ pago.pagMonto|floatformat:0 }}</div>
+    <div class="amount-currency">COP — {{ pago.get_pagMetodo_display }}</div>
+    {% if pago.pagEstado == 'PAGADO' %}
+    <div class="status-badge status-pagado">
+      <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      PAGADO
+    </div>
+    {% elif pago.pagEstado == 'PENDIENTE' %}
+    <div class="status-badge status-pendiente">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      PENDIENTE DE PAGO EN CAJA
+    </div>
+    {% else %}
+    <div class="status-badge status-anulado">ANULADO</div>
+    {% endif %}
+  </div>
+
+  <hr class="divider">
+
+  <!-- Vehículo -->
+  <div class="detail-section">
+    <div class="section-title">Vehículo</div>
+    <div class="row">
+      <span class="row-label">Placa</span>
+      <span class="row-value mono">{{ parqueo.fkIdVehiculo.vehPlaca }}</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Tipo</span>
+      <span class="row-value">{{ parqueo.fkIdVehiculo.vehTipo }}</span>
+    </div>
+    {% if parqueo.fkIdVehiculo.vehMarca %}
+    <div class="row">
+      <span class="row-label">Marca / Modelo</span>
+      <span class="row-value">{{ parqueo.fkIdVehiculo.vehMarca }} {{ parqueo.fkIdVehiculo.vehModelo }}</span>
+    </div>
+    {% endif %}
+    {% if parqueo.fkIdVehiculo.fkIdUsuario %}
+    <div class="row">
+      <span class="row-label">Propietario</span>
+      <span class="row-value">{{ parqueo.fkIdVehiculo.fkIdUsuario.usuNombreCompleto }}</span>
+    </div>
+    {% elif parqueo.fkIdVehiculo.nombre_contacto %}
+    <div class="row">
+      <span class="row-label">Visitante</span>
+      <span class="row-value">{{ parqueo.fkIdVehiculo.nombre_contacto }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <hr class="divider">
+
+  <!-- Estadía -->
+  <div class="detail-section">
+    <div class="section-title">Estadía</div>
+    <div class="row">
+      <span class="row-label">Espacio</span>
+      <span class="row-value highlight">{{ parqueo.fkIdEspacio.espNumero }}</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Piso</span>
+      <span class="row-value">{{ parqueo.fkIdEspacio.fkIdPiso.pisNombre }}</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Entrada</span>
+      <span class="row-value">{{ parqueo.parHoraEntrada|date:"d/m/Y, g:i a" }}</span>
+    </div>
+    {% if parqueo.parHoraSalida %}
+    <div class="row">
+      <span class="row-label">Salida</span>
+      <span class="row-value">{{ parqueo.parHoraSalida|date:"d/m/Y, g:i a" }}</span>
+    </div>
+    {% endif %}
+    {% if duracion %}
+    <div class="row">
+      <span class="row-label">Duración</span>
+      <span class="row-value">{{ duracion }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if descuento_total > 0 %}
+  <hr class="divider">
+
+  <!-- Descuentos -->
+  <div class="detail-section">
+    <div class="section-title">Descuentos</div>
+    {% for ca in cupones %}
+    <div class="row">
+      <span class="row-label">{{ ca.fkIdCupon.cupNombre }}</span>
+      <span class="row-value discount">-${{ ca.montoDescontado|floatformat:0 }}</span>
+    </div>
+    {% endfor %}
+    <div class="row" style="margin-top:8px; padding-top:8px; border-top: 1px solid #1e1e3a;">
+      <span class="row-label" style="font-weight:600;">Subtotal antes de descuento</span>
+      <span class="row-value">${{ monto_original|floatformat:0 }}</span>
+    </div>
+    <div class="row">
+      <span class="row-label" style="font-weight:600;">Total a pagar</span>
+      <span class="row-value total">${{ pago.pagMonto|floatformat:0 }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tear -->
+  <div class="tear"></div>
+
+  <!-- Footer -->
+  <div class="receipt-footer">
+    <div class="footer-text">
+      Gracias por usar nuestros servicios.<br>
+      Conserve este recibo como comprobante de pago.
+    </div>
+    <div class="footer-brand">MultiParking &copy; {{ pago.pagFechaPago|date:"Y" }}</div>
+  </div>
+
+</div>
+</body>
+</html>
