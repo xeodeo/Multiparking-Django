@@ -123,6 +123,15 @@
         updateClock();
         setInterval(updateClock, 1000);
     </script>
+    <script>
+    // URL amigable: dashboard y todas las vistas de cliente se muestran como /cliente.
+    (function() {
+        const p = window.location.pathname;
+        if (p.startsWith('/cliente') || p.startsWith('/dashboard') || p.startsWith('/parqueadero') || p.startsWith('/recibo')) {
+            history.replaceState(null, '', '/cliente');
+        }
+    })();
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 

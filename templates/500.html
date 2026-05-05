@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error del servidor - MultiParking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0a0a14; font-family: system-ui, sans-serif; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-16px); }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .float { animation: float 5s ease-in-out infinite; }
+        .blink { animation: blink 2s ease-in-out infinite; }
+        .scan-line {
+            position: absolute;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent);
+            animation: scan 3s linear infinite;
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .terminal {
+            background: #0d0d1a;
+            border: 1px solid #1e1e3a;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center grid-bg">
+    <!-- Glow orbs -->
+    <div class="fixed top-0 right-1/4 w-96 h-96 bg-red-900/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed bottom-0 left-1/4 w-96 h-96 bg-orange-900/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-xl w-full">
+        <!-- Logo -->
+        <div class="mb-8">
+            <a href="/" class="text-xl font-extrabold inline-block">
+                <span class="text-purple-400">Multi</span><span class="text-white">Parking</span>
+            </a>
+        </div>
+
+        <!-- Icon with scan effect -->
+        <div class="mb-6 flex justify-center">
+            <div class="relative w-32 h-32 rounded-full bg-red-900/20 border-2 border-red-500/30 flex items-center justify-center overflow-hidden float">
+                <div class="scan-line"></div>
+                <svg class="w-16 h-16 text-red-400 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Error code -->
+        <h1 class="text-8xl font-black mb-2 text-red-500" style="text-shadow: 0 0 40px rgba(239,68,68,0.3);">500</h1>
+        <h2 class="text-2xl font-bold text-white mb-3">Error del servidor</h2>
+        <p class="text-gray-400 text-base mb-6 leading-relaxed">
+            Algo salió mal en nuestros sistemas.<br>
+            Puede ser una falla en la base de datos o un error interno.
+        </p>
+
+        <!-- Terminal card -->
+        <div class="terminal rounded-xl p-4 mb-6 text-left text-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <span class="text-gray-500 text-xs ml-2">multiparking.log</span>
+            </div>
+            <p class="text-red-400 font-mono"><span class="text-gray-500">$</span> Estado del sistema: <span class="blink text-red-400">&#9632; FALLO</span></p>
+            <p class="text-gray-500 font-mono mt-1"><span class="text-gray-600">$</span> Conexión a base de datos: <span class="text-red-400">INTERRUMPIDA</span></p>
+            <p class="text-gray-500 font-mono mt-1"><span class="text-gray-600">$</span> Nuestro equipo fue notificado automáticamente.</p>
+        </div>
+
+        <!-- What to do -->
+        <div class="bg-yellow-900/10 border border-yellow-500/20 rounded-xl p-4 mb-6 text-left">
+            <h3 class="text-yellow-300 font-semibold text-sm mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                ¿Qué puedes hacer?
+            </h3>
+            <ul class="text-gray-400 text-sm space-y-1">
+                <li class="flex items-center gap-2"><span class="text-purple-400">›</span> Espera un momento e intenta recargar la página</li>
+                <li class="flex items-center gap-2"><span class="text-purple-400">›</span> Verifica tu conexión a internet</li>
+                <li class="flex items-center gap-2"><span class="text-purple-400">›</span> Si el problema persiste, contacta al administrador</li>
+            </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button onclick="location.reload()"
+                class="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Reintentar
+            </button>
+            <a href="/"
+                class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-purple-900/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Ir al inicio
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <p class="mt-12 text-gray-600 text-xs">
+            &copy; MultiParking — Sistema de Gestión de Parqueadero
+        </p>
+    </div>
+</body>
+</html>

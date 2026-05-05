@@ -1,3 +1,39 @@
+from django.db import OperationalError, ProgrammingError
+from django.http import HttpResponse
+
+
+def _render_500():
+    try:
+        with open('templates/500.html', 'r', encoding='utf-8') as f:
+            return HttpResponse(f.read(), status=500, content_type='text/html')
+    except Exception:
+        return HttpResponse(
+            '<h1 style="font-family:sans-serif;color:#fff;background:#0a0a14;padding:2rem">Error del servidor (500)</h1>',
+            status=500, content_type='text/html'
+        )
+
+
+class DatabaseErrorMiddleware:
+    """
+    Captura errores de base de datos (OperationalError, ProgrammingError) en cualquier
+    vista y devuelve la página 500 estática sin depender del ORM ni de templates dinámicos.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            return self.get_response(request)
+        except (OperationalError, ProgrammingError):
+            return _render_500()
+
+    def process_exception(self, _request, exception):
+        if isinstance(exception, (OperationalError, ProgrammingError)):
+            return _render_500()
+        return None
+
+
 class SecurityHeadersMiddleware:
     """
     Agrega headers de seguridad HTTP a todas las respuestas:

@@ -144,6 +144,12 @@
         updateClock();
         setInterval(updateClock, 1000);
     </script>
+    <script>
+    // URL amigable: todo el panel de guardia se muestra como /guardia.
+    if (window.location.pathname.startsWith('/guardia')) {
+        history.replaceState(null, '', '/guardia');
+    }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

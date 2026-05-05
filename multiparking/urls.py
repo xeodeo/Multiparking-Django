@@ -40,7 +40,7 @@ from fidelidad.views import FidelidadConfigView, PerfilClienteView, ReclamarBono
 from vehiculos.views import (
     VehiculoListView, VehiculoCreateView, VehiculoUpdateView, VehiculoDeleteView
 )
-from pagos.views import PagosListView
+from pagos.views import PagosListView, ReciboView
 from parqueadero.reportes_views import ReportesView, ExportarPDFReportesView, ExportarExcelReportesView
 from vehiculos.cliente_views import ClienteCrearVehiculoView, ClienteEditarVehiculoView
 from reservas.cliente_views import (
@@ -176,4 +176,10 @@ urlpatterns = [
     path('cliente/reservas/<int:pk>/editar/', ClienteEditarReservaView.as_view(), name='cliente_editar_reserva'),
     path('cliente/reservas/<int:pk>/cancelar/', ClienteCancelarReservaView.as_view(), name='cliente_cancelar_reserva'),
     path('cliente/reservas/<int:pk>/confirmar/', ClienteConfirmarReservaView.as_view(), name='cliente_confirmar_reserva'),
+    # Recibo de pago (acceso por rol)
+    path('recibo/<int:pk>/', ReciboView.as_view(), name='recibo_pago'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = 'multiparking.error_views.error_404'
+handler500 = 'multiparking.error_views.error_500'
+handler403 = 'multiparking.error_views.error_403'

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso denegado - MultiParking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0a0a14; font-family: system-ui, sans-serif; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-16px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+        .float { animation: float 4s ease-in-out infinite; }
+        .shake { animation: shake 0.5s ease-in-out; }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(245,158,11,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245,158,11,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center grid-bg">
+    <div class="fixed top-0 left-1/3 w-96 h-96 bg-yellow-900/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-lg w-full">
+        <!-- Logo -->
+        <div class="mb-8">
+            <a href="/" class="text-xl font-extrabold inline-block">
+                <span class="text-purple-400">Multi</span><span class="text-white">Parking</span>
+            </a>
+        </div>
+
+        <!-- Icon -->
+        <div class="mb-6 flex justify-center">
+            <div class="w-32 h-32 rounded-full bg-yellow-900/20 border-2 border-yellow-500/30 flex items-center justify-center float" id="icon">
+                <svg class="w-16 h-16 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Error code -->
+        <h1 class="text-8xl font-black mb-2 text-yellow-400" style="text-shadow: 0 0 40px rgba(245,158,11,0.3);">403</h1>
+        <h2 class="text-2xl font-bold text-white mb-3">Acceso denegado</h2>
+        <p class="text-gray-400 text-base mb-8 leading-relaxed">
+            No tienes permisos para acceder a esta sección.<br>
+            Si crees que es un error, contacta al administrador.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="javascript:history.back()"
+                class="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Volver
+            </a>
+            <a href="/login/"
+                class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-purple-900/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                Iniciar sesión
+            </a>
+        </div>
+
+        <p class="mt-12 text-gray-600 text-xs">
+            &copy; MultiParking — Sistema de Gestión de Parqueadero
+        </p>
+    </div>
+    <script>
+        document.getElementById('icon').addEventListener('click', function() {
+            this.classList.add('shake');
+            setTimeout(() => this.classList.remove('shake'), 500);
+        });
+    </script>
+</body>
+</html>

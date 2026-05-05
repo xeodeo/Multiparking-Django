@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página no encontrada - MultiParking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0a0a14; font-family: system-ui, sans-serif; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+            70% { box-shadow: 0 0 0 30px rgba(124, 58, 237, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .float { animation: float 4s ease-in-out infinite; }
+        .pulse-ring { animation: pulse-ring 2.5s infinite; }
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa, #7c3aed, #6d28d9);
+            background-size: 200% 200%;
+            animation: gradient-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center grid-bg">
+    <!-- Glow orbs -->
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-indigo-900/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-lg w-full">
+        <!-- Logo -->
+        <div class="mb-8">
+            <a href="/" class="text-xl font-extrabold inline-block">
+                <span class="text-purple-400">Multi</span><span class="text-white">Parking</span>
+            </a>
+        </div>
+
+        <!-- Icon -->
+        <div class="mb-6 flex justify-center">
+            <div class="w-32 h-32 rounded-full bg-purple-900/30 border-2 border-purple-500/30 flex items-center justify-center pulse-ring float">
+                <svg class="w-16 h-16 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Error code -->
+        <h1 class="text-8xl font-black mb-2 gradient-text">404</h1>
+        <h2 class="text-2xl font-bold text-white mb-3">Página no encontrada</h2>
+        <p class="text-gray-400 text-base mb-8 leading-relaxed">
+            El espacio de parqueo que buscas no existe o fue movido.<br>
+            Verifica la dirección o regresa al inicio.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="javascript:history.back()"
+                class="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Volver
+            </a>
+            <a href="/"
+                class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-purple-900/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Ir al inicio
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <p class="mt-12 text-gray-600 text-xs">
+            &copy; MultiParking — Sistema de Gestión de Parqueadero
+        </p>
+    </div>
+</body>
+</html>
