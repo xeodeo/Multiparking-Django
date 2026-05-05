@@ -72,6 +72,7 @@
             cursor: pointer;
         }
     </style>
+    <script>if(location.pathname.startsWith('/admin-panel'))history.replaceState(null,'','/panel');</script>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -479,12 +480,6 @@
             });
         });
     });
-    </script>
-    <script>
-    // URL amigable: todo el panel admin se muestra como /panel en la barra del navegador.
-    if (window.location.pathname.startsWith('/admin-panel')) {
-        history.replaceState(null, '', '/panel');
-    }
     </script>
     {% block extra_js %}{% endblock %}
 </body>
