@@ -76,6 +76,20 @@
     {% block extra_head %}{% endblock %}
 </head>
 
+<style>
+#mp-loader{position:fixed;inset:0;background:#0a0a14;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .25s ease}
+#mp-loader.out{opacity:0;pointer-events:none}
+.mp-bar{width:120px;height:2px;background:#1e1e3a;border-radius:9px;overflow:hidden}
+.mp-bar span{display:block;height:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);animation:mpload .5s ease forwards}
+@keyframes mpload{from{width:0}to{width:100%}}
+</style>
+<div id="mp-loader">
+  <div style="text-align:center">
+    <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:10px"><span style="color:#a78bfa">Multi</span>Parking</div>
+    <div class="mp-bar"><span></span></div>
+  </div>
+</div>
+<script>window.addEventListener('load',function(){var l=document.getElementById('mp-loader');l.classList.add('out');setTimeout(function(){l.remove()},300)});</script>
 <body class="text-white min-h-screen flex">
 
     <!-- Skip to main content (WCAG keyboard navigation) -->
