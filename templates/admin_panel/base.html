@@ -72,7 +72,7 @@
             cursor: pointer;
         }
     </style>
-    <script>if(location.pathname.startsWith('/admin-panel'))history.replaceState(null,'','/panel');</script>
+    <script>if(location.pathname.startsWith('/admin-panel'))history.replaceState(null,'','/admin-panel');</script>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -491,6 +491,26 @@
 
             document.addEventListener('click', function(e) {
                 if (!wrapper.contains(e.target)) closeDropdown();
+            });
+        });
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            var real = link.getAttribute('href');
+            if (!real || real.startsWith('javascript') || real === '#') return;
+            link.addEventListener('mouseenter', function() {
+                link.setAttribute('data-h', link.getAttribute('href'));
+                link.removeAttribute('href');
+            });
+            link.addEventListener('mouseleave', function() {
+                var s = link.getAttribute('data-h');
+                if (s) link.setAttribute('href', s);
+            });
+            link.addEventListener('click', function(e) {
+                var s = link.getAttribute('data-h');
+                if (s) { e.preventDefault(); location.href = s; }
             });
         });
     });

@@ -32,7 +32,25 @@
             background-color: #0a0a14;
         }
     </style>
-    <script>(function(){var p=location.pathname;if(p.startsWith('/cliente')||p.startsWith('/dashboard')||p.startsWith('/parqueadero')||p.startsWith('/recibo'))history.replaceState(null,'','/cliente');})();</script>
+    <script>
+    (function(){var p=location.pathname;if(p.startsWith('/cliente')||p.startsWith('/dashboard')||p.startsWith('/parqueadero')||p.startsWith('/recibo'))history.replaceState(null,'','/cliente');})();
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('header a, nav a, footer a').forEach(function(link) {
+            var real = link.getAttribute('href');
+            if (!real || real.startsWith('javascript') || real === '#') return;
+            link.addEventListener('mouseenter', function() {
+                link.setAttribute('data-h', link.getAttribute('href'));
+                link.removeAttribute('href');
+            });
+            link.addEventListener('mouseleave', function() {
+                var s = link.getAttribute('data-h'); if (s) link.setAttribute('href', s);
+            });
+            link.addEventListener('click', function(e) {
+                var s = link.getAttribute('data-h'); if (s) { e.preventDefault(); location.href = s; }
+            });
+        });
+    });
+    </script>
 </head>
 
 <style>
