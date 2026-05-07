@@ -36,6 +36,7 @@
         @keyframes pulse-space { 0%,100%{opacity:1;} 50%{opacity:.6;} }
         .animate-pulse-space { animation: pulse-space 1.5s ease-in-out infinite; }
     </style>
+    <script>if(location.pathname.startsWith('/guardia/'))history.replaceState(null,'','/guardia/');</script>
     {% block extra_head %}{% endblock %}
 </head>
 
