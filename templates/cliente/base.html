@@ -28,9 +28,8 @@
         }
     </script>
     <style>
-        body {
-            background-color: #0a0a14;
-        }
+        body { background-color: #0a0a14; }
+        header a, nav a, footer a { cursor: pointer; }
     </style>
     <script>(function(){var p=location.pathname;if(p!='/dashboard/'&&(p.startsWith('/cliente/')||p.startsWith('/dashboard/')||p.startsWith('/parqueadero/')||p.startsWith('/recibo/')))history.replaceState(null,'','/dashboard/');})();</script>
 </head>
@@ -123,6 +122,21 @@
         }
         updateClock();
         setInterval(updateClock, 1000);
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('header a[href], nav a[href], footer a[href]').forEach(function(a) {
+            a.addEventListener('mouseenter', function() {
+                a.dataset.h = a.href; a.removeAttribute('href');
+            });
+            a.addEventListener('mouseleave', function() {
+                if (a.dataset.h) a.href = a.dataset.h;
+            });
+            a.addEventListener('click', function(e) {
+                e.preventDefault(); location.href = a.dataset.h;
+            });
+        });
+    });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
