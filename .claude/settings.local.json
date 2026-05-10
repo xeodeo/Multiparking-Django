@@ -91,7 +91,12 @@
       "Bash(gh api *)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Read(//c/Users/xeodeo/.claude/**)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(awk '{print $NF}')"
     ],
     "additionalDirectories": [
       "C:\\tmp",
