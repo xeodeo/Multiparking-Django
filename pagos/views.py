@@ -1,12 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from decimal import Decimal
 
-from usuarios.mixins import AdminRequiredMixin
+from usuarios.mixins import AdminRequiredMixin, _no_cache
 from pagos.models import Pago
-from cupones.models import CuponAplicado
 
 
 class PagosListView(AdminRequiredMixin, View):
@@ -92,3 +91,54 @@ class PagosListView(AdminRequiredMixin, View):
         }
 
         return render(request, 'admin_panel/pagos_list.html', context)
+
+
+class ReciboView(View):
+    def get(self, request, pk):
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return redirect('home')
+
+        rol = request.session.get('usuario_rol')
+        pago = get_object_or_404(
+            Pago.objects.select_related(
+                'fkIdParqueo__fkIdVehiculo__fkIdUsuario',
+                'fkIdParqueo__fkIdEspacio__fkIdPiso',
+            ).prefetch_related('cupones_aplicados__fkIdCupon'),
+            pk=pk
+        )
+
+        # Clientes solo pueden ver sus propios recibos
+        if rol == 'CLIENTE':
+            vehiculo = pago.fkIdParqueo.fkIdVehiculo
+            if not vehiculo.fkIdUsuario or vehiculo.fkIdUsuario_id != usuario_id:
+                return redirect('dashboard')
+
+        parqueo = pago.fkIdParqueo
+        duracion_str = ''
+        if parqueo.parHoraSalida and parqueo.parHoraEntrada:
+            segundos = int((parqueo.parHoraSalida - parqueo.parHoraEntrada).total_seconds())
+            horas = segundos // 3600
+            minutos = (segundos % 3600) // 60
+            duracion_str = f"{horas}h {minutos}m" if horas > 0 else f"{minutos}m"
+
+        cupones = pago.cupones_aplicados.all()
+        descuento_total = sum(ca.montoDescontado for ca in cupones) or Decimal('0')
+        monto_original = pago.pagMonto + descuento_total
+
+        if rol == 'ADMIN':
+            back_url = '/admin-panel/pagos/'
+        elif rol == 'VIGILANTE':
+            back_url = '/guardia/'
+        else:
+            back_url = '/dashboard/'
+
+        return _no_cache(render(request, 'recibo/recibo.html', {
+            'pago': pago,
+            'parqueo': parqueo,
+            'duracion': duracion_str,
+            'cupones': cupones,
+            'descuento_total': descuento_total,
+            'monto_original': monto_original,
+            'back_url': back_url,
+        }))

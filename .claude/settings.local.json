@@ -90,7 +90,8 @@
       "WebFetch(domain:github.com)",
       "Bash(gh api *)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Read(//c/Users/xeodeo/.claude/**)"
+      "Read(//c/Users/xeodeo/.claude/**)",
+      "Bash(git checkout *)"
     ],
     "additionalDirectories": [
       "C:\\tmp",

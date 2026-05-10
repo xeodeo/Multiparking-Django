@@ -220,4 +220,5 @@ class ClienteSalidaView(ClienteRequiredMixin, View):
                 'registro': registro,
                 'monto_final': monto_final,
                 'metodo': 'PSE',
+                'pago': pago,
             })

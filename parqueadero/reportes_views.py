@@ -273,63 +273,189 @@ class ExportarPDFReportesView(AdminRequiredMixin, View):
     def get(self, request):
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import mm
+        from reportlab.lib.enums import TA_RIGHT, TA_CENTER, TA_LEFT
         import io
+
+        PURPLE      = colors.HexColor('#7c3aed')
+        PURPLE_DARK = colors.HexColor('#5b21b6')
+        ROW_ALT     = colors.HexColor('#f5f3ff')
+        GRAY_LIGHT  = colors.HexColor('#f9fafb')
+        GRAY_TEXT   = colors.HexColor('#6b7280')
+        BORDER      = colors.HexColor('#e5e7eb')
+        BLACK       = colors.HexColor('#111827')
+        GREEN       = colors.HexColor('#16a34a')
 
         periodo = request.GET.get('periodo', 'mes')
         now = timezone.now()
         if periodo == 'semana':
             fecha_inicio = now - timedelta(days=7)
-            label = 'última semana'
+            label = 'Última Semana'
         elif periodo == 'año':
             fecha_inicio = now - timedelta(days=365)
-            label = 'último año'
+            label = 'Último Año'
         else:
             fecha_inicio = now - timedelta(days=30)
-            label = 'último mes'
+            label = 'Último Mes'
 
         pagos = Pago.objects.filter(
             pagFechaPago__gte=fecha_inicio,
             pagEstado='PAGADO'
-        ).select_related('fkIdParqueo__fkIdVehiculo', 'fkIdParqueo__fkIdEspacio')
-
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40, bottomMargin=40)
-        styles = getSampleStyleSheet()
-        elements = []
-
-        elements.append(Paragraph(f'Reporte de Ingresos — {label}', styles['Title']))
-        elements.append(Paragraph(f'Generado: {now.strftime("%d/%m/%Y %H:%M")}', styles['Normal']))
-        elements.append(Spacer(1, 20))
+        ).select_related(
+            'fkIdParqueo__fkIdVehiculo',
+            'fkIdParqueo__fkIdEspacio__fkIdPiso'
+        ).order_by('-pagFechaPago')
 
         total = pagos.aggregate(t=Sum('pagMonto'))['t'] or 0
-        elements.append(Paragraph(f'<b>Total recaudado: ${float(total):,.0f} COP</b>', styles['Normal']))
-        elements.append(Spacer(1, 12))
 
-        data = [['Fecha', 'Placa', 'Espacio', 'Método', 'Monto COP']]
-        for p in pagos[:500]:
+        buffer = io.BytesIO()
+        W, H = A4
+        doc = SimpleDocTemplate(
+            buffer, pagesize=A4,
+            topMargin=0, bottomMargin=20*mm,
+            leftMargin=18*mm, rightMargin=18*mm
+        )
+
+        s_title   = ParagraphStyle('title',   fontName='Helvetica-Bold', fontSize=20, textColor=colors.white,   leading=24, alignment=TA_LEFT)
+        s_sub     = ParagraphStyle('sub',     fontName='Helvetica',      fontSize=9,  textColor=colors.HexColor('#ddd6fe'), leading=12, alignment=TA_LEFT)
+        s_label   = ParagraphStyle('label',   fontName='Helvetica',      fontSize=8,  textColor=GRAY_TEXT, leading=10, spaceAfter=2)
+        s_value   = ParagraphStyle('value',   fontName='Helvetica-Bold', fontSize=14, textColor=BLACK,    leading=16)
+        s_value_g = ParagraphStyle('value_g', fontName='Helvetica-Bold', fontSize=16, textColor=GREEN,    leading=18)
+        s_footer  = ParagraphStyle('footer',  fontName='Helvetica',      fontSize=7,  textColor=GRAY_TEXT, alignment=TA_CENTER)
+
+        PAGE_W = W - 36*mm  # usable width
+
+        elements = []
+
+        # ── HEADER BAND (purple box as table trick) ──────────────────────
+        now_local = timezone.localtime(now)
+        header_data = [[
+            Paragraph(f'MultiParking', s_title),
+            Paragraph(f'Reporte de Ingresos — {label}<br/><font size="8" color="#ddd6fe">Generado: {now_local.strftime("%d/%m/%Y %H:%M")}</font>', s_sub),
+        ]]
+        header_table = Table(header_data, colWidths=[PAGE_W * 0.4, PAGE_W * 0.6])
+        header_table.setStyle(TableStyle([
+            ('BACKGROUND',   (0, 0), (-1, -1), PURPLE_DARK),
+            ('TOPPADDING',   (0, 0), (-1, -1), 14),
+            ('BOTTOMPADDING',(0, 0), (-1, -1), 14),
+            ('LEFTPADDING',  (0, 0), (-1, -1), 14),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+            ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROUNDEDCORNERS', [6]),
+        ]))
+        elements.append(header_table)
+        elements.append(Spacer(1, 14))
+
+        # ── SUMMARY CARDS ────────────────────────────────────────────────
+        summary_data = [[
+            Paragraph('Total Recaudado', s_label),
+            Paragraph('Pagos Incluidos', s_label),
+            Paragraph('Período', s_label),
+        ], [
+            Paragraph(f'${float(total):,.0f} COP', s_value_g),
+            Paragraph(str(pagos.count()), s_value),
+            Paragraph(label, s_value),
+        ]]
+        col_w = PAGE_W / 3
+        summary_table = Table(summary_data, colWidths=[col_w, col_w, col_w])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND',    (0, 0), (-1, -1), GRAY_LIGHT),
+            ('TOPPADDING',    (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 12),
+            ('BOX',           (0, 0), (-1, -1), 0.5, BORDER),
+            ('LINEAFTER',     (0, 0), (1, -1),  0.5, BORDER),
+            ('ROUNDEDCORNERS', [4]),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 16))
+
+        # ── TABLE ────────────────────────────────────────────────────────
+        col_widths = [28*mm, 22*mm, 28*mm, 22*mm, 24*mm, 30*mm]
+        data = [[
+            Paragraph('<b>Fecha</b>',   ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            Paragraph('<b>Hora</b>',    ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            Paragraph('<b>Placa</b>',   ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            Paragraph('<b>Espacio</b>', ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            Paragraph('<b>Método</b>',  ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            Paragraph('<b>Monto COP</b>', ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white, alignment=TA_RIGHT)),
+        ]]
+
+        s_cell = ParagraphStyle('cell', fontName='Helvetica', fontSize=8, textColor=BLACK, leading=10)
+        s_mono = ParagraphStyle('mono', fontName='Helvetica-Bold', fontSize=8, textColor=BLACK, leading=10)
+        s_amt  = ParagraphStyle('amt',  fontName='Helvetica-Bold', fontSize=8, textColor=GREEN, leading=10, alignment=TA_RIGHT)
+
+        for i, p in enumerate(pagos[:500]):
+            fecha_local = timezone.localtime(p.pagFechaPago)
+            piso = ''
+            try:
+                piso = p.fkIdParqueo.fkIdEspacio.fkIdPiso.pisNombre
+            except Exception:
+                pass
             data.append([
-                p.pagFechaPago.strftime('%d/%m/%Y'),
-                p.fkIdParqueo.fkIdVehiculo.vehPlaca,
-                p.fkIdParqueo.fkIdEspacio.espNumero,
-                p.pagMetodo,
-                f'${float(p.pagMonto):,.0f}',
+                Paragraph(fecha_local.strftime('%d/%m/%Y'), s_cell),
+                Paragraph(fecha_local.strftime('%H:%M'),    s_cell),
+                Paragraph(p.fkIdParqueo.fkIdVehiculo.vehPlaca, s_mono),
+                Paragraph(f"{p.fkIdParqueo.fkIdEspacio.espNumero}<br/><font size='7' color='#9ca3af'>{piso}</font>", s_cell),
+                Paragraph(p.pagMetodo, s_cell),
+                Paragraph(f'${float(p.pagMonto):,.0f}', s_amt),
             ])
 
-        t = Table(data, colWidths=[80, 70, 70, 70, 90])
-        t.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6d28d9')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f9fafb'), colors.white]),
-            ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#d1d5db')),
-            ('ALIGN', (4, 0), (4, -1), 'RIGHT'),
-        ]))
-        elements.append(t)
+        # totals row
+        data.append([
+            Paragraph('<b>TOTAL</b>', ParagraphStyle('tot', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white)),
+            '', '', '', '',
+            Paragraph(f'<b>${float(total):,.0f}</b>', ParagraphStyle('tamt', fontName='Helvetica-Bold', fontSize=8, textColor=colors.white, alignment=TA_RIGHT)),
+        ])
 
-        doc.build(elements)
+        n = len(data)
+        row_styles = []
+        for r in range(1, n - 1):
+            bg = ROW_ALT if r % 2 == 0 else colors.white
+            row_styles.append(('BACKGROUND', (0, r), (-1, r), bg))
+
+        t = Table(data, colWidths=col_widths, repeatRows=1)
+        t.setStyle(TableStyle([
+            # header
+            ('BACKGROUND',    (0, 0), (-1, 0),  PURPLE),
+            ('TOPPADDING',    (0, 0), (-1, 0),  8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0),  8),
+            # cells
+            ('TOPPADDING',    (0, 1), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 6),
+            # totals row
+            ('BACKGROUND',    (0, n-1), (-1, n-1), PURPLE_DARK),
+            ('SPAN',          (0, n-1), (4, n-1)),
+            # borders
+            ('LINEBELOW',     (0, 0), (-1, 0),  0.5, PURPLE_DARK),
+            ('LINEBELOW',     (0, 1), (-1, -2), 0.3, BORDER),
+            ('BOX',           (0, 0), (-1, -1), 0.5, BORDER),
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+        ] + row_styles))
+        elements.append(t)
+        elements.append(Spacer(1, 10))
+
+        # ── FOOTER ───────────────────────────────────────────────────────
+        elements.append(HRFlowable(width='100%', thickness=0.5, color=BORDER))
+        elements.append(Spacer(1, 4))
+        elements.append(Paragraph(
+            f'MultiParking · Reporte generado el {now_local.strftime("%d/%m/%Y a las %H:%M")} · Solo pagos con estado PAGADO',
+            s_footer
+        ))
+
+        def add_page_num(canvas, doc):
+            canvas.saveState()
+            canvas.setFont('Helvetica', 7)
+            canvas.setFillColor(GRAY_TEXT)
+            canvas.drawRightString(W - 18*mm, 12*mm, f'Página {doc.page}')
+            canvas.restoreState()
+
+        doc.build(elements, onFirstPage=add_page_num, onLaterPages=add_page_num)
         buffer.seek(0)
         response = HttpResponse(buffer, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="reporte_ingresos_{periodo}.pdf"'
