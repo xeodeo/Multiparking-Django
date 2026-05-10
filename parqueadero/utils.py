@@ -23,11 +23,8 @@ def _calcular_pisos_data(now):
     # Si la reserva está a más de 2h, no se marca visualmente; el guardia no necesita
     # anticiparse tanto. Cambiar aquí si el negocio quiere ampliar/reducir la ventana.
     limite_2h = now + timedelta(hours=2)
-    from django.db.models import Prefetch
-    from .models import Espacio
     pisos = Piso.objects.filter(pisEstado=True).prefetch_related(
-        Prefetch('espacios', queryset=Espacio.objects.order_by('espNumero')),
-        'espacios__reservas'
+        'espacios', 'espacios__reservas'
     ).order_by('pisNombre')
 
     pisos_list = []
@@ -39,7 +36,7 @@ def _calcular_pisos_data(now):
         piso.ocupados_espacios = ocupados_piso
 
         espacios_list = []
-        for espacio in piso.espacios.order_by('espNumero'):
+        for espacio in piso.espacios.all():
             reserva_proxima = None
             pago_pendiente = False
 

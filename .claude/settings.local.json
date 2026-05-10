@@ -86,13 +86,18 @@
       "Bash(cmd.exe /c \"taskkill /F /IM python.exe\" 2>&1)",
       "Bash(cmd.exe /c \"netstat -ano | findstr :8000\" 2>&1)",
       "Bash(cmd.exe /c \"netstat -ano | findstr LISTENING | findstr :8000\")",
-      "Bash(cmd.exe /c \"tasklist | findstr python\")"
+      "Bash(cmd.exe /c \"tasklist | findstr python\")",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//c/Users/xeodeo/.claude/**)"
     ],
     "additionalDirectories": [
       "C:\\tmp",
       "\\tmp",
       "C:\\Users\\xeodeo\\Desktop",
-      "C:\\Users\\xeodeo\\Desktop\\Multiparking-Django"
+      "C:\\Users\\xeodeo\\Desktop\\Multiparking-Django",
+      "C:\\Users\\xeodeo\\.claude"
     ]
   },
   "enabledMcpjsonServers": [

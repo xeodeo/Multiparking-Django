@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.x-092E20?style=for-the-badge&logo=django&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0_dev-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-producción-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-CDN-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
@@ -11,7 +11,7 @@
 
 **Sistema de gestión inteligente para parqueaderos multinivel**
 
-[Demo en Vivo](https://multiparking-django.onrender.com) | [Instalación](#-instalación) | [Características](#-características)
+[Demo en Vivo](https://multiparking-django.onrender.com) · [Instalación](#-instalación) · [Características](#-características) · [Credenciales de prueba](#demo-en-vivo)
 
 </div>
 
@@ -19,7 +19,7 @@
 
 ## Descripción
 
-**MultiParking** es una aplicación web desarrollada en Django para la administración completa de parqueaderos de múltiples pisos. Permite gestionar usuarios, vehículos, espacios de parqueo, reservas, tarifas dinámicas, pagos, cupones de descuento, novedades (incidentes) y un programa de fidelidad con stickers.
+**MultiParking** es una aplicación web desarrollada en Django para la administración completa de parqueaderos de múltiples pisos. Gestiona usuarios, vehículos, espacios de parqueo, reservas, tarifas dinámicas, pagos, cupones de descuento, novedades (incidentes) y un programa de fidelidad con stickers.
 
 ### Casos de Uso
 
@@ -27,7 +27,6 @@
 - Hoteles con gestión de vehículos de huéspedes
 - Edificios corporativos con control de acceso vehicular
 - Universidades con reservas para estudiantes y profesores
-- Hospitales con gestión de parqueo para pacientes y personal
 
 ---
 
@@ -37,59 +36,62 @@
 
 - **Dashboard interactivo** con estadísticas en tiempo real
 - **Gráficos dinámicos** de ingresos (últimos 7 días) y tendencias de ocupación por hora (Chart.js)
-- **Gestión de pisos** con visualización de capacidad y porcentaje de ocupación
-- **Tipos de espacios** configurables (Carro, Moto, etc.)
+- **Vista general de pisos** con mapa visual de ocupación por espacio (orden estable en PostgreSQL)
+- **Gestión de pisos, tipos de espacio y espacios** — creación individual o por rango
 - **Inventario de parqueo** con historial completo de entradas/salidas
 - **Registro de entrada/salida** con modal interactivo y cálculo automático de tarifas
-- **Reportes** exportables en PDF (reportlab) y Excel (openpyxl)
-- **Gestión de usuarios** con roles y activación/desactivación
+- **Reportes** exportables en PDF estilizado (ReportLab) y Excel (openpyxl)
+- **Gestión de usuarios** con roles, activación/desactivación y eliminación protegida por teclado
+- **Cupones de descuento** con validación de uso único por usuario
 
 ### Panel Guardia (Vigilante)
 
 - Dashboard exclusivo para el rol VIGILANTE
-- Registrar ingreso de vehículos (busca por placa, asigna espacio)
-- Registrar salida y confirmar pago
-- Vista de ocupación en tiempo real
+- Registrar ingreso de vehículos (busca por placa, asigna espacio disponible)
+- Registrar salida con cálculo automático de cobro
+- Confirmar pago en efectivo al momento de salida
+- Vista de ocupación en tiempo real con indicadores de pagos pendientes
 
 ### Panel Cliente
 
-- Dashboard personal con vehículos, reservas y stickers
+- Dashboard personal con vehículos, reservas activas y stickers acumulados
 - Gestión de vehículos propios (crear, editar)
 - Reservas de espacios (crear, editar, cancelar, confirmar)
 - Perfil con historial de stickers y bono de fidelidad
-- Salida del parqueadero mediante QR
+- Salida del parqueadero con pago en línea o generación de recibo para caja
 
-### Gestión de Vehículos
+### Recibos de Pago
 
-- Registro de vehículos de **usuarios registrados** y **visitantes**
-- Búsqueda rápida por placa
-- Información de contacto para visitantes (nombre y teléfono)
-- Historial de parqueos por vehículo
+- Generación de recibos imprimibles para **admin, vigilante y cliente**
+- Control de acceso por rol: el cliente solo ve sus propios recibos
+- Diseño con tema oscuro MultiParking, optimizado para impresión (`@media print`)
+- Detalle de vehículo, duración, descuentos aplicados y monto final
 
 ### Sistema de Pagos y Tarifas
 
 - **Tarifas flexibles** por hora, día o mes según tipo de espacio
 - **Precio diferenciado para visitantes** (`precioHoraVisitante`)
-- Cálculo automático del monto según tiempo de estadía (redondeo hacia arriba a 100 COP)
+- Cálculo automático: minutos/60 × precioHora, redondeado a 100 COP
 - Solo una tarifa activa por tipo de espacio a la vez
-- Registro de pagos con estados (Pagado/Pendiente)
-- **Cupones de descuento** (porcentaje o valor fijo) con código único
+- Estados de pago: Pagado / Pendiente (efectivo) / Anulado
+- **Cupones** (porcentaje o valor fijo) con código único, uso único por usuario
 
 ### Sistema de Reservas
 
 - Reserva de espacios por fecha y hora
-- Estados: Pendiente, Confirmada, Completada, Cancelada
+- Estados: Pendiente → Confirmada → Completada / Cancelada
 - Gestión desde panel admin y desde panel cliente
-- Liberación automática de espacios al cancelar/completar
+- Liberación automática de espacio al cancelar o completar
 
 ### Novedades (Incidentes)
 
 - Registro de incidentes por vehículo y/o espacio
-- Estados: PENDIENTE, EN_PROCESO, RESUELTO
-- Soporte para fotos adjuntas
-- Asignación de responsable y seguimiento con comentarios
+- Estados: PENDIENTE → EN_PROCESO → RESUELTO
+- Soporte para fotos adjuntas (`ImageField`)
+- Asignación de reportador y responsable, seguimiento con comentarios
+- Notificación por email al registrar una novedad (SendGrid)
 
-### Programa de Fidelidad (Stickers)
+### Programa de Fidelidad
 
 - Un sticker por cada parqueo de más de 1 hora (usuarios registrados)
 - Meta configurable de stickers para canjear bono
@@ -98,26 +100,26 @@
 
 ### Código QR
 
-- Generación de QR por espacio para entrada rápida
-- Escáner QR para registrar ingreso desde el celular del cliente
+- Generación de QR por espacio para entrada rápida desde celular
+- Escáner QR para registrar ingreso sin necesidad del guardia
 
-### Interfaz Moderna
+### Páginas de Error Personalizadas
 
-- **Diseño Dark Mode** con paleta de colores personalizada (mp-dark, mp-purple)
-- **Tailwind CSS** para diseño responsivo y moderno
-- Barra de reloj en tiempo real con fecha y hora en español
-- Date pickers con tema oscuro personalizado
-- Estados visuales con badges de colores (Disponible, Ocupado, Reservado, Inactivo)
+- **404** — página oscura con animación flotante y botón de regreso
+- **500** — terminal animado, muestra cuando la base de datos no responde
+- **403** — candado con animación, redirige al login
+- Middleware `DatabaseErrorMiddleware` captura `OperationalError` antes de llegar al usuario
 
 ### Seguridad
 
-- **Sistema de autenticación personalizado** (sin django.contrib.auth)
+- **Autenticación personalizada** — `Usuario` propio, sin `django.contrib.auth.User`
 - Hashing de contraseñas con PBKDF2 (Django hashers)
-- **Recuperación de contraseña** via email (SendGrid)
-- **Control de acceso basado en roles**: Admin, Vigilante, Cliente
-- **CSP + X-XSS-Protection** vía `SecurityHeadersMiddleware`
-- **No-cache tras logout** vía `NoCacheAfterLogoutMiddleware`
-- Protección CSRF en todos los formularios
+- Recuperación de contraseña con token por email (SendGrid)
+- **Roles**: ADMIN · VIGILANTE · CLIENTE con mixins de acceso (`AdminRequiredMixin`, etc.)
+- `SecurityHeadersMiddleware`: `Content-Security-Policy` + `X-XSS-Protection`
+- `NoCacheAfterLogoutMiddleware`: previene back-button tras cerrar sesión
+- CSRF en todos los formularios
+- Protección contra SQL injection vía ORM de Django
 
 ---
 
@@ -125,15 +127,49 @@
 
 | Categoría | Tecnología |
 |-----------|------------|
-| **Backend** | Django 6.0, Python 3.12+ |
-| **Base de Datos** | MySQL 8.0 (dev) · PostgreSQL (producción en Render) |
-| **Frontend** | Tailwind CSS (CDN) + Django Templates |
-| **Gráficos** | Chart.js (Line & Bar) |
-| **Reportes** | reportlab (PDF), openpyxl (Excel) |
+| **Lenguaje** | Python 3.12+ |
+| **Framework web** | Django 5.x |
+| **Base de datos** | MySQL 8.0 (desarrollo) · PostgreSQL (producción — Render.com) |
+| **Frontend** | Tailwind CSS (CDN) + Django Templates (SSR) |
+| **Gráficos** | Chart.js (línea e histograma) |
+| **Reportes** | ReportLab (PDF) · openpyxl (Excel) |
 | **Email** | SendGrid (`django-sendgrid-v5`) |
-| **Autenticación** | Sesiones personalizadas (sin django.contrib.auth.User) |
-| **APIs** | Django REST Framework |
-| **Despliegue** | Render.com + Gunicorn + WhiteNoise |
+| **Autenticación** | Sesiones personalizadas (sin `django.contrib.auth`) |
+| **API** | Django REST Framework |
+| **Servidor** | Gunicorn + WhiteNoise (archivos estáticos) |
+| **Despliegue** | Render.com |
+
+---
+
+## Patrón de Diseño
+
+El proyecto aplica el patrón **MVT (Model–View–Template)** de Django:
+
+- **Model**: define la estructura de datos con validaciones y reglas de negocio (`validators`, `@property` calculados)
+- **View**: Class-Based Views con mixins de autorización por rol; maneja lógica de negocio sin Django Forms
+- **Template**: Server-Side Rendering con Tailwind CSS; AJAX puntual para operaciones sin recarga
+
+Adicionalmente:
+- **Middleware chain** para seguridad (CSP, no-cache, errores de BD)
+- **Separación de responsabilidades** por app: cada módulo de negocio es una app Django independiente
+- **Singleton pattern** en `ConfiguracionFidelidad` (pk=1 fijo)
+
+---
+
+## Arquitectura de Apps
+
+```
+multiparking/          ← Configuración, URLs, middleware, error views
+usuarios/              ← Autenticación y gestión de usuarios
+vehiculos/             ← Vehículos de usuarios registrados y visitantes
+parqueadero/           ← Pisos, espacios, inventario, QR, reportes
+tarifas/               ← Tarifas por tipo de espacio
+pagos/                 ← Registro de pagos y recibos
+cupones/               ← Cupones de descuento con validación de uso
+reservas/              ← Reservas de espacios
+novedades/             ← Incidentes y novedades operativas
+fidelidad/             ← Programa de stickers y bonos
+```
 
 ---
 
@@ -141,204 +177,61 @@
 
 ### Prerrequisitos
 
-- Python 3.12 o superior
-- MySQL 8.0 o superior
-- pip
+- Python 3.12+
+- MySQL 8.0+
 - Git
 
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
+### Pasos
 
 ```bash
-git clone https://github.com/tu-usuario/multiparking.git
-cd multiparking
-```
+# 1. Clonar
+git clone https://github.com/xeodeo/Multiparking-Django.git
+cd Multiparking-Django
 
-2. **Crear entorno virtual**
-
-```bash
+# 2. Entorno virtual
 python -m venv venv
+source venv/bin/activate        # Linux/Mac
+venv\Scripts\activate           # Windows
 
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-3. **Instalar dependencias**
-
-```bash
+# 3. Dependencias
 pip install -r requirements.txt
+
+# 4. Variables de entorno — copiar y editar
+cp .env.example .env
 ```
 
-4. **Configurar variables de entorno**
-
-Crear archivo `.env` en la raíz del proyecto:
+`.env` mínimo para desarrollo:
 
 ```env
-# Base de datos MySQL (desarrollo)
 DB_NAME=multiparking_db
 DB_USER=root
-DB_PASSWORD=tu_password_mysql
+DB_PASSWORD=tu_password
 DB_HOST=localhost
 DB_PORT=3306
-
-# Django
-SECRET_KEY=tu_secret_key_super_segura_aqui
+SECRET_KEY=clave-secreta-larga
 DEBUG=True
-
-# Email (opcional en dev)
-SENDGRID_API_KEY=tu_api_key
-DEFAULT_FROM_EMAIL=noreply@multiparking.com
+SENDGRID_API_KEY=opcional-en-dev
 ```
-
-5. **Crear base de datos MySQL**
-
-```sql
-CREATE DATABASE multiparking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-6. **Ejecutar migraciones**
 
 ```bash
-python manage.py makemigrations
+# 5. Base de datos
 python manage.py migrate
-```
 
-7. **Cargar datos de prueba**
-
-```bash
-# Opción A: solo usuario admin
-python create_admin.py
-
-# Opción B: base de datos completa con datos demo
+# 6. Datos de demostración
 python scripts/reiniciar_base_datos.py
-```
 
-8. **Iniciar servidor**
-
-```bash
+# 7. Iniciar
 python manage.py runserver
 ```
 
-9. **Acceder**
+### URLs de acceso
 
-- Página pública: `http://127.0.0.1:8000`
-- Panel admin: `http://127.0.0.1:8000/admin-panel/`
-- Panel guardia: `http://127.0.0.1:8000/guardia/`
-- Dashboard cliente: `http://127.0.0.1:8000/dashboard/`
-
----
-
-## Estructura del Proyecto
-
-```
-multiparking/
-├── multiparking/              # Configuración principal del proyecto
-│   ├── settings.py            # MySQL dev / PostgreSQL prod, timezone Bogotá
-│   ├── urls.py                # URLs principales (admin, guardia, cliente, API)
-│   ├── middleware.py          # SecurityHeadersMiddleware, NoCacheAfterLogoutMiddleware
-│   └── wsgi.py
-│
-├── usuarios/                  # Autenticación personalizada
-│   ├── models.py              # Usuario (custom, sin django.contrib.auth)
-│   ├── views.py               # Login, Register, Logout, Password Reset, CRUD admin
-│   └── mixins.py              # AdminRequiredMixin, VigilanteRequiredMixin
-│
-├── parqueadero/               # App principal - Gestión del parqueadero
-│   ├── models.py              # Piso, TipoEspacio, Espacio, InventarioParqueo
-│   ├── views.py               # CRUD admin + Dashboard + Entrada/Salida + QR
-│   ├── vigilante_views.py     # Vistas exclusivas del panel guardia
-│   ├── cliente_views.py       # Salida del parqueadero para cliente
-│   └── reportes_views.py      # Exportar PDF y Excel
-│
-├── vehiculos/                 # Gestión de vehículos
-│   ├── models.py              # Vehiculo (usuarios registrados y visitantes)
-│   ├── views.py               # CRUD admin
-│   └── cliente_views.py       # CRUD para el cliente
-│
-├── tarifas/                   # Sistema de tarifas
-│   ├── models.py              # Tarifa (precioHora, precioHoraVisitante, precioDia, precioMensual)
-│   └── views.py               # CRUD + toggle activa
-│
-├── pagos/                     # Registro de pagos
-│   ├── models.py              # Pago
-│   └── views.py               # Lista de pagos
-│
-├── cupones/                   # Sistema de cupones
-│   ├── models.py              # Cupon (con cupCodigo), CuponAplicado
-│   └── views.py               # CRUD de cupones
-│
-├── reservas/                  # Sistema de reservas
-│   ├── models.py              # Reserva
-│   ├── views.py               # CRUD admin + Finalizar/Cancelar
-│   └── cliente_views.py       # Crear/editar/cancelar para cliente
-│
-├── novedades/                 # Incidentes y novedades
-│   ├── models.py              # Novedad (descripción, foto, estado, comentario)
-│   └── views.py               # CRUD de novedades
-│
-├── fidelidad/                 # Programa de fidelidad
-│   ├── models.py              # ConfiguracionFidelidad (singleton), Sticker
-│   └── views.py               # Config admin + Perfil cliente + Reclamar bono
-│
-├── templates/
-│   ├── base.html              # Template base público
-│   ├── home.html              # Página de inicio
-│   ├── auth/                  # Login, Register, Password Reset, Dashboard cliente
-│   ├── vigilante/             # Panel del guardia
-│   ├── cliente/               # Perfil, vehículos, reservas del cliente
-│   └── admin_panel/           # Panel administrativo completo
-│       ├── base.html          # Layout admin (sidebar + header + reloj)
-│       ├── dashboard.html
-│       ├── pisos/, espacios/, vehiculos/
-│       ├── tarifas/, cupones/, reservas/
-│       ├── inventario/, pagos/, reportes/
-│       ├── novedades/, fidelidad/
-│       └── usuarios/
-│
-├── scripts/
-│   ├── reiniciar_base_datos.py   # Reset + seed completo (dev)
-│   ├── render_datos_prueba.py    # Seed para Render (prod)
-│   ├── cargar_datos_iniciales.py # Solo estructura base
-│   ├── mantener_datos_demo.py    # Mantener pagos demo actualizados
-│   └── DATOS_DEMO.md             # Guía de scripts de datos
-│
-├── create_admin.py            # Crea usuario admin rápidamente
-├── requirements.txt
-├── .env.example
-└── README.md
-```
-
----
-
-## Uso del Sistema
-
-### Como Administrador
-
-1. Iniciar sesión en `/login/` con credenciales de admin
-2. **Configurar el parqueadero:** pisos → tipos de espacio → espacios (individual o por rango)
-3. **Configurar tarifas** por tipo de espacio con precios diferenciados (usuario / visitante)
-4. **Registrar novedades** de incidentes por vehículo o espacio
-5. **Ver reportes** y exportarlos en PDF o Excel
-6. **Gestionar fidelidad:** configurar meta de stickers y vigencia del bono
-
-### Como Vigilante (Guardia)
-
-1. Iniciar sesión → redirige automáticamente a `/guardia/`
-2. **Registrar ingreso**: buscar vehículo por placa → asignar espacio → confirmar
-3. **Registrar salida**: seleccionar vehículo → calcular cobro → confirmar pago
-4. Ver ocupación en tiempo real del parqueadero
-
-### Como Cliente
-
-1. Registrarse en `/register/`
-2. **Dashboard** (`/dashboard/`): resumen de vehículos, reservas activas y stickers
-3. **Reservar** un espacio con fecha y hora
-4. **Perfil** (`/cliente/perfil/`): ver stickers acumulados y reclamar bono
-5. **Salida QR**: escanear código del espacio al salir
+| Panel | URL |
+|-------|-----|
+| Página pública | `http://127.0.0.1:8000/` |
+| Admin | `http://127.0.0.1:8000/admin-panel/` |
+| Guardia | `http://127.0.0.1:8000/guardia/` |
+| Cliente | `http://127.0.0.1:8000/dashboard/` |
 
 ---
 
@@ -346,99 +239,122 @@ multiparking/
 
 **[https://multiparking-django.onrender.com](https://multiparking-django.onrender.com)**
 
-> La aplicación está en el plan gratuito de Render — puede tardar 30-50 segundos en despertar (cold start).
+> Plan gratuito de Render — puede tardar 30–50 segundos en despertar (cold start).
 
 ### Credenciales de Prueba
 
-| Rol | Email | Password |
-|-----|-------|----------|
+| Rol | Email | Contraseña |
+|-----|-------|-----------|
 | Administrador | `admin@multiparking.com` | `admin123` |
 | Vigilante | `vigilante@multiparking.com` | `vigil123` |
-| Cliente 1 (Carlos Perez) | `cliente@test.com` | `test123` |
-| Cliente 2 (Maria Lopez) | `maria@test.com` | `test123` |
+| Cliente (Carlos) | `cliente@test.com` | `test123` |
+| Cliente (María) | `maria@test.com` | `test123` |
 
-### Cupones de Descuento
+### Cupones Activos
 
 | Código | Descuento |
 |--------|-----------|
 | `BIENVENIDO20` | 20% |
-| `DESCUENTO5K` | $5,000 fijo |
+| `DESCUENTO5K` | $5.000 fijo |
 | `FINDE50` | 50% |
 | `VIPPREMIUM` | 30% |
 
 ---
 
+## Estructura del Proyecto
+
+```
+Multiparking-Django/
+├── multiparking/
+│   ├── settings.py          # Config MySQL/PostgreSQL, timezone Bogotá
+│   ├── urls.py              # URLs completas (admin, guardia, cliente, API)
+│   ├── middleware.py        # DatabaseError, SecurityHeaders, NoCache
+│   └── error_views.py       # Handlers 404 / 500 / 403
+│
+├── usuarios/                # Auth personalizada
+├── vehiculos/               # CRUD vehículos (admin + cliente)
+├── parqueadero/             # Core: pisos, espacios, inventario, QR, reportes
+├── tarifas/                 # Tarifas por tipo de espacio
+├── pagos/                   # Pagos + recibos imprimibles
+├── cupones/                 # Cupones con uso único por usuario
+├── reservas/                # Reservas (admin + cliente)
+├── novedades/               # Incidentes con foto y seguimiento
+├── fidelidad/               # Stickers y bonos de fidelidad
+│
+├── templates/
+│   ├── 404.html / 500.html / 403.html   # Páginas de error
+│   ├── recibo/recibo.html               # Recibo imprimible
+│   ├── admin_panel/                     # Panel administrador
+│   ├── vigilante/                       # Panel guardia
+│   └── cliente/                         # Panel cliente
+│
+├── scripts/
+│   ├── reiniciar_base_datos.py          # Reset + seed completo
+│   ├── render_datos_prueba.py           # Seed para producción (PostgreSQL)
+│   └── DATOS_DEMO.md                    # Guía de scripts
+│
+├── requirements.txt
+├── .env.example
+└── build.sh                             # Script de despliegue en Render
+```
+
+---
+
 ## Convenciones del Código
 
-### Nomenclatura de Modelos
-
-- **Campos**: camelCase con prefijo de tabla
-  - Usuario: `usuDocumento`, `usuNombre`, `usuApellido`, `usuCorreo`, `usuClaveHash`
-  - Vehículo: `vehPlaca`, `vehTipo`, `vehMarca`
-  - Espacio: `espNumero`, `espEstado`
-  - Inventario: `parHoraEntrada`, `parHoraSalida`
-  - Novedad: `novDescripcion`, `novEstado`, `novComentario`
-  - Sticker: `stkFecha`
-
-- **Foreign Keys**: `fkId<Entity>` con `db_column` explícito
-  - `fkIdPiso`, `fkIdVehiculo`, `fkIdEspacio`, `fkIdTipoEspacio`, `fkIdReportador`
-
-- **Tablas**: nombres en minúsculas
-  - `usuarios`, `vehiculos`, `espacios`, `inventario_parqueo`, `novedades`, `fidelidad_stickers`
-
-### Arquitectura
-
-- **Vistas**: Class-based views (CBV) con patrón CRUD
-- **Templates**: Server-side rendering con Django Template Language
-- **Sin Django Forms**: validación manual en vistas (mayor control)
-- **Idioma mixto**: Español para dominio de negocio, inglés para términos técnicos
-- **Timezone**: `America/Bogota` (UTC-5)
-- **Locale**: `es-co` (español Colombia)
+- **Campos de modelos**: camelCase con prefijo de tabla (`usuNombre`, `vehPlaca`, `espEstado`, `parHoraEntrada`)
+- **Foreign Keys**: `fkId<Entidad>` con `db_column` explícito
+- **Tablas**: nombres en minúsculas (`usuarios`, `vehiculos`, `espacios`, `inventario_parqueo`)
+- **Vistas**: Class-Based Views sin Django Forms — validación directa sobre `request.POST`
+- **Idioma**: Español para dominio de negocio, inglés para términos técnicos/framework
+- **Timezone**: `America/Bogota` (UTC-5) · **Locale**: `es-co`
 
 ---
 
 ## Seguridad
 
-- **Hashing**: PBKDF2 con Django hashers
-- **Roles**: `ADMIN` (panel completo), `VIGILANTE` (operaciones de parqueo), `CLIENTE` (self-service)
-- **CSP**: `Content-Security-Policy` restringida a self + Tailwind CDN
-- **No-cache**: headers para prevenir back-button tras logout
-- **CSRF**: tokens en todos los formularios
-- **SQL Injection**: protección automática con ORM de Django
-- **Recuperación de contraseña**: tokens únicos por email vía SendGrid
+| Mecanismo | Implementación |
+|-----------|---------------|
+| Hashing contraseñas | PBKDF2 con Django hashers |
+| Control de acceso | Mixins por rol: Admin / Vigilante / Cliente |
+| Headers HTTP | CSP restringida + X-XSS-Protection |
+| Caché tras logout | `Cache-Control: no-store` en sesiones activas |
+| CSRF | Token en todos los formularios |
+| SQL Injection | Protección automática ORM |
+| Errores de BD | `DatabaseErrorMiddleware` → página 500 estática |
+| Password reset | Token único por email (SendGrid) |
 
 ---
 
 ## Roadmap
 
-### Completado
-- [x] Panel de administración completo
-- [x] Panel vigilante/guardia dedicado
-- [x] Panel cliente con self-service
-- [x] Novedades e incidentes
-- [x] Programa de fidelidad con stickers
-- [x] Código QR para entrada
-- [x] Reportes PDF y Excel
-- [x] Recuperación de contraseña
-- [x] Tarifas diferenciadas (usuario vs visitante)
+### ✅ Completado
+- Panel administrador, guardia y cliente completos
+- Novedades e incidentes con fotos
+- Programa de fidelidad con stickers y bonos
+- Código QR para entrada rápida
+- Reportes PDF y Excel con diseño
+- Recibos imprimibles por rol
+- Recuperación de contraseña
+- Tarifas diferenciadas (registrado vs visitante)
+- Páginas de error 404 / 500 / 403 personalizadas
+- Middleware de error de base de datos
 
-### Próximas Funcionalidades
-- [ ] Notificaciones push / SMS al registrar entrada/salida
-- [ ] Pagos en línea (PSE, PayU, Stripe)
-- [ ] Reconocimiento de placas con OCR
-- [ ] API REST completa con Swagger
-- [ ] Multi-tenant (soporte para múltiples parqueaderos)
+### 🔜 Próximas Funcionalidades
+- Notificaciones push / SMS al registrar entrada/salida
+- Pagos en línea (PSE, PayU, Stripe)
+- Reconocimiento de placas con OCR
+- API REST completa con documentación Swagger
+- Multi-tenant (soporte para múltiples parqueaderos)
 
 ---
 
 ## Licencia
 
-MIT License. Ver `LICENSE` para más detalles.
+MIT License.
 
 ---
 
 <div align="center">
-
-Desarrollado con dedicación por el equipo de **MultiParking** — Colombia
-
+Desarrollado con dedicación por el equipo de <strong>MultiParking</strong> — Colombia 🇨🇴
 </div>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MultiParking — Presentación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & VIEWPORT BASE ─────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow-x: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
+body { background: #0a0a14; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow: hidden; }
+
+/* ── TOKENS ────────────────────────────────────────── */
+:root {
+  --bg:       #0a0a14;
+  --card:     #12121f;
+  --border:   #1e1e3a;
+  --purple:   #7c3aed;
+  --pl:       #a78bfa;
+  --pd:       #5b21b6;
+  --muted:    #9ca3af;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --t1: clamp(3.2rem,  8vw,  7rem);
+  --t2: clamp(2.2rem,  5vw,  3.8rem);
+  --t3: clamp(1.5rem,  3.5vw, 2.4rem);
+  --tb: clamp(1.15rem, 2vw,  1.5rem);
+  --ts: clamp(0.95rem, 1.4vw, 1.15rem);
+  --pad: clamp(2rem, 4.5vw, 4rem);
+  --gap: clamp(0.6rem, 1.8vw, 1.4rem);
+}
+
+/* ── SLIDE BASE ────────────────────────────────────── */
+.slide {
+  width: 100vw; height: 100vh; height: 100dvh;
+  overflow: hidden; scroll-snap-align: start;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.slide-content {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; max-height: 100%;
+  overflow: hidden; padding: var(--pad);
+  max-width: min(95vw, 1300px);
+  margin-left: auto; margin-right: auto;
+  width: 100%;
+}
+
+/* ── GRID BACKGROUND ───────────────────────────────── */
+.grid-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* ── GLOW ORBS ─────────────────────────────────────── */
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); pointer-events: none; opacity: .5;
+}
+.orb-1 { width: 400px; height: 400px; background: rgba(124,58,237,.3); top: -100px; right: -100px; }
+.orb-2 { width: 300px; height: 300px; background: rgba(91,33,182,.2); bottom: -80px; left: -60px; }
+
+/* ── ANIMATIONS ────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal:nth-child(2) { transition-delay: .08s; }
+.reveal:nth-child(3) { transition-delay: .16s; }
+.reveal:nth-child(4) { transition-delay: .24s; }
+.reveal:nth-child(5) { transition-delay: .32s; }
+.reveal:nth-child(6) { transition-delay: .40s; }
+.reveal:nth-child(7) { transition-delay: .48s; }
+
+@keyframes pulse-glow {
+  0%,100% { text-shadow: 0 0 20px rgba(167,139,250,.4); }
+  50%      { text-shadow: 0 0 40px rgba(167,139,250,.8), 0 0 80px rgba(124,58,237,.4); }
+}
+.glow-text { animation: pulse-glow 3s ease-in-out infinite; }
+
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.fade-in { animation: fadeIn .8s ease forwards; }
+
+/* ── PROGRESS BAR ──────────────────────────────────── */
+#progress {
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 200;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transition: width .3s ease;
+}
+
+/* ── NAV DOTS ──────────────────────────────────────── */
+#nav-dots { display: none; }
+
+/* ── SLIDE NUMBER ───────────────────────────────────── */
+.slide-num {
+  position: absolute; bottom: 1.2rem; right: var(--pad);
+  font-family: 'DM Mono', monospace; font-size: var(--ts);
+  color: var(--border); letter-spacing: .1em;
+}
+
+/* ── LABEL / EYEBROW ────────────────────────────────── */
+.label {
+  font-family: 'DM Mono', monospace;
+  font-size: var(--ts); color: var(--pl);
+  letter-spacing: .2em; text-transform: uppercase;
+  margin-bottom: .8rem; opacity: .9;
+}
+
+/* ── DIVIDER ─────────────────────────────────────────── */
+.divider {
+  width: clamp(40px,8vw,80px); height: 2px;
+  background: linear-gradient(90deg, var(--purple), transparent);
+  margin: clamp(.6rem,1.5vw,1.2rem) 0;
+}
+
+/* ── CARDS ───────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: clamp(.8rem,2vw,1.4rem);
+}
+.card-purple {
+  background: rgba(124,58,237,.1);
+  border-color: rgba(124,58,237,.3);
+}
+
+/* ── BADGE ────────────────────────────────────────────── */
+.badge {
+  display: inline-block; font-size: var(--ts);
+  padding: .25em .8em; border-radius: 999px;
+  font-family: 'DM Mono', monospace; letter-spacing: .05em;
+}
+.badge-purple { background: rgba(124,58,237,.2); color: var(--pl); border: 1px solid rgba(124,58,237,.3); }
+.badge-green  { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.25); }
+.badge-red    { background: rgba(239,68,68,.1);  color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+
+/* ── CHECK LIST ───────────────────────────────────────── */
+.check-list { list-style: none; display: flex; flex-direction: column; gap: var(--gap); }
+.check-list li { display: flex; align-items: flex-start; gap: .7rem; font-size: var(--tb); color: #cbd5e1; line-height: 1.4; }
+.check-list li::before { content: '✓'; color: var(--pl); font-weight: 700; flex-shrink: 0; margin-top: .05em; }
+
+/* ── PROBLEM LIST ─────────────────────────────────────── */
+.prob-list { list-style: none; display: flex; flex-direction: column; gap: var(--gap); }
+.prob-list li { display: flex; align-items: flex-start; gap: .7rem; font-size: var(--tb); color: #cbd5e1; line-height: 1.4; }
+.prob-list li::before { content: '×'; color: #f87171; font-weight: 700; flex-shrink: 0; }
+
+/* ── STEP LIST ────────────────────────────────────────── */
+.step-list { list-style: none; display: flex; flex-direction: column; gap: var(--gap); }
+.step-list li { display: flex; align-items: flex-start; gap: .8rem; font-size: var(--tb); color: #cbd5e1; line-height: 1.4; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(124,58,237,.3); border: 1px solid var(--purple); color: var(--pl); font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── CODE BLOCK ───────────────────────────────────────── */
+.code-block {
+  background: #0d1117; border: 1px solid #1e1e3a;
+  border-radius: 8px; padding: clamp(.8rem,2vw,1.2rem);
+  font-family: 'DM Mono', monospace; font-size: var(--ts);
+  color: #8b949e; line-height: 1.8; overflow: hidden;
+  white-space: pre;
+}
+.code-block .kw  { color: var(--pl); }
+.code-block .str { color: #a5d6ff; }
+.code-block .num { color: #79c0ff; }
+.code-block .cm  { color: #3d4451; }
+.code-block .fn  { color: #d2a8ff; }
+.code-block .op  { color: #ff7b72; }
+
+/* ── 3-COL PANEL GRID ─────────────────────────────────── */
+.panel-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: clamp(.5rem, 1.2vw, 1rem);
+}
+.panel-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: clamp(.8rem, 1.8vw, 1.3rem); display: flex; flex-direction: column; gap: .5rem; }
+.panel-card h3 { font-size: var(--t3); color: var(--pl); margin-bottom: .3rem; }
+.panel-card ul { list-style: none; display: flex; flex-direction: column; gap: .35rem; }
+.panel-card ul li { font-size: clamp(1rem, 1.6vw, 1.25rem); color: var(--muted); line-height: 1.4; }
+.panel-card ul li::before { content: '›'; color: var(--purple); margin-right: .4rem; }
+
+/* ── TECH TABLE ───────────────────────────────────────── */
+.tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(.5rem,1.5vw,1rem); }
+.tech-row { display: flex; align-items: center; gap: .8rem; padding: clamp(.5rem,1.2vw,.9rem) clamp(.7rem,1.5vw,1.1rem); background: var(--card); border: 1px solid var(--border); border-radius: 8px; }
+.tech-row .tc { font-size: var(--tb); color: var(--muted); min-width: 120px; flex-shrink: 0; }
+.tech-row .tv { font-size: var(--tb); color: #e2e8f0; font-weight: 500; }
+
+/* ── MVT BOXES ────────────────────────────────────────── */
+.mvt-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(.6rem,1.5vw,1rem); }
+.mvt-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: clamp(.8rem,2vw,1.4rem); border-top: 2px solid var(--purple); }
+.mvt-box .letter { font-family: 'DM Mono',monospace; font-size: clamp(2rem,5vw,3rem); font-weight: 700; color: var(--purple); line-height: 1; margin-bottom: .4rem; }
+.mvt-box .word { font-size: var(--t3); font-weight: 700; color: #fff; margin-bottom: .5rem; }
+.mvt-box .desc { font-size: var(--ts); color: var(--muted); line-height: 1.5; }
+
+/* ── DB SPLIT ─────────────────────────────────────────── */
+.db-split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(.6rem,2vw,1.5rem); }
+.db-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: clamp(1rem,2.5vw,2rem); }
+.db-box .env { font-family: 'DM Mono',monospace; font-size: var(--tb); color: var(--pl); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .6rem; }
+.db-box h3 { font-size: var(--t2); color: #fff; margin-bottom: .6rem; }
+.db-box p { font-size: var(--tb); color: var(--muted); }
+
+/* ── CRED TABLE ───────────────────────────────────────── */
+.cred-table { width: 100%; border-collapse: collapse; font-size: var(--tb); }
+.cred-table th { color: var(--muted); font-weight: 500; text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--border); }
+.cred-table td { padding: .6rem .8rem; color: #e2e8f0; border-bottom: 1px solid rgba(30,30,58,.5); }
+.cred-table td:first-child { color: var(--pl); font-weight: 600; }
+.cred-table code { font-family: 'DM Mono',monospace; background: rgba(124,58,237,.15); padding: .15em .5em; border-radius: 4px; color: #c4b5fd; font-size: .9em; }
+
+/* ── URL DISPLAY ──────────────────────────────────────── */
+.url-display {
+  display: inline-flex; align-items: center; gap: .6rem;
+  background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.3);
+  border-radius: 8px; padding: .6rem 1.2rem;
+  font-family: 'DM Mono',monospace; font-size: clamp(.75rem,1.3vw,1rem);
+  color: var(--pl); margin-bottom: clamp(.8rem,2vw,1.5rem);
+}
+.url-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-height: 700px) {
+  :root { --pad: clamp(1rem,3vw,2.5rem); --gap: .4rem; }
+}
+@media (max-height: 600px) {
+  #nav-dots, .slide-num, .orb { display: none; }
+  :root { --pad: 1rem; }
+}
+@media (max-width: 700px) {
+  .panel-grid, .mvt-grid, .db-split, .tech-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<nav id="nav-dots"></nav>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 1 — PORTADA
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s1">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="slide-content" style="align-items:flex-start">
+    <p class="label reveal">// Ingeniería de Software · Mayo 2025</p>
+    <h1 class="reveal glow-text" style="font-size:clamp(3rem,9vw,7rem);font-weight:700;line-height:.95;margin-bottom:.4rem">
+      <span style="color:var(--pl)">Multi</span>Parking
+    </h1>
+    <p class="reveal" style="font-size:var(--t2);color:var(--muted);margin-bottom:clamp(1rem,3vw,2rem)">
+      Sistema de Gestión de Parqueaderos Multinivel
+    </p>
+    <div class="divider reveal"></div>
+    <div class="reveal" style="display:flex;gap:clamp(.5rem,2vw,1.5rem);flex-wrap:wrap;margin-top:.5rem">
+      <span class="badge badge-purple">Django · Python</span>
+      <span class="badge badge-purple">PostgreSQL</span>
+      <span class="badge badge-green">En Producción</span>
+    </div>
+    <p class="reveal" style="font-family:'DM Mono',monospace;font-size:var(--ts);color:var(--muted);margin-top:clamp(1.5rem,4vw,3rem);line-height:1.8">
+      Kevin Santiago Pinto López &nbsp;·&nbsp; Kevin Ovalle
+    </p>
+  </div>
+  <span class="slide-num">01 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 2 — LA NECESIDAD
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s2">
+  <div class="orb orb-1" style="background:rgba(239,68,68,.15)"></div>
+  <div class="slide-content" style="display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+    <div>
+      <p class="label reveal">02 — Necesidad</p>
+      <h2 class="reveal" style="font-size:var(--t1);font-weight:700;line-height:1.05;margin-bottom:.8rem">El<br><span style="color:var(--pl)">Problema</span></h2>
+      <p class="reveal" style="font-size:var(--tb);color:var(--muted);line-height:1.5">
+        Los parqueaderos multinivel en Colombia manejan su operación con métodos manuales.
+      </p>
+    </div>
+    <div>
+      <ul class="prob-list">
+        <li class="reveal">Control manual en papel o Excel, sin visibilidad en tiempo real</li>
+        <li class="reveal">Cobros calculados a mano — errores y demoras en la salida</li>
+        <li class="reveal">Sin historial de vehículos ni trazabilidad de incidentes</li>
+        <li class="reveal">Sin posibilidad de reservar un espacio antes de llegar</li>
+        <li class="reveal">Resultado: filas, pérdida de ingresos y mala experiencia</li>
+      </ul>
+    </div>
+  </div>
+  <span class="slide-num">02 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 3 — ¿QUÉ ES MULTIPARKING?
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s3">
+  <div class="orb orb-1"></div>
+  <div class="slide-content" style="display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+    <div>
+      <p class="label reveal">03 — Solución</p>
+      <h2 class="reveal" style="font-size:var(--t1);font-weight:700;line-height:1.05;margin-bottom:.6rem">
+        ¿Qué es<br><span style="color:var(--pl)">MultiParking?</span>
+      </h2>
+      <p class="reveal" style="font-size:var(--tb);color:var(--muted);line-height:1.5;margin-bottom:clamp(.8rem,2vw,1.5rem)">
+        Aplicación web que digitaliza completamente la operación de un parqueadero multinivel.
+      </p>
+      <div class="reveal url-display">
+        <span class="url-dot"></span>
+        multiparking-django.onrender.com
+      </div>
+    </div>
+    <div>
+      <ul class="check-list">
+        <li class="reveal">Control de espacios en tiempo real</li>
+        <li class="reveal">3 roles: Administrador · Vigilante · Cliente</li>
+        <li class="reveal">Cálculo automático de cobro al salir</li>
+        <li class="reveal">Reservas online desde el celular</li>
+        <li class="reveal">Reportes exportables en PDF y Excel</li>
+      </ul>
+    </div>
+  </div>
+  <span class="slide-num">03 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 4 — LOS 3 PANELES
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s4">
+  <div class="orb orb-2"></div>
+  <div class="slide-content" style="max-width:min(98vw,1500px)">
+    <p class="label reveal">04 — Arquitectura funcional</p>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.6rem,1.5vw,1rem)">
+      Tres perfiles, tres experiencias
+    </h2>
+    <div class="panel-grid reveal">
+      <div class="panel-card" style="border-top:2px solid var(--purple)">
+        <h3>Administrador</h3>
+        <ul>
+          <li>Dashboard con gráficos en tiempo real</li>
+          <li>Gestiona pisos, espacios y tarifas</li>
+          <li>Exporta reportes PDF / Excel</li>
+          <li>Gestiona usuarios y cupones</li>
+        </ul>
+      </div>
+      <div class="panel-card" style="border-top:2px solid #10b981">
+        <h3 style="color:#34d399">Vigilante</h3>
+        <ul>
+          <li>Registra ingreso de vehículos</li>
+          <li>Calcula cobro al registrar salida</li>
+          <li>Confirma pagos en efectivo</li>
+          <li>Ve ocupación en tiempo real</li>
+        </ul>
+      </div>
+      <div class="panel-card" style="border-top:2px solid #f59e0b">
+        <h3 style="color:#fbbf24">Cliente</h3>
+        <ul>
+          <li>Reserva espacios con fecha y hora</li>
+          <li>Gestiona sus vehículos</li>
+          <li>Acumula stickers de fidelidad</li>
+          <li>Salida rápida con código QR</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">04 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 5 — PATRÓN DE DISEÑO
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s5">
+  <div class="orb orb-1"></div>
+  <div class="slide-content">
+    <p class="label reveal">05 — Patrón de diseño</p>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.8rem,2vw,1.5rem)">
+      MVT — Model · View · Template
+    </h2>
+    <div class="mvt-grid reveal">
+      <div class="mvt-box">
+        <div class="letter">M</div>
+        <div class="word">Model</div>
+        <div class="desc">Define datos, validaciones y reglas de negocio. ORM Django + validators + propiedades calculadas.</div>
+      </div>
+      <div class="mvt-box">
+        <div class="letter">V</div>
+        <div class="word">View</div>
+        <div class="desc">Class-Based Views con mixins de autorización por rol. Lógica de negocio sin Django Forms.</div>
+      </div>
+      <div class="mvt-box">
+        <div class="letter">T</div>
+        <div class="word">Template</div>
+        <div class="desc">Server-Side Rendering con Tailwind CSS. AJAX puntual para operaciones sin recarga.</div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;gap:.6rem;margin-top:clamp(.8rem,2vw,1.2rem);flex-wrap:wrap">
+      <span class="badge badge-purple">Middleware chain de seguridad</span>
+      <span class="badge badge-purple">10 apps independientes</span>
+      <span class="badge badge-purple">Singleton en Fidelidad</span>
+    </div>
+  </div>
+  <span class="slide-num">05 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 6 — STACK TECNOLÓGICO
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s6">
+  <div class="orb orb-2"></div>
+  <div class="slide-content">
+    <p class="label reveal">06 — Lenguajes &amp; Frameworks</p>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.8rem,2vw,1.5rem)">Stack Tecnológico</h2>
+    <div class="tech-grid reveal">
+      <div class="tech-row"><span class="tc">Lenguaje</span><span class="tv">Python 3.12+</span></div>
+      <div class="tech-row"><span class="tc">Framework</span><span class="tv">Django 5.x</span></div>
+      <div class="tech-row"><span class="tc">Frontend</span><span class="tv">Tailwind CSS + Templates</span></div>
+      <div class="tech-row"><span class="tc">Gráficos</span><span class="tv">Chart.js</span></div>
+      <div class="tech-row"><span class="tc">PDF / Excel</span><span class="tv">ReportLab · openpyxl</span></div>
+      <div class="tech-row"><span class="tc">Email</span><span class="tv">SendGrid</span></div>
+      <div class="tech-row"><span class="tc">API</span><span class="tv">Django REST Framework</span></div>
+      <div class="tech-row"><span class="tc">Servidor</span><span class="tv">Gunicorn + WhiteNoise</span></div>
+    </div>
+    <p class="reveal" style="font-size:var(--ts);color:var(--muted);margin-top:clamp(.6rem,1.5vw,1rem)">
+      → Tabla completa en <span style="color:var(--pl);font-family:'DM Mono',monospace">README.md #tecnologías</span>
+    </p>
+  </div>
+  <span class="slide-num">06 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 7 — BASE DE DATOS
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s7">
+  <div class="orb orb-1"></div>
+  <div class="slide-content">
+    <p class="label reveal">07 — Base de datos</p>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.8rem,2vw,1.5rem)">Capa de Datos</h2>
+    <div class="db-split reveal">
+      <div class="db-box">
+        <div class="env">Desarrollo</div>
+        <h3>MySQL 8.0</h3>
+        <p>Local · utf8mb4 · configurado en <code style="font-family:'DM Mono',monospace;color:var(--pl);background:rgba(124,58,237,.1);padding:.1em .4em;border-radius:4px">.env</code></p>
+      </div>
+      <div class="db-box" style="border-color:rgba(124,58,237,.3)">
+        <div class="env" style="color:#34d399">Producción</div>
+        <h3>PostgreSQL</h3>
+        <p>Render.com · vía <code style="font-family:'DM Mono',monospace;color:#34d399;background:rgba(16,185,129,.1);padding:.1em .4em;border-radius:4px">DATABASE_URL</code> · dj-database-url</p>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:clamp(.8rem,2vw,1.2rem)">
+      <p style="font-size:var(--ts);color:var(--muted);margin-bottom:.5rem">10 tablas principales · ORM Django · sin SQL manual</p>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <span class="badge badge-purple">usuarios</span><span class="badge badge-purple">vehiculos</span>
+        <span class="badge badge-purple">espacios</span><span class="badge badge-purple">inventario_parqueo</span>
+        <span class="badge badge-purple">pagos</span><span class="badge badge-purple">reservas</span>
+        <span class="badge badge-purple">novedades</span><span class="badge badge-purple">fidelidad_stickers</span>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">07 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 8 — DEMO INTRO
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s8">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="slide-content">
+    <p class="label reveal">08 — Prototipo funcional</p>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:clamp(.6rem,1.5vw,1.2rem)" class="reveal">
+      <div class="url-display" style="margin-bottom:0">
+        <span class="url-dot"></span>
+        multiparking-django.onrender.com
+      </div>
+      <span class="badge badge-green">En vivo</span>
+    </div>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.6rem,1.5vw,1.2rem)">
+      Credenciales de acceso
+    </h2>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.6rem,1.5vw,1rem);width:100%">
+
+      <div class="card" style="border-top:2px solid var(--purple)">
+        <p style="font-size:var(--ts);color:var(--muted);margin-bottom:.3rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">Administrador</p>
+        <p style="font-size:var(--tb);color:var(--pl);font-weight:700;margin-bottom:.6rem">Admin</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--ts);color:#c4b5fd;background:rgba(124,58,237,.12);padding:.4rem .7rem;border-radius:6px;margin-bottom:.4rem;word-break:break-all">admin@multiparking.com</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--tb);color:#e2e8f0;background:rgba(255,255,255,.05);padding:.4rem .7rem;border-radius:6px;letter-spacing:.1em">admin123</p>
+      </div>
+
+      <div class="card" style="border-top:2px solid #10b981">
+        <p style="font-size:var(--ts);color:var(--muted);margin-bottom:.3rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">Guardia</p>
+        <p style="font-size:var(--tb);color:#34d399;font-weight:700;margin-bottom:.6rem">Vigilante</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--ts);color:#6ee7b7;background:rgba(16,185,129,.1);padding:.4rem .7rem;border-radius:6px;margin-bottom:.4rem;word-break:break-all">vigilante@multiparking.com</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--tb);color:#e2e8f0;background:rgba(255,255,255,.05);padding:.4rem .7rem;border-radius:6px;letter-spacing:.1em">vigil123</p>
+      </div>
+
+      <div class="card" style="border-top:2px solid #f59e0b">
+        <p style="font-size:var(--ts);color:var(--muted);margin-bottom:.3rem;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">Usuario</p>
+        <p style="font-size:var(--tb);color:#fbbf24;font-weight:700;margin-bottom:.6rem">Cliente</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--ts);color:#fde68a;background:rgba(245,158,11,.1);padding:.4rem .7rem;border-radius:6px;margin-bottom:.4rem;word-break:break-all">cliente@test.com</p>
+        <p style="font-family:'DM Mono',monospace;font-size:var(--tb);color:#e2e8f0;background:rgba(255,255,255,.05);padding:.4rem .7rem;border-radius:6px;letter-spacing:.1em">test123</p>
+      </div>
+
+    </div>
+    <p class="reveal" style="font-size:var(--ts);color:var(--muted);margin-top:.8rem">
+      ⚠ Plan gratuito de Render — puede tardar 30–50 seg en despertar (cold start)
+    </p>
+  </div>
+  <span class="slide-num">08 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 9 — RECORRIDO DEMO
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s9">
+  <div class="orb orb-2"></div>
+  <div class="slide-content" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+    <div>
+      <p class="label reveal">09 — Demo en vivo</p>
+      <h2 class="reveal" style="font-size:var(--t1);font-weight:700;line-height:1.05">
+        Recorrido<br><span style="color:var(--pl)">del Sistema</span>
+      </h2>
+    </div>
+    <div>
+      <ol class="step-list">
+        <li class="reveal"><span class="step-num">1</span>Página de inicio pública</li>
+        <li class="reveal"><span class="step-num">2</span>Panel Admin → Dashboard con gráficos</li>
+        <li class="reveal"><span class="step-num">3</span>Vista General de Pisos — mapa en tiempo real</li>
+        <li class="reveal"><span class="step-num">4</span>Guardia → Registrar ingreso de vehículo</li>
+        <li class="reveal"><span class="step-num">5</span>Registrar salida + recibo imprimible</li>
+        <li class="reveal"><span class="step-num">6</span>Cliente → Reservas y programa de fidelidad</li>
+        <li class="reveal"><span class="step-num">7</span>Exportar reporte en PDF</li>
+      </ol>
+    </div>
+  </div>
+  <span class="slide-num">09 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 10 — INTÉRPRETE
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s10">
+  <div class="orb orb-1"></div>
+  <div class="slide-content" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+    <div>
+      <p class="label reveal">10 — Compilador o intérprete</p>
+      <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:.8rem">
+        Python es <span style="color:var(--pl)">Interpretado</span>
+      </h2>
+      <ul class="check-list">
+        <li class="reveal">El intérprete CPython ejecuta el código línea a línea — sin compilar a binario</li>
+        <li class="reveal">Gunicorn recibe la petición HTTP y la pasa a Django</li>
+        <li class="reveal">Django (Python) procesa la vista y consulta a PostgreSQL</li>
+        <li class="reveal">El template se renderiza y se devuelve HTML al navegador</li>
+      </ul>
+    </div>
+    <div class="reveal">
+      <div class="code-block"><span class="cm"># Django procesa cada request así:</span>
+
+<span class="kw">def</span> <span class="fn">calcular_cobro</span>(minutos, tarifa):
+    horas = minutos / <span class="num">60</span>
+    monto = horas * tarifa.precioHora
+    <span class="cm"># Redondear a 100 COP más cercano</span>
+    <span class="kw">return</span> ceil(monto / <span class="num">100</span>) * <span class="num">100</span>
+
+<span class="cm"># Sin compilación → despliegue inmediato</span>
+<span class="cm"># con build.sh en Render.com</span></div>
+    </div>
+  </div>
+  <span class="slide-num">10 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 11 — ESTRUCTURA DEL CÓDIGO
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s11">
+  <div class="orb orb-2"></div>
+  <div class="slide-content">
+    <p class="label reveal">11 — Estructura del código</p>
+    <h2 class="reveal" style="font-size:var(--t2);font-weight:700;margin-bottom:clamp(.8rem,2vw,1.5rem)">10 Apps · ~40 Vistas · ~60 Templates</h2>
+    <div class="tech-grid reveal">
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">usuarios/</span><span class="tv" style="color:var(--muted)">Auth personalizada, roles, mixins</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">parqueadero/</span><span class="tv" style="color:var(--muted)">Core: pisos, espacios, QR, reportes</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">pagos/</span><span class="tv" style="color:var(--muted)">Cobros y recibos imprimibles</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">cupones/</span><span class="tv" style="color:var(--muted)">Descuentos, uso único por usuario</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">reservas/</span><span class="tv" style="color:var(--muted)">Reservas online admin + cliente</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">novedades/</span><span class="tv" style="color:var(--muted)">Incidentes con foto y seguimiento</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">fidelidad/</span><span class="tv" style="color:var(--muted)">Stickers y bonos de descuento</span></div>
+      <div class="tech-row"><span class="tc" style="color:var(--pl)">middleware</span><span class="tv" style="color:var(--muted)">CSP · No-cache · DB Error handler</span></div>
+    </div>
+    <p class="reveal" style="font-size:var(--ts);color:var(--muted);margin-top:.8rem">
+      → Estructura completa en <span style="color:var(--pl);font-family:'DM Mono',monospace">README.md #estructura</span>
+      &nbsp;·&nbsp; Código en <span style="color:var(--pl);font-family:'DM Mono',monospace">github.com/xeodeo/Multiparking-Django</span>
+    </p>
+  </div>
+  <span class="slide-num">11 / 12</span>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SLIDE 12 — CIERRE
+══════════════════════════════════════════════════════ -->
+<section class="slide grid-bg" id="s12">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="slide-content" style="align-items:center;text-align:center">
+    <h1 class="reveal glow-text" style="font-size:clamp(3rem,9vw,7rem);font-weight:700;line-height:.95;margin-bottom:.6rem">
+      <span style="color:var(--pl)">Multi</span>Parking
+    </h1>
+    <p class="reveal" style="font-size:var(--tb);color:var(--muted);margin-bottom:clamp(1.5rem,4vw,3rem)">
+      Problema real → Solución funcional en producción
+    </p>
+    <div class="reveal" style="display:flex;flex-direction:column;gap:.8rem;align-items:center;margin-bottom:clamp(1.5rem,4vw,3rem)">
+      <div class="url-display">
+        <span class="url-dot"></span>
+        multiparking-django.onrender.com
+      </div>
+      <div class="url-display" style="background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color:var(--pl);flex-shrink:0"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        github.com/xeodeo/Multiparking-Django
+      </div>
+    </div>
+    <h2 class="reveal" style="font-size:var(--t2);color:var(--pl)">¿Preguntas?</h2>
+  </div>
+  <span class="slide-num">12 / 12</span>
+</section>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const progress = document.getElementById('progress');
+let currentIdx = 0;
+let isScrolling = false;
+
+// Intersection observer — reveals + progress
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+    currentIdx = [...slides].indexOf(e.target);
+    progress.style.width = `${((currentIdx + 1) / slides.length) * 100}%`;
+  });
+}, { threshold: 0.6 });
+slides.forEach(s => io.observe(s));
+
+function goTo(idx) {
+  if (isScrolling) return;
+  const target = Math.max(0, Math.min(idx, slides.length - 1));
+  if (target === currentIdx && idx !== target) return;
+  isScrolling = true;
+  slides[target].scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => { isScrolling = false; }, 700);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (['ArrowDown','ArrowRight',' ','PageDown'].includes(e.key)) {
+    e.preventDefault(); goTo(currentIdx + 1);
+  }
+  if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) {
+    e.preventDefault(); goTo(currentIdx - 1);
+  }
+  if (e.key==='f'||e.key==='F') document.documentElement.requestFullscreen?.();
+  if (e.key==='Home') goTo(0);
+  if (e.key==='End')  goTo(slides.length - 1);
+});
+
+// Touch swipe
+let ty = 0;
+document.addEventListener('touchstart', e => ty = e.touches[0].clientY, { passive:true });
+document.addEventListener('touchend', e => {
+  const dy = ty - e.changedTouches[0].clientY;
+  if (Math.abs(dy) > 50) goTo(dy > 0 ? currentIdx + 1 : currentIdx - 1);
+}, { passive:true });
+</script>
+</body>
+</html>

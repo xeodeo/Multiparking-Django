@@ -62,20 +62,12 @@
             color-scheme: dark;
         }
 
-        /* Tamaño de letra en tablas del admin */
-        table thead th { font-size: 0.82rem; }
-        table tbody td { font-size: 1rem; }
-
-        /* Mantiene el cursor pointer aunque se quite el href para ocultar URL en status bar */
-        #sidebar a { cursor: pointer; }
-
         /* Recolorea el ícono del calendario en Webkit/Chrome para que coincida con el tema */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0.7) sepia(1) saturate(3) hue-rotate(220deg);
             cursor: pointer;
         }
     </style>
-    <script>if(location.pathname.startsWith('/admin-panel/'))history.replaceState(null,'','/admin-panel/');</script>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -480,21 +472,6 @@
 
             document.addEventListener('click', function(e) {
                 if (!wrapper.contains(e.target)) closeDropdown();
-            });
-        });
-    });
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('#sidebar a[href]').forEach(function(a) {
-            a.addEventListener('mouseenter', function() {
-                a.dataset.h = a.href; a.removeAttribute('href');
-            });
-            a.addEventListener('mouseleave', function() {
-                if (a.dataset.h) a.href = a.dataset.h;
-            });
-            a.addEventListener('click', function(e) {
-                e.preventDefault(); location.href = a.dataset.h;
             });
         });
     });

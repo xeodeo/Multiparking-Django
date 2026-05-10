@@ -32,11 +32,10 @@
         body { background-color: #0a0a14; }
         select option { background-color: #12121f; color: #fff; }
         input[type="date"] { color-scheme: dark; }
+        /* Animación de parpadeo suave — usada en espacios ocupados del mapa de pisos */
         @keyframes pulse-space { 0%,100%{opacity:1;} 50%{opacity:.6;} }
         .animate-pulse-space { animation: pulse-space 1.5s ease-in-out infinite; }
-        header a, nav a { cursor: pointer; }
     </style>
-    <script>if(location.pathname.startsWith('/guardia/'))history.replaceState(null,'','/guardia/');</script>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -144,21 +143,6 @@
         }
         updateClock();
         setInterval(updateClock, 1000);
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('header a[href], nav a[href]').forEach(function(a) {
-            a.addEventListener('mouseenter', function() {
-                a.dataset.h = a.href; a.removeAttribute('href');
-            });
-            a.addEventListener('mouseleave', function() {
-                if (a.dataset.h) a.href = a.dataset.h;
-            });
-            a.addEventListener('click', function(e) {
-                e.preventDefault(); location.href = a.dataset.h;
-            });
-        });
-    });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
