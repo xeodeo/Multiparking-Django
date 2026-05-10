@@ -10,10 +10,9 @@
 
 ```
 MultiParking
-Sistema de Gestión de Parqueaderos Multinivel
+Sistema de Gestión de Parqueaderos
 
-[Nombres del grupo]
-[Institución]
+Kevin Ovalle · Kevin Santiago Pinto López
 Mayo 2025
 ```
 
@@ -27,12 +26,11 @@ Mayo 2025
 ```
 El Problema
 
-Los parqueaderos multinivel en Colombia manejan:
-  • Control manual de espacios en papel o Excel
-  • Sin visibilidad en tiempo real de espacios ocupados
-  • Cobros calculados manualmente → errores y demoras
-  • Sin historial de vehículos ni trazabilidad
-  • Sin gestión de reservas previas
+Observado en un parqueadero real en Suba, Bogotá:
+  • Control manual en papel o Excel, sin visibilidad en tiempo real
+  • Cobros calculados a mano → errores y demoras en la salida
+  • Sin historial de vehículos ni trazabilidad de incidentes
+  • Sin posibilidad de reservar un espacio antes de llegar
 
 Resultado: pérdida de ingresos, filas en la entrada
 y experiencia deficiente para el cliente.
@@ -50,7 +48,7 @@ y experiencia deficiente para el cliente.
 MultiParking
 
 Aplicación web para la gestión completa
-de parqueaderos de múltiples pisos.
+de parqueaderos.
 
 ✓ Control de espacios en tiempo real
 ✓ 3 roles: Administrador · Vigilante · Cliente

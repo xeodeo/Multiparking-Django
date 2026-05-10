@@ -9,7 +9,7 @@
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-CDN-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-**Sistema de gestión inteligente para parqueaderos multinivel**
+**Sistema de gestión inteligente para parqueaderos**
 
 [Demo en Vivo](https://multiparking-django.onrender.com) · [Instalación](#-instalación) · [Características](#-características) · [Credenciales de prueba](#demo-en-vivo)
 
@@ -19,13 +19,14 @@
 
 ## Descripción
 
-**MultiParking** es una aplicación web desarrollada en Django para la administración completa de parqueaderos de múltiples pisos. Gestiona usuarios, vehículos, espacios de parqueo, reservas, tarifas dinámicas, pagos, cupones de descuento, novedades (incidentes) y un programa de fidelidad con stickers.
+**MultiParking** es una aplicación web desarrollada en Django para la administración completa de parqueaderos. Nació del análisis de un parqueadero real en la localidad de Suba, Bogotá, y fue diseñada para escalar a cualquier tipo de establecimiento que necesite gestionar espacios de parqueo, vehículos, reservas, tarifas, pagos, cupones de descuento, novedades e incidentes, y un programa de fidelidad con stickers.
 
 ### Casos de Uso
 
-- Centros comerciales con parqueadero multinivel
-- Hoteles con gestión de vehículos de huéspedes
-- Edificios corporativos con control de acceso vehicular
+- **Origen:** parqueadero en Suba, Bogotá — caso de análisis real
+- Centros comerciales con control de acceso vehicular y reservas anticipadas
+- Hoteles con gestión de vehículos de huéspedes y visitantes
+- Edificios corporativos con tarifas diferenciadas por tipo de usuario
 - Universidades con reservas para estudiantes y profesores
 
 ---
