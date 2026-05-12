@@ -15,7 +15,7 @@
     </div>
 
     <!-- Form -->
-    <form method="POST" class="bg-mp-card border border-mp-border rounded-xl p-6">
+    <form method="POST" action="{{ request.path }}" class="bg-mp-card border border-mp-border rounded-xl p-6">
         {% csrf_token %}
 
         <!-- Placa -->

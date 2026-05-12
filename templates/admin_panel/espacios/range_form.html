@@ -17,7 +17,7 @@
             <p>Esta herramienta generará múltiples espacios automáticamente. Ej: A-01, A-02, ..., A-20.</p>
         </div>
 
-        <form method="POST">
+        <form method="POST" action="{{ request.path }}">
             {% csrf_token %}
 
             <div class="space-y-6">

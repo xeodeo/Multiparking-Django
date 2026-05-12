@@ -13,7 +13,7 @@
     </div>
 
     <div class="bg-mp-card border border-mp-border rounded-xl p-6">
-        <form method="POST">
+        <form method="POST" action="{{ request.path }}">
             {% csrf_token %}
 
             <div class="space-y-6">

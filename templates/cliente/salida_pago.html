@@ -15,7 +15,7 @@
         <p class="text-mp-muted">Completa el pago para marcar tu salida</p>
     </div>
 
-    <form method="POST" id="payment-form">
+    <form method="POST" action="{{ request.path }}" id="payment-form">
         {% csrf_token %}
 
         <!-- Información del Vehículo y Estadía -->

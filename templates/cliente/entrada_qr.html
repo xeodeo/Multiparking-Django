@@ -49,7 +49,7 @@
         </div>
 
         <!-- Botón de Entrada -->
-        <form method="POST">
+        <form method="POST" action="{{ request.path }}">
             {% csrf_token %}
             <button type="submit" class="w-full bg-mp-purple hover:bg-mp-purple-dark text-white py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-purple-900/50 hover:shadow-purple-900/70 flex items-center justify-center gap-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +72,7 @@
         </div>
 
         {% if vehiculos %}
-        <form method="POST">
+        <form method="POST" action="{{ request.path }}">
             {% csrf_token %}
 
             <!-- Seleccionar Vehículo -->
