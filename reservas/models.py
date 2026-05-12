@@ -47,31 +47,24 @@ class Reserva(models.Model):
     @classmethod
     def cancelar_vencidas(cls):
         """
-        Cancela en bloque las reservas PENDIENTES cuya hora de inicio es en ≤15 min.
-
-        Regla de negocio: si el cliente no confirmó con al menos 15 minutos de anticipación,
-        la reserva se libera automáticamente para que el guardia pueda asignar el espacio
-        a vehículos sin reserva. Se llama desde dashboard_view en cada carga del cliente.
-
-        ⚠ Tradeoff N+1 aceptado: se cargan todas las reservas PENDIENTES a Python porque
-        django ORM no puede hacer timezone.make_aware(combine(fecha, hora)) en una
-        anotación de base de datos (no es un campo datetime, son date + time separados).
-        Si el volumen de reservas pendientes crece mucho, considerar desnormalizar a un
-        campo DateTimeField calculado al crear la reserva.
+        Cancela las reservas PENDIENTES cuya hora de inicio ya pasó o está en ≤15 min,
+        y libera los espacios que estaban bloqueados por ellas.
         """
         from django.utils import timezone
         from datetime import datetime, timedelta
+        from parqueadero.models import Espacio
         now = timezone.now()
         ids_vencidas = [
-            r.pk for r in cls.objects.filter(resEstado='PENDIENTE')
-            # make_aware necesita ejecutarse en Python; no se puede delegar al ORM
-            # sin un campo datetime materializado.
+            r.pk for r in cls.objects.filter(resEstado='PENDIENTE').select_related('fkIdEspacio')
             if (timezone.make_aware(datetime.combine(r.resFechaReserva, r.resHoraInicio)) - now)
                <= timedelta(minutes=15)
         ]
         if ids_vencidas:
-            # update() es una sola query SQL; evita N saves individuales y no dispara
-            # señales post_save (intencional: no hay side effects que necesitemos aquí).
+            # Liberar los espacios antes de cancelar las reservas
+            Espacio.objects.filter(
+                reservas__pk__in=ids_vencidas,
+                espEstado='RESERVADO'
+            ).update(espEstado='DISPONIBLE')
             cls.objects.filter(pk__in=ids_vencidas).update(resEstado='CANCELADA')
 
     class Meta:

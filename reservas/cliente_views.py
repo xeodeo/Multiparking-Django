@@ -81,6 +81,13 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
 
+        # Validar que la fecha y hora no sean en el pasado
+        now = timezone.now()
+        fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
+        if fecha_hora_inicio <= now:
+            messages.error(request, 'No puedes reservar en horarios que ya pasaron. Elige una hora futura.')
+            return self.get(request)
+
         # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora
         reservas_conflicto = Reserva.objects.filter(
             fkIdEspacio=espacio,
