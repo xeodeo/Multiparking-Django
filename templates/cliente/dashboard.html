@@ -89,7 +89,7 @@
 {% endif %}
 
 <!-- Acciones Rápidas -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+<div class="grid grid-cols-2 {% if stickers_count >= 1 %}lg:grid-cols-5{% else %}lg:grid-cols-4{% endif %} gap-3 mb-8">
     <!-- Ingresar al Parqueadero (QR) -->
     <a href="{% url 'escanear_qr' %}" class="group bg-mp-card border border-mp-border hover:border-mp-purple rounded-lg p-4 hover:bg-mp-purple/5 transition">
         <div class="flex items-center gap-3">
@@ -134,6 +134,21 @@
             </div>
         </div>
     </a>
+
+    <!-- Fidelidad (solo si tiene al menos 1 sticker) -->
+    {% if stickers_count >= 1 %}
+    <a href="{% url 'cliente_perfil' %}" class="group bg-mp-card border border-yellow-500/30 hover:border-yellow-400 rounded-lg p-4 hover:bg-yellow-500/5 transition">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition flex-shrink-0">
+                <span class="text-xl">⭐</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-yellow-300 text-sm truncate">Fidelidad</h3>
+                <p class="text-xs text-yellow-600 truncate">{{ stickers_count }} sticker{{ stickers_count|pluralize:"s" }}</p>
+            </div>
+        </div>
+    </a>
+    {% endif %}
 
     <!-- Marcar Salida -->
     <a href="{% url 'cliente_salida' %}" class="group bg-mp-card border border-mp-border hover:border-red-500 rounded-lg p-4 hover:bg-red-500/5 transition">

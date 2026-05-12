@@ -261,6 +261,10 @@ def dashboard_view(request):
             'valor_acumulado': valor_acumulado,
         }
 
+    # Stickers de fidelidad
+    from fidelidad.models import Sticker
+    stickers_count = Sticker.objects.filter(fkIdUsuario=usuario).count()
+
     # Historial de pagos del usuario
     pagos_historial = Pago.objects.filter(
         fkIdParqueo__fkIdVehiculo__fkIdUsuario=usuario
@@ -292,6 +296,7 @@ def dashboard_view(request):
         'reservas': reservas,
         'pagos': pagos_con_duracion,
         'parqueo_activo': parqueo_activo,
+        'stickers_count': stickers_count,
     })
 
 

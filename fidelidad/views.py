@@ -126,6 +126,7 @@ class PerfilClienteView(View):
             'progreso': progreso,
             'puede_reclamar': puede_reclamar,
             'bono_activo': bono_activo,
+            'config_porcentaje': config.porcentajeBono,
         })
 
 
