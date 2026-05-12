@@ -96,7 +96,17 @@
       "Bash(git rm *)",
       "Bash(git add *)",
       "Bash(git restore *)",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Bash(git commit -m ' *)",
+      "Bash(sed -i 's/<form method=\"POST\">/<form method=\"POST\" action=\"{{ request.path }}\">/g' templates/admin_panel/cupones/form.html templates/admin_panel/espacios/form.html templates/admin_panel/espacios/range_form.html templates/admin_panel/tarifas/form.html templates/admin_panel/tipos_espacio/form.html templates/admin_panel/usuarios/form.html templates/admin_panel/vehiculos/form.html)",
+      "Bash(sed -i 's/<form method=\"POST\" class=\"bg-mp-card border border-mp-border rounded-xl p-6 space-y-5\">/<form method=\"POST\" action=\"{{ request.path }}\" class=\"bg-mp-card border border-mp-border rounded-xl p-6 space-y-5\">/g' templates/admin_panel/pisos/form.html)",
+      "Bash(sed -i 's/<form method=\"GET\" class=\"flex flex-wrap gap-4 items-end\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex flex-wrap gap-4 items-end\">/g' templates/admin_panel/espacios/list.html)",
+      "Bash(sed -i 's/<form method=\"get\" class=\"mb-6\">/<form method=\"get\" action=\"{{ request.path }}\" class=\"mb-6\">/g' templates/admin_panel/inventario/list.html)",
+      "Bash(sed -i 's/<form method=\"GET\" class=\"flex gap-3\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex gap-3\">/g' templates/admin_panel/novedades/list.html templates/admin_panel/usuarios/list.html)",
+      "Bash(sed -i 's/<form method=\"GET\" class=\"flex flex-col sm:flex-row gap-4\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex flex-col sm:flex-row gap-4\">/g' templates/admin_panel/reservas/list.html)",
+      "Bash(sed -i 's/<form method=\"GET\" class=\"flex gap-4 items-end\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex gap-4 items-end\">/g' templates/admin_panel/vehiculos/list.html)",
+      "Bash(git reset *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "C:\\tmp",
