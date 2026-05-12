@@ -22,7 +22,7 @@ def _build_usuarios_log(config):
     clientes = Usuario.objects.filter(
         rolTipoRol='CLIENTE',
         usuEstado=True,
-    ).order_by('usuNombreCompleto')
+    ).order_by('usuNombre', 'usuApellido')
 
     log = []
     for u in clientes:
