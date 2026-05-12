@@ -32,7 +32,7 @@
 
 <!-- Filtros -->
 <div class="bg-mp-card border border-mp-border rounded-xl p-4 mb-6">
-    <form method="GET" class="flex gap-3">
+    <form method="GET" action="{{ request.path }}" class="flex gap-3">
         <div class="relative flex-1">
             <input type="text" name="q" value="{{ q }}" placeholder="Buscar en descripción..."
                 class="w-full bg-black/20 border border-mp-border rounded-lg pl-4 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-mp-purple transition text-sm">
