@@ -27,6 +27,12 @@ def _build_usuarios_log(config):
     log = []
     for u in clientes:
         num_stickers = Sticker.objects.filter(fkIdUsuario=u).count()
+        tiene_bono = Cupon.objects.filter(
+            cupCodigo__startswith='BONO',
+            cupNombre__icontains=u.usuNombreCompleto,
+        ).exists()
+        if num_stickers == 0 and not tiene_bono:
+            continue
 
         bono = Cupon.objects.filter(
             cupCodigo__startswith='BONO',
@@ -120,6 +126,41 @@ class PerfilClienteView(View):
             'progreso': progreso,
             'puede_reclamar': puede_reclamar,
             'bono_activo': bono_activo,
+        })
+
+
+class CuponeraClienteView(View):
+    """Cuponera del cliente: muestra sus cupones bono activos."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.session.get('usuario_id'):
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        usuario = Usuario.objects.get(pk=request.session['usuario_id'])
+        cupones = Cupon.objects.filter(
+            cupCodigo__startswith='BONO',
+            cupActivo=True,
+            cupNombre__icontains=usuario.usuNombreCompleto,
+        ).prefetch_related('aplicaciones').order_by('-cupFechaInicio')
+
+        hoy = date.today()
+        cupones_data = []
+        for c in cupones:
+            usado = c.aplicaciones.exists()
+            vencido = c.cupFechaFin < hoy
+            dias = (c.cupFechaFin - hoy).days if not vencido and not usado else None
+            cupones_data.append({
+                'cupon': c,
+                'usado': usado,
+                'vencido': vencido,
+                'dias': dias,
+            })
+
+        return render(request, 'cliente/cuponera.html', {
+            'cupones': cupones_data,
+            'usuario': usuario,
         })
 
 

@@ -54,6 +54,12 @@
                         <div class="text-mp-muted text-xs"></div>
                     </div>
                     <div class="flex items-center gap-3">
+                        {% if tiene_cuponera %}
+                        <a href="{% url 'cliente_cuponera' %}" aria-label="Mi cuponera"
+                            class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition font-bold animate-pulse">
+                            🎟️ <span class="hidden sm:inline">Cuponera</span>
+                        </a>
+                        {% endif %}
                         <a href="{% url 'cliente_perfil' %}" aria-label="Mi perfil"
                             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-mp-purple/20 hover:bg-mp-purple/30 text-mp-purple-light transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

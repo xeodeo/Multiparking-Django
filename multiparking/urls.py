@@ -36,7 +36,7 @@ from cupones.views import (
 )
 from reservas.views import ReservaListView, ReservaFinalizarView, ReservaCancelarView, ReservaEditarView
 from novedades.views import NovedadListView, NovedadCreateView, NovedadUpdateView, NovedadDeleteView
-from fidelidad.views import FidelidadConfigView, PerfilClienteView, ReclamarBonoView
+from fidelidad.views import FidelidadConfigView, PerfilClienteView, ReclamarBonoView, CuponeraClienteView
 from vehiculos.views import (
     VehiculoListView, VehiculoCreateView, VehiculoUpdateView, VehiculoDeleteView
 )
@@ -125,6 +125,7 @@ urlpatterns = [
     path('admin-panel/fidelidad/', FidelidadConfigView.as_view(), name='admin_fidelidad'),
     path('cliente/perfil/', PerfilClienteView.as_view(), name='cliente_perfil'),
     path('cliente/perfil/reclamar-bono/', ReclamarBonoView.as_view(), name='cliente_reclamar_bono'),
+    path('cliente/cuponera/', CuponeraClienteView.as_view(), name='cliente_cuponera'),
 
     # Inventario
     path('admin-panel/inventario/', InventarioListView.as_view(), name='admin_inventario'),

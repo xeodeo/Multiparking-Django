@@ -1,0 +1,226 @@
+{% extends "cliente/base.html" %}
+{% block title %}Mi Cuponera{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+    .ticket {
+        font-family: 'Space Grotesk', sans-serif;
+        position: relative;
+        display: flex;
+        border-radius: 1rem;
+        overflow: visible;
+        filter: drop-shadow(0 8px 32px rgba(234,179,8,0.18));
+        transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .ticket:hover {
+        transform: translateY(-4px) rotate(-0.5deg);
+        filter: drop-shadow(0 16px 48px rgba(234,179,8,0.32));
+    }
+    .ticket-body {
+        flex: 1;
+        background: linear-gradient(135deg, #1c1704 0%, #2d2006 50%, #1a1502 100%);
+        border: 2px solid #a16207;
+        border-right: none;
+        border-radius: 1rem 0 0 1rem;
+        padding: 1.5rem 1.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .ticket-body::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: radial-gradient(circle, rgba(234,179,8,0.06) 1px, transparent 1px);
+        background-size: 20px 20px;
+        pointer-events: none;
+    }
+    .ticket-stub {
+        width: 110px;
+        background: linear-gradient(135deg, #713f12 0%, #92400e 100%);
+        border: 2px solid #a16207;
+        border-left: 2px dashed rgba(234,179,8,0.4);
+        border-radius: 0 1rem 1rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 0.75rem;
+        gap: 0.5rem;
+        position: relative;
+    }
+    .ticket-notch-top, .ticket-notch-bottom {
+        position: absolute;
+        left: -14px;
+        width: 28px;
+        height: 28px;
+        background: #0a0a14;
+        border-radius: 50%;
+        border: 2px solid #a16207;
+    }
+    .ticket-notch-top { top: -14px; }
+    .ticket-notch-bottom { bottom: -14px; }
+
+    .stub-text {
+        font-family: 'Bangers', cursive;
+        color: #fde68a;
+        font-size: 1.1rem;
+        letter-spacing: 0.12em;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        text-shadow: 0 0 12px rgba(234,179,8,0.5);
+    }
+
+    /* used / expired states */
+    .ticket-usado .ticket-body,
+    .ticket-usado .ticket-stub {
+        filter: grayscale(0.85) brightness(0.6);
+    }
+    .ticket-vencido .ticket-body,
+    .ticket-vencido .ticket-stub {
+        filter: grayscale(0.7) brightness(0.65);
+        border-color: #6b7280;
+    }
+    .ticket-usado .ticket-body { border-color: #4b5563; }
+    .ticket-usado .ticket-stub { border-color: #4b5563; border-left-color: rgba(156,163,175,0.3); }
+
+    .shine-badge {
+        position: absolute;
+        top: 12px; right: 14px;
+        background: linear-gradient(135deg, #eab308, #f59e0b);
+        color: #1c1704;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(234,179,8,0.45);
+    }
+
+    .countdown {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(234,179,8,0.12);
+        border: 1px solid rgba(234,179,8,0.3);
+        border-radius: 0.5rem;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        color: #fcd34d;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        font-family: 'Bangers', cursive;
+    }
+</style>
+
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <div class="text-6xl mb-3" aria-hidden="true">🎟️</div>
+        <h1 style="font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,3.5rem);letter-spacing:0.06em;"
+            class="text-yellow-300 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]">
+            Mi Cuponera
+        </h1>
+        <p class="text-yellow-600 text-sm mt-1">Tus bonos de fidelidad — ¡úsalos antes de que venzan!</p>
+    </div>
+
+    {% if cupones %}
+    <div class="flex flex-col gap-6">
+        {% for item in cupones %}
+        <div class="ticket
+            {% if item.usado %}ticket-usado{% elif item.vencido %}ticket-vencido{% endif %}">
+
+            <!-- Main body -->
+            <div class="ticket-body">
+                {% if not item.usado and not item.vencido %}
+                <span class="shine-badge">✦ Disponible</span>
+                {% elif item.usado %}
+                <span class="shine-badge" style="background:linear-gradient(135deg,#6b7280,#4b5563);color:#e5e7eb;">
+                    Canjeado
+                </span>
+                {% else %}
+                <span class="shine-badge" style="background:linear-gradient(135deg,#991b1b,#7f1d1d);color:#fca5a5;">
+                    Vencido
+                </span>
+                {% endif %}
+
+                <!-- Discount -->
+                <div class="flex items-end gap-3 mb-3 mt-2">
+                    <span style="font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,4rem);line-height:1;color:#fde68a;text-shadow:0 0 24px rgba(234,179,8,0.6);">
+                        {{ item.cupon.cupValor|floatformat:0 }}%
+                    </span>
+                    <span class="text-yellow-500 text-sm font-semibold mb-2">descuento</span>
+                </div>
+
+                <!-- Name -->
+                <p class="text-white font-bold text-base mb-1">{{ item.cupon.cupNombre }}</p>
+                <p class="text-yellow-700 text-xs mb-4">{{ item.cupon.cupDescripcion }}</p>
+
+                <!-- Footer row -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col">
+                        <span class="text-yellow-800 text-xs">Código</span>
+                        <span class="font-mono font-bold text-yellow-300 text-sm tracking-widest">
+                            {{ item.cupon.cupCodigo }}
+                        </span>
+                    </div>
+                    <div class="flex flex-col ml-4">
+                        <span class="text-yellow-800 text-xs">Válido hasta</span>
+                        <span class="text-yellow-400 text-sm font-semibold">
+                            {{ item.cupon.cupFechaFin|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                    {% if item.dias is not None %}
+                    <div class="ml-auto">
+                        <span class="countdown">
+                            ⏳ {{ item.dias }} día{{ item.dias|pluralize:"s" }} restante{{ item.dias|pluralize:"s" }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tear stub -->
+            <div class="ticket-stub">
+                <div class="ticket-notch-top"></div>
+                <div class="ticket-notch-bottom"></div>
+                <span class="text-3xl" aria-hidden="true">
+                    {% if item.usado %}✅{% elif item.vencido %}❌{% else %}🎁{% endif %}
+                </span>
+                <span class="stub-text">
+                    {% if item.usado %}CANJEADO{% elif item.vencido %}VENCIDO{% else %}MULTIPARKING{% endif %}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Summary -->
+    <div class="mt-8 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5 text-center">
+        <p class="text-yellow-600 text-sm">
+            {% with total=cupones|length %}
+            {{ total }} cupón{{ total|pluralize:"es" }} en total
+            {% endwith %}
+            &nbsp;·&nbsp;
+            Presenta el código al momento de tu reserva o en caja.
+        </p>
+    </div>
+
+    {% else %}
+    <div class="empty-state text-center py-20">
+        <div class="text-7xl mb-4" aria-hidden="true">🎫</div>
+        <p style="font-size:2rem;" class="text-yellow-800 mb-2">Sin cupones aún</p>
+        <p class="text-yellow-900 text-sm">Sigue acumulando stickers y reclama tu primer bono desde tu perfil.</p>
+        <a href="{% url 'cliente_perfil' %}"
+           class="inline-block mt-6 px-6 py-3 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 font-bold transition">
+            Ver mi perfil →
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
