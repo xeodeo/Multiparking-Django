@@ -14,6 +14,56 @@ from cupones.models import Cupon
 from .models import ConfiguracionFidelidad, Sticker
 
 
+def _build_usuarios_log(config):
+    """Construye el log de clientes con su estado en el programa de fidelidad."""
+    hoy = date.today()
+    meta = config.metaStickers
+
+    clientes = Usuario.objects.filter(
+        rolTipoRol='CLIENTE',
+        usuEstado=True,
+    ).order_by('usuNombreCompleto')
+
+    log = []
+    for u in clientes:
+        num_stickers = Sticker.objects.filter(fkIdUsuario=u).count()
+
+        bono = Cupon.objects.filter(
+            cupCodigo__startswith='BONO',
+            cupNombre__icontains=u.usuNombreCompleto,
+        ).prefetch_related('aplicaciones').order_by('-cupFechaInicio').first()
+
+        if bono:
+            if bono.aplicaciones.exists():
+                estado = 'REDIMIDO'
+                dias_restantes = None
+            elif bono.cupFechaFin < hoy:
+                estado = 'VENCIDO'
+                dias_restantes = None
+            else:
+                estado = 'DISPONIBLE'
+                dias_restantes = (bono.cupFechaFin - hoy).days
+        elif num_stickers >= meta:
+            estado = 'LISTO'
+            dias_restantes = None
+            bono = None
+        else:
+            estado = 'EN_PROGRESO'
+            dias_restantes = None
+            bono = None
+
+        log.append({
+            'usuario': u,
+            'stickers': num_stickers,
+            'faltan': max(meta - num_stickers, 0),
+            'estado': estado,
+            'dias_restantes': dias_restantes,
+            'bono': bono,
+        })
+
+    return log
+
+
 class FidelidadConfigView(AdminRequiredMixin, View):
     """Panel admin para configurar la meta de stickers."""
 
@@ -22,6 +72,7 @@ class FidelidadConfigView(AdminRequiredMixin, View):
         return render(request, 'admin_panel/fidelidad/config.html', {
             'active_page': 'fidelidad',
             'config': config,
+            'usuarios_log': _build_usuarios_log(config),
         })
 
     def post(self, request):

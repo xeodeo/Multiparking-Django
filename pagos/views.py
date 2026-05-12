@@ -22,6 +22,7 @@ class PagosListView(AdminRequiredMixin, View):
         pagos_qs = Pago.objects.select_related(
             'fkIdParqueo',
             'fkIdParqueo__fkIdVehiculo',
+            'fkIdParqueo__fkIdVehiculo__fkIdUsuario',
             'fkIdParqueo__fkIdEspacio'
         ).prefetch_related('cupones_aplicados').order_by('-pagFechaPago')
 
@@ -34,7 +35,9 @@ class PagosListView(AdminRequiredMixin, View):
             pagos_qs = pagos_qs.filter(
                 Q(pk__icontains=search_query) |
                 Q(fkIdParqueo__fkIdVehiculo__vehPlaca__icontains=search_query) |
-                Q(fkIdParqueo__pk__icontains=search_query)
+                Q(fkIdParqueo__pk__icontains=search_query) |
+                Q(fkIdParqueo__fkIdVehiculo__fkIdUsuario__usuNombre__icontains=search_query) |
+                Q(fkIdParqueo__fkIdVehiculo__fkIdUsuario__usuApellido__icontains=search_query)
             )
 
         # Calcular estadísticas globales (sin filtros de búsqueda, pero sí de estado)
@@ -69,11 +72,14 @@ class PagosListView(AdminRequiredMixin, View):
                 ca.montoDescontado for ca in pago.cupones_aplicados.all()
             ) or Decimal('0')
 
+            vehiculo = pago.fkIdParqueo.fkIdVehiculo
+            usuario = vehiculo.fkIdUsuario
             pagos_list.append({
                 'id': f'pay{pago.pk}',
                 'pago': pago,
                 'registro': f'inv{pago.fkIdParqueo.pk}',
-                'placa': pago.fkIdParqueo.fkIdVehiculo.vehPlaca,
+                'placa': vehiculo.vehPlaca,
+                'usuario': usuario,
                 'descuento': descuento_total,
                 'total': pago.pagMonto,
             })

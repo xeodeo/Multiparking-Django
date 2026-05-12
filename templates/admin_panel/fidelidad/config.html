@@ -56,4 +56,81 @@
         </div>
     </div>
 </div>
+
+<!-- Log de clientes -->
+<div class="mt-8 bg-mp-card border border-mp-border rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-mp-border">
+        <h2 class="text-lg font-bold">Estado por cliente</h2>
+        <p class="text-mp-muted text-sm mt-0.5">{{ usuarios_log|length }} cliente{{ usuarios_log|length|pluralize:"s" }} registrado{{ usuarios_log|length|pluralize:"s" }}</p>
+    </div>
+
+    {% if usuarios_log %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="text-xs text-mp-muted border-b border-mp-border">
+                    <th class="px-6 py-3 font-medium">Cliente</th>
+                    <th class="px-6 py-3 font-medium">Stickers</th>
+                    <th class="px-6 py-3 font-medium w-36">Progreso</th>
+                    <th class="px-6 py-3 font-medium">Estado</th>
+                    <th class="px-6 py-3 font-medium">Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in usuarios_log %}
+                <tr class="border-b border-mp-border/50 hover:bg-white/5 transition">
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-white">{{ item.usuario.usuNombreCompleto }}</p>
+                        <p class="text-xs text-mp-muted">{{ item.usuario.usuCorreo }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-white font-bold">{{ item.stickers }}</span>
+                        <span class="text-mp-muted"> / {{ config.metaStickers }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="w-full bg-black/30 rounded-full h-2">
+                            {% if item.stickers >= config.metaStickers %}
+                            <div class="h-2 rounded-full bg-green-500" style="width:100%"></div>
+                            {% else %}
+                            <div class="h-2 rounded-full bg-mp-purple" style="width:{% widthratio item.stickers config.metaStickers 100 %}%"></div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if item.estado == 'EN_PROGRESO' %}
+                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-xs font-bold">En progreso</span>
+                        {% elif item.estado == 'LISTO' %}
+                        <span class="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-xs font-bold">Listo para reclamar</span>
+                        {% elif item.estado == 'DISPONIBLE' %}
+                        <span class="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs font-bold">Premio activo</span>
+                        {% elif item.estado == 'VENCIDO' %}
+                        <span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold">Premio vencido</span>
+                        {% elif item.estado == 'REDIMIDO' %}
+                        <span class="bg-gray-500/20 text-gray-400 px-3 py-1 rounded-full text-xs font-bold">Premio redimido</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-xs text-mp-muted">
+                        {% if item.estado == 'EN_PROGRESO' %}
+                        Lleva {{ item.stickers }}, le faltan {{ item.faltan }}
+                        {% elif item.estado == 'LISTO' %}
+                        Puede reclamar su bono del {{ config.porcentajeBono }}%
+                        {% elif item.estado == 'DISPONIBLE' %}
+                        Código: <span class="font-mono text-green-300">{{ item.bono.cupCodigo }}</span> — vence en {{ item.dias_restantes }} día{{ item.dias_restantes|pluralize }}
+                        {% elif item.estado == 'VENCIDO' %}
+                        Código <span class="font-mono text-red-400">{{ item.bono.cupCodigo }}</span> venció el {{ item.bono.cupFechaFin|date:"d/m/Y" }} sin usarse
+                        {% elif item.estado == 'REDIMIDO' %}
+                        Usó el código <span class="font-mono text-gray-400">{{ item.bono.cupCodigo }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-12 text-center text-mp-muted">
+        <p>No hay clientes registrados todavía.</p>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
