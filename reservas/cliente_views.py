@@ -81,15 +81,6 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
 
-        # Validar que la reserva sea con al menos 1 hora de anticipación
-        now = timezone.now()
-        fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
-        if fecha_hora_inicio - now < timedelta(hours=1):
-            now_local = timezone.localtime(now)
-            hora_minima = (now_local + timedelta(hours=1)).strftime('%H:%M')
-            messages.error(request, f'Debes reservar con al menos 1 hora de anticipación. Si es para hoy, elige a partir de las {hora_minima}.')
-            return self.get(request)
-
         # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora
         reservas_conflicto = Reserva.objects.filter(
             fkIdEspacio=espacio,
