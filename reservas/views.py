@@ -148,6 +148,111 @@ class ReservaEditarView(AdminRequiredMixin, View):
         return redirect('admin_reservas')
 
 
+class AdminCrearReservaView(AdminRequiredMixin, View):
+    """Admin crea una reserva desde el mapa de espacios del dashboard."""
+
+    def post(self, request):
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        espacio_id = request.POST.get('espacio_id')
+        vehiculo_id = request.POST.get('vehiculo_id')
+        fecha = request.POST.get('fecha')
+        hora_inicio = request.POST.get('hora_inicio')
+        hora_fin = request.POST.get('hora_fin') or None
+
+        if not all([espacio_id, vehiculo_id, fecha, hora_inicio]):
+            msg = 'Todos los campos son obligatorios.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('admin_dashboard')
+
+        try:
+            fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
+            hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
+            hora_fin_obj = datetime.strptime(hora_fin, '%H:%M').time() if hora_fin else None
+        except ValueError:
+            msg = 'Fecha u hora inválida.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('admin_dashboard')
+
+        try:
+            espacio = Espacio.objects.get(pk=espacio_id, espEstado='DISPONIBLE')
+        except Espacio.DoesNotExist:
+            msg = 'El espacio no está disponible.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('admin_dashboard')
+
+        try:
+            vehiculo = Vehiculo.objects.get(pk=vehiculo_id)
+        except Vehiculo.DoesNotExist:
+            msg = 'Vehículo no válido.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('admin_dashboard')
+
+        conflicto = Reserva.objects.filter(
+            fkIdEspacio=espacio,
+            resFechaReserva=fecha_obj,
+            resHoraInicio=hora_inicio_obj,
+            resEstado__in=['PENDIENTE', 'CONFIRMADA'],
+        ).exists()
+
+        if conflicto:
+            msg = 'El espacio ya tiene una reserva en ese horario.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('admin_dashboard')
+
+        with transaction.atomic():
+            reserva = Reserva.objects.create(
+                fkIdEspacio=espacio,
+                fkIdVehiculo=vehiculo,
+                resFechaReserva=fecha_obj,
+                resHoraInicio=hora_inicio_obj,
+                resHoraFin=hora_fin_obj,
+                resEstado='PENDIENTE',
+            )
+            espacio.reservar()
+
+        if is_ajax:
+            return JsonResponse({'ok': True, 'reserva_id': reserva.pk})
+        messages.success(request, f'Reserva #{reserva.pk} creada para {vehiculo.vehPlaca}.')
+        return redirect('admin_dashboard')
+
+
+class AdminClientesVehiculosAPIView(AdminRequiredMixin, View):
+    """Devuelve clientes activos y sus vehículos para el modal de reserva."""
+
+    def get(self, request):
+        from usuarios.models import Usuario
+        clientes = Usuario.objects.filter(
+            rolTipoRol='CLIENTE', usuEstado=True
+        ).order_by('usuNombre', 'usuApellido')
+
+        vehiculos = Vehiculo.objects.filter(
+            fkIdUsuario__isnull=False,
+            fkIdUsuario__usuEstado=True,
+        ).select_related('fkIdUsuario').order_by('vehPlaca')
+
+        return JsonResponse({
+            'clientes': [
+                {'id': u.pk, 'nombre': u.usuNombreCompleto}
+                for u in clientes
+            ],
+            'vehiculos': [
+                {'id': v.pk, 'placa': v.vehPlaca, 'usuario_id': v.fkIdUsuario.pk}
+                for v in vehiculos
+            ],
+        })
+
+
 class ReservaDetallesAPIView(VigilanteRequiredMixin, View):
     """API endpoint para obtener detalles de una reserva"""
     def get(self, request, pk):

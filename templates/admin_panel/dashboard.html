@@ -89,6 +89,13 @@
                     </div>
                     {% if espacio.pago_pendiente %}
                     <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                    {% elif espacio.espEstado == 'DISPONIBLE' and not espacio.reserva_proxima %}
+                    <button type="button"
+                        onclick="event.stopPropagation(); openCrearReservaModal('{{ espacio.pk }}', '{{ espacio.espNumero }}', '{{ piso.pisNombre }}')"
+                        title="Crear reserva para este espacio"
+                        class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-blue-500 hover:bg-blue-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10 shadow">
+                        📅
+                    </button>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -603,6 +610,97 @@
         </div>
     </div>
 </div>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREAR RESERVA (desde mapa de espacios)              -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="crearReservaModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 backdrop-blur-sm" onclick="if(event.target===this) closeCrearReservaModal()">
+    <div class="bg-mp-card border border-mp-border rounded-2xl w-full max-w-md shadow-2xl shadow-black/50 mx-4 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-500/10 to-transparent border-b border-mp-border px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Crear Reserva</h3>
+                    <p class="text-sm text-mp-muted mt-0.5">
+                        Espacio <span id="crearResEspacioNum" class="text-blue-400 font-bold"></span>
+                        <span class="text-mp-muted/60 mx-1">&middot;</span>
+                        <span id="crearResPisoNombre" class="text-mp-muted"></span>
+                    </p>
+                </div>
+                <button type="button" onclick="closeCrearReservaModal()" class="text-mp-muted hover:text-white transition p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <form id="crearReservaForm" onsubmit="submitCrearReserva(event)">
+            <input type="hidden" id="crearResEspacioId">
+            <div class="px-6 py-5 space-y-4">
+
+                <!-- Loading -->
+                <div id="crearResLoading" class="flex items-center justify-center gap-3 py-4">
+                    <svg class="animate-spin h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-mp-muted text-sm">Cargando clientes...</span>
+                </div>
+
+                <!-- Campos (ocultos hasta que carguen los datos) -->
+                <div id="crearResFields" class="hidden space-y-4">
+                    <!-- Cliente -->
+                    <div>
+                        <label class="block text-sm font-medium text-mp-muted mb-1">Cliente <span class="text-red-400">*</span></label>
+                        <select id="crearResCliente" onchange="filtrarVehiculos()" required
+                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                            <option value="">— Selecciona un cliente —</option>
+                        </select>
+                    </div>
+                    <!-- Vehículo -->
+                    <div>
+                        <label class="block text-sm font-medium text-mp-muted mb-1">Vehículo <span class="text-red-400">*</span></label>
+                        <select id="crearResVehiculo" required
+                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                            <option value="">— Primero selecciona un cliente —</option>
+                        </select>
+                    </div>
+                    <!-- Fecha -->
+                    <div>
+                        <label class="block text-sm font-medium text-mp-muted mb-1">Fecha <span class="text-red-400">*</span></label>
+                        <input type="date" id="crearResFecha" required
+                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <!-- Hora inicio / fin -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-mp-muted mb-1">Hora llegada <span class="text-red-400">*</span></label>
+                            <input type="time" id="crearResHoraInicio" required
+                                class="w-full bg-mp-dark border border-mp-border rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-mp-muted mb-1">Hora salida <span class="text-mp-muted text-xs">(opc.)</span></label>
+                            <input type="time" id="crearResHoraFin"
+                                class="w-full bg-mp-dark border border-mp-border rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                        </div>
+                    </div>
+                    <!-- Error -->
+                    <p id="crearResError" class="hidden text-red-400 text-sm bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2"></p>
+                </div>
+            </div>
+
+            <div id="crearResFooter" class="hidden border-t border-mp-border px-6 py-4 bg-black/20 flex justify-end gap-3">
+                <button type="button" onclick="closeCrearReservaModal()" class="px-4 py-2.5 rounded-lg text-mp-muted hover:text-white transition">Cancelar</button>
+                <button type="submit" id="crearResSubmitBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                    </svg>
+                    Crear Reserva
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -919,7 +1017,8 @@
         // No refrescar si hay un modal abierto — evita interrumpir al operador
         if (!document.getElementById('entryModal').classList.contains('hidden') ||
             !document.getElementById('exitModal').classList.contains('hidden') ||
-            !document.getElementById('reservaModal').classList.contains('hidden')) {
+            !document.getElementById('reservaModal').classList.contains('hidden') ||
+            !document.getElementById('crearReservaModal').classList.contains('hidden')) {
             return;
         }
 
@@ -1102,6 +1201,121 @@
             });
         }
     });
+
+    // ── Modal Crear Reserva ──
+    let _crearResDatos = null; // cache de clientes/vehiculos
+
+    function openCrearReservaModal(espacioId, espacioNum, pisoNombre) {
+        document.getElementById('crearResEspacioId').value = espacioId;
+        document.getElementById('crearResEspacioNum').textContent = espacioNum;
+        document.getElementById('crearResPisoNombre').textContent = pisoNombre || '';
+        document.getElementById('crearResError').classList.add('hidden');
+        // Fecha por defecto = hoy
+        document.getElementById('crearResFecha').value = new Date().toISOString().split('T')[0];
+        document.getElementById('crearResHoraInicio').value = '';
+        document.getElementById('crearResHoraFin').value = '';
+
+        document.getElementById('crearReservaModal').classList.remove('hidden');
+        document.getElementById('crearReservaModal').classList.add('flex');
+
+        if (_crearResDatos) {
+            _poblarSelects(_crearResDatos);
+        } else {
+            document.getElementById('crearResLoading').classList.remove('hidden');
+            document.getElementById('crearResFields').classList.add('hidden');
+            document.getElementById('crearResFooter').classList.add('hidden');
+
+            fetch('{% url "admin_clientes_vehiculos" %}')
+                .then(r => r.json())
+                .then(data => {
+                    _crearResDatos = data;
+                    _poblarSelects(data);
+                })
+                .catch(() => {
+                    document.getElementById('crearResLoading').innerHTML = '<p class="text-red-400 text-sm">Error al cargar clientes.</p>';
+                });
+        }
+    }
+
+    function _poblarSelects(data) {
+        const sel = document.getElementById('crearResCliente');
+        sel.innerHTML = '<option value="">— Selecciona un cliente —</option>';
+        data.clientes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nombre;
+            opt.dataset.vehiculos = JSON.stringify(
+                data.vehiculos.filter(v => v.usuario_id === c.id)
+            );
+            sel.appendChild(opt);
+        });
+        document.getElementById('crearResVehiculo').innerHTML = '<option value="">— Primero selecciona un cliente —</option>';
+        document.getElementById('crearResLoading').classList.add('hidden');
+        document.getElementById('crearResFields').classList.remove('hidden');
+        document.getElementById('crearResFooter').classList.remove('hidden');
+    }
+
+    function filtrarVehiculos() {
+        const sel = document.getElementById('crearResCliente');
+        const chosen = sel.options[sel.selectedIndex];
+        const vSel = document.getElementById('crearResVehiculo');
+        vSel.innerHTML = '<option value="">— Selecciona un vehículo —</option>';
+        if (!chosen || !chosen.dataset.vehiculos) return;
+        const vehiculos = JSON.parse(chosen.dataset.vehiculos);
+        vehiculos.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.placa;
+            vSel.appendChild(opt);
+        });
+        if (vehiculos.length === 1) vSel.value = vehiculos[0].id;
+    }
+
+    function submitCrearReserva(e) {
+        e.preventDefault();
+        const errEl = document.getElementById('crearResError');
+        errEl.classList.add('hidden');
+
+        const payload = new FormData();
+        payload.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        payload.append('espacio_id', document.getElementById('crearResEspacioId').value);
+        payload.append('vehiculo_id', document.getElementById('crearResVehiculo').value);
+        payload.append('fecha', document.getElementById('crearResFecha').value);
+        payload.append('hora_inicio', document.getElementById('crearResHoraInicio').value);
+        payload.append('hora_fin', document.getElementById('crearResHoraFin').value);
+
+        const btn = document.getElementById('crearResSubmitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        fetch('{% url "admin_reservas_crear" %}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: payload,
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/> </svg> Crear Reserva';
+            if (data.ok) {
+                closeCrearReservaModal();
+                refreshDashboard();
+            } else {
+                errEl.textContent = data.error || 'Error al crear la reserva.';
+                errEl.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            errEl.textContent = 'Error de red. Intenta de nuevo.';
+            errEl.classList.remove('hidden');
+        });
+    }
+
+    function closeCrearReservaModal() {
+        document.getElementById('crearReservaModal').classList.add('hidden');
+        document.getElementById('crearReservaModal').classList.remove('flex');
+    }
 
     // ── Validación en tiempo real del modal de ingreso ──
     (function(){
