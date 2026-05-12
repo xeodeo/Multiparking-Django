@@ -36,6 +36,7 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
             'title': 'Crear Reserva',
             'vehiculos': vehiculos,
             'pisos': pisos,
+            'today': date.today().isoformat(),
         })
 
     def post(self, request):
@@ -80,23 +81,13 @@ class ClienteCrearReservaView(ClienteRequiredMixin, View):
         # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
 
-        # Validar que la hora de reserva sea mayor a la hora actual
-        now = timezone.now()
-        now_local = timezone.localtime(now)  # Convierte a zona horaria de Bogotá (America/Bogota)
-
-        # Si es hoy, la hora debe ser mayor a la hora actual
-        if fecha_obj == date.today():
-            hora_actual = now_local.time().hour
-            hora_reserva = hora_inicio_obj.hour
-
-            if hora_reserva <= hora_actual:
-                messages.error(request, f'No puedes reservar para la misma hora. La reserva debe ser para las {hora_actual + 1}:00 en adelante.')
-                return self.get(request)
-
         # Validar que la reserva sea con al menos 1 hora de anticipación
+        now = timezone.now()
         fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
         if fecha_hora_inicio - now < timedelta(hours=1):
-            messages.error(request, 'Debes reservar con al menos 1 hora de anticipación.')
+            now_local = timezone.localtime(now)
+            hora_minima = (now_local + timedelta(hours=1)).strftime('%H:%M')
+            messages.error(request, f'Debes reservar con al menos 1 hora de anticipación. Si es para hoy, elige a partir de las {hora_minima}.')
             return self.get(request)
 
         # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora
@@ -166,6 +157,7 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
             'vehiculos': vehiculos,
             'pisos': pisos,
             'reserva': reserva,
+            'today': date.today().isoformat(),
         })
 
     def post(self, request, pk):
@@ -217,23 +209,13 @@ class ClienteEditarReservaView(ClienteRequiredMixin, View):
         # Parsear hora de inicio
         hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
 
-        # Validar que la hora de reserva sea mayor a la hora actual
-        now = timezone.now()
-        now_local = timezone.localtime(now)  # Convertir a hora local de Bogotá
-
-        # Si es hoy, la hora debe ser mayor a la hora actual
-        if fecha_obj == date.today():
-            hora_actual = now_local.time().hour
-            hora_reserva = hora_inicio_obj.hour
-
-            if hora_reserva <= hora_actual:
-                messages.error(request, f'No puedes reservar para la misma hora. La reserva debe ser para las {hora_actual + 1}:00 en adelante.')
-                return self.get(request, pk)
-
         # Validar que la reserva sea con al menos 1 hora de anticipación
+        now = timezone.now()
         fecha_hora_inicio = timezone.make_aware(datetime.combine(fecha_obj, hora_inicio_obj))
         if fecha_hora_inicio - now < timedelta(hours=1):
-            messages.error(request, 'Debes reservar con al menos 1 hora de anticipación.')
+            now_local = timezone.localtime(now)
+            hora_minima = (now_local + timedelta(hours=1)).strftime('%H:%M')
+            messages.error(request, f'Debes reservar con al menos 1 hora de anticipación. Si es para hoy, elige a partir de las {hora_minima}.')
             return self.get(request, pk)
 
         # Verificar que no haya otra reserva para el mismo espacio en la misma fecha y hora (excluyendo esta reserva)

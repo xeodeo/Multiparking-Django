@@ -105,7 +105,6 @@
                             type="radio"
                             name="espacio_id"
                             value="{{ espacio.pk }}"
-                            required
                             {% if reserva and reserva.fkIdEspacio.pk == espacio.pk %}checked{% endif %}
                             class="peer sr-only">
                         <div class="aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-bold border-2 transition-all
@@ -273,11 +272,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstBtn = document.querySelector('.tab-btn-reserva');
     if(firstBtn) firstBtn.click();
 
-    // Asegura que la fecha mínima sea hoy (el atributo min ya lo hace en el HTML, esto es redundante pero seguro)
+    // Establecer fecha mínima y valor por defecto solo si el campo está vacío (no en modo edición)
     const dateInput = document.querySelector('input[name="fecha_inicio"]');
     if(dateInput) {
         const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
+        dateInput.setAttribute('min', today);
+        if(!dateInput.value) dateInput.value = today;
     }
 
     // Aplicar filtro inicial por si ya hay un vehículo preseleccionado (modo edición)
