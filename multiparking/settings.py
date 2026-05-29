@@ -215,3 +215,4 @@ else:
     SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
     SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Multiparking <pintololpez53@gmail.com>')
+EMAIL_TIMEOUT = 15  # segundos — evita que el worker de Gunicorn quede colgado

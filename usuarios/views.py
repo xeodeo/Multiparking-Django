@@ -579,18 +579,22 @@ class PasswordResetConfirmView(View):
 # ── Prueba de Correos (solo ADMIN) ──────────────────────────────────────────
 
 class AdminTestEmailView(AdminRequiredMixin, View):
-    """
-    Permite al administrador enviar un correo de prueba para verificar
-    que la configuración de SendGrid esté funcionando correctamente.
-    El envío es SÍNCRONO (sin hilo) para capturar y mostrar errores en pantalla.
-    """
+    """Permite al administrador enviar un correo de prueba para verificar la configuración."""
+
     def _get_config(self):
         import os
         from django.conf import settings as django_settings
+        gmail_user = os.getenv('GMAIL_USER', '')
+        gmail_ok = bool(os.getenv('GMAIL_APP_PASSWORD', ''))
+        sendgrid_ok = bool(os.getenv('SENDGRID_API_KEY', ''))
+        if gmail_ok:
+            smtp_host = f'smtp.gmail.com:587 (Gmail — {gmail_user})'
+        else:
+            smtp_host = 'api.sendgrid.com (SendGrid HTTP)'
         return {
-            'api_key_set': bool(os.getenv('SENDGRID_API_KEY', '')),
+            'api_key_set': gmail_ok or sendgrid_ok,
             'from_email': django_settings.DEFAULT_FROM_EMAIL,
-            'smtp_host': 'api.sendgrid.com (HTTP)',
+            'smtp_host': smtp_host,
         }
 
     def get(self, request):
@@ -601,6 +605,7 @@ class AdminTestEmailView(AdminRequiredMixin, View):
         })
 
     def post(self, request):
+        import concurrent.futures
         from django.conf import settings as django_settings
         from django.core.mail import EmailMultiAlternatives
         from django.template.loader import render_to_string
@@ -620,25 +625,30 @@ class AdminTestEmailView(AdminRequiredMixin, View):
             return render(request, 'admin_panel/test_email.html', ctx)
 
         if not config['api_key_set']:
-            messages.error(request, 'SENDGRID_API_KEY no está configurada. Agrégala en .env o en las variables de entorno de Render.')
+            messages.error(request, 'No hay proveedor de correo configurado. Agrega GMAIL_APP_PASSWORD o SENDGRID_API_KEY en las variables de entorno.')
             return render(request, 'admin_panel/test_email.html', ctx)
 
-        try:
-            # Envío SÍNCRONO para capturar el error exacto inmediatamente
-            html_body = render_to_string('emails/test_email.html', {
-                'destinatario': destinatario,
-                'from_email': config['from_email'],
-            })
-            msg = EmailMultiAlternatives(
-                subject='✅ Prueba de correo — Multiparking',
-                body='Este es un correo de prueba del sistema Multiparking.',
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                to=[destinatario],
-            )
-            msg.attach_alternative(html_body, 'text/html')
-            msg.send(fail_silently=False)
-            messages.success(request, f'Correo enviado exitosamente a {destinatario}. Revisa tu bandeja de entrada (y spam).')
-        except Exception as e:
-            messages.error(request, f'Error al enviar: {e}')
+        html_body = render_to_string('emails/test_email.html', {
+            'destinatario': destinatario,
+            'from_email': config['from_email'],
+        })
+        msg = EmailMultiAlternatives(
+            subject='✅ Prueba de correo — Multiparking',
+            body='Este es un correo de prueba del sistema Multiparking.',
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            to=[destinatario],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+
+        # Envío en hilo con timeout para no bloquear el worker de Gunicorn
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(msg.send, fail_silently=False)
+            try:
+                future.result(timeout=20)
+                messages.success(request, f'Correo enviado exitosamente a {destinatario}. Revisa tu bandeja (y spam).')
+            except concurrent.futures.TimeoutError:
+                messages.warning(request, f'El correo a {destinatario} se está enviando — revisa tu bandeja en unos instantes.')
+            except Exception as e:
+                messages.error(request, f'Error al enviar: {e}')
 
         return render(request, 'admin_panel/test_email.html', ctx)
