@@ -201,18 +201,14 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# ── Email: Gmail SMTP con App Password (prioritario) / SendGrid (fallback) ────
-_gmail_app_password = os.getenv('GMAIL_APP_PASSWORD', '')
-if _gmail_app_password:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.getenv('GMAIL_USER', '')
-    EMAIL_HOST_PASSWORD = _gmail_app_password
+# ── Email: Resend HTTP API (prioritario) / SendGrid (fallback) ───────────────
+_resend_key = os.getenv('RESEND_API_KEY', '')
+if _resend_key:
+    EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+    ANYMAIL = {'RESEND_API_KEY': _resend_key}
 else:
     EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
     SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
     SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Multiparking <pintololpez53@gmail.com>')
-EMAIL_TIMEOUT = 15  # segundos — evita que el worker de Gunicorn quede colgado
+EMAIL_TIMEOUT = 15

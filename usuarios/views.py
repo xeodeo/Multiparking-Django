@@ -584,15 +584,16 @@ class AdminTestEmailView(AdminRequiredMixin, View):
     def _get_config(self):
         import os
         from django.conf import settings as django_settings
-        gmail_user = os.getenv('GMAIL_USER', '')
-        gmail_ok = bool(os.getenv('GMAIL_APP_PASSWORD', ''))
+        resend_ok = bool(os.getenv('RESEND_API_KEY', ''))
         sendgrid_ok = bool(os.getenv('SENDGRID_API_KEY', ''))
-        if gmail_ok:
-            smtp_host = f'smtp.gmail.com:587 (Gmail — {gmail_user})'
-        else:
+        if resend_ok:
+            smtp_host = 'api.resend.com (Resend HTTP)'
+        elif sendgrid_ok:
             smtp_host = 'api.sendgrid.com (SendGrid HTTP)'
+        else:
+            smtp_host = 'Sin proveedor configurado'
         return {
-            'api_key_set': gmail_ok or sendgrid_ok,
+            'api_key_set': resend_ok or sendgrid_ok,
             'from_email': django_settings.DEFAULT_FROM_EMAIL,
             'smtp_host': smtp_host,
         }
