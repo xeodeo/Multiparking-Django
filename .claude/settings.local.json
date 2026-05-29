@@ -106,7 +106,9 @@
       "Bash(sed -i 's/<form method=\"GET\" class=\"flex flex-col sm:flex-row gap-4\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex flex-col sm:flex-row gap-4\">/g' templates/admin_panel/reservas/list.html)",
       "Bash(sed -i 's/<form method=\"GET\" class=\"flex gap-4 items-end\">/<form method=\"GET\" action=\"{{ request.path }}\" class=\"flex gap-4 items-end\">/g' templates/admin_panel/vehiculos/list.html)",
       "Bash(git reset *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)"
     ],
     "additionalDirectories": [
       "C:\\tmp",

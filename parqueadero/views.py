@@ -516,41 +516,41 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
         espacio_id = request.POST.get('espacio_id')
         nombre = request.POST.get('nombre', '').strip()
         telefono = request.POST.get('telefono', '').strip()
+        source = request.POST.get('source', 'dashboard')
+        redirect_url = 'admin_inventario' if source == 'inventario' else 'admin_dashboard'
 
         if not placa or not espacio_id:
             messages.error(request, 'Placa y Espacio son obligatorios.')
-            return redirect('admin_dashboard')
+            return redirect(redirect_url)
 
         if not re.match(r'^[A-Za-z0-9-]+$', placa):
             messages.error(request, 'La placa solo acepta letras, números y guiones.')
-            return redirect('admin_dashboard')
+            return redirect(redirect_url)
 
         if nombre and not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
             messages.error(request, 'El nombre solo debe contener letras.')
-            return redirect('admin_dashboard')
+            return redirect(redirect_url)
 
         if telefono and not re.match(r'^[0-9]+$', telefono):
             messages.error(request, 'El teléfono solo debe contener números.')
-            return redirect('admin_dashboard')
+            return redirect(redirect_url)
 
         # 1. Validar Espacio
         espacio = get_object_or_404(Espacio, pk=espacio_id)
         if espacio.espEstado != 'DISPONIBLE':
             messages.error(request, f'El espacio {espacio.espNumero} no está disponible.')
-            return redirect('admin_dashboard')
+            return redirect(redirect_url)
 
         # 2. Buscar/Crear Vehículo
         vehiculo = Vehiculo.objects.filter(vehPlaca=placa).first()
         if not vehiculo:
-            # Placa nueva → crea el vehículo como visitante (sin usuario asociado)
             vehiculo = Vehiculo.objects.create(
                 vehPlaca=placa,
-                vehTipo='Carro',  # Tipo por defecto; se puede cambiar después
+                vehTipo='Carro',
                 nombre_contacto=nombre,
                 telefono_contacto=telefono
             )
         else:
-            # Actualizar datos de contacto si se proporcionan y es visitante
             if vehiculo.es_visitante and (nombre or telefono):
                 if nombre: vehiculo.nombre_contacto = nombre
                 if telefono: vehiculo.telefono_contacto = telefono
@@ -559,7 +559,7 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
         # 3. Verificar si ya tiene un ingreso activo (doble check)
         if InventarioParqueo.objects.filter(fkIdVehiculo=vehiculo, parHoraSalida__isnull=True).exists():
              messages.error(request, f'El vehículo {placa} ya tiene un ingreso activo.')
-             return redirect('admin_dashboard')
+             return redirect(redirect_url)
 
         with transaction.atomic():
             nuevo_registro = InventarioParqueo.objects.create(
@@ -570,7 +570,7 @@ class RegistrarIngresoView(AdminRequiredMixin, View):
 
         email_utils.enviar_confirmacion_entrada(nuevo_registro)
         messages.success(request, f'Ingreso registrado para {placa} en {espacio.espNumero}.')
-        return redirect('admin_dashboard')
+        return redirect(redirect_url)
 
 
 class BuscarVehiculoView(AdminRequiredMixin, View):
@@ -854,6 +854,9 @@ class InventarioListView(AdminRequiredMixin, View):
             'vehiculos_dentro': vehiculos_dentro,
             'salidas_hoy': salidas_hoy,
             'total_registros': total_registros,
+            'espacios_disponibles': Espacio.objects.filter(
+                espEstado='DISPONIBLE'
+            ).select_related('fkIdPiso').order_by('fkIdPiso__pisNombre', 'espNumero'),
         })
 
 

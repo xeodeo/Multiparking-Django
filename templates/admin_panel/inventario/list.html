@@ -9,12 +9,12 @@
         <h1 class="text-2xl font-bold text-white mb-1">Inventario de Parqueo</h1>
         <p class="text-sm text-mp-muted">Registro real de entradas y salidas. Al registrar salida se calcula el pago automáticamente.</p>
     </div>
-    <a href="#" class="inline-flex items-center gap-2 px-4 py-2.5 bg-mp-purple hover:bg-mp-purple-dark rounded-lg text-white text-sm font-medium transition-colors">
+    <button type="button" onclick="openInventarioEntryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-mp-purple hover:bg-mp-purple-dark rounded-lg text-white text-sm font-medium transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
         Registrar Entrada
-    </a>
+    </button>
 </div>
 
 <!-- Stats Cards -->
@@ -172,6 +172,98 @@
     </div>
 </div>
 
+<!-- Modal Entrada -->
+<div id="inventarioEntryModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm items-center justify-center z-50 p-4" onclick="if(event.target===this) closeInventarioEntryModal()">
+    <div class="bg-mp-card border border-mp-border rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50 overflow-hidden">
+        <div class="bg-gradient-to-r from-mp-purple/20 to-transparent border-b border-mp-border px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-white">Registrar Ingreso</h3>
+            <button type="button" onclick="closeInventarioEntryModal()" class="text-mp-muted hover:text-white transition p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form action="{% url 'admin_registrar_ingreso' %}" method="POST" id="invEntryForm">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="inventario">
+
+            <div class="px-6 py-5 space-y-4">
+                <!-- Espacio -->
+                <div>
+                    <label class="block text-sm font-medium text-mp-muted mb-2">Espacio <span class="text-red-500">*</span></label>
+                    <select name="espacio_id" required
+                        class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition">
+                        <option value="">Seleccionar espacio...</option>
+                        {% for esp in espacios_disponibles %}
+                        <option value="{{ esp.pk }}">{{ esp.espNumero }} — {{ esp.fkIdPiso.pisNombre }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if not espacios_disponibles %}
+                    <p class="text-xs text-yellow-400 mt-1">No hay espacios disponibles en este momento.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Placa -->
+                <div>
+                    <label class="block text-sm font-medium text-mp-muted mb-2">Placa <span class="text-red-500">*</span></label>
+                    <div class="flex gap-3">
+                        <input type="text" name="placa" id="invPlaca" required maxlength="8"
+                            class="flex-1 bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white font-mono tracking-widest uppercase placeholder-gray-600 focus:outline-none focus:border-mp-purple focus:ring-1 focus:ring-mp-purple transition"
+                            placeholder="ABC-123" autocomplete="off">
+                        <button type="button" onclick="buscarPlacaInventario()"
+                            class="bg-mp-purple hover:bg-mp-purple-dark text-white px-5 py-3 rounded-lg font-medium transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                            </svg>
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vehículo encontrado -->
+                <div id="invVehiculoEncontrado" class="hidden">
+                    <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-4">
+                        <p class="text-green-300 font-bold text-sm mb-2">Vehículo registrado</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><span class="text-mp-muted text-xs block">Propietario</span><span id="invFoundNombre" class="text-white font-medium"></span></div>
+                            <div><span class="text-mp-muted text-xs block">Tipo</span><span id="invFoundTipo" class="text-white font-medium"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos visitante (placa nueva) -->
+                <div id="invVisitanteFields" class="hidden space-y-3">
+                    <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-400">
+                        Placa no registrada — se creará como visitante.
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-mp-muted mb-2">Nombre (opcional)</label>
+                        <input type="text" name="nombre" maxlength="60" placeholder="Nombre del visitante"
+                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-mp-purple transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-mp-muted mb-2">Teléfono (opcional)</label>
+                        <input type="text" name="telefono" maxlength="10" placeholder="3001234567"
+                            class="w-full bg-mp-dark border border-mp-border rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-mp-purple transition">
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 pb-6 flex gap-3">
+                <button type="button" onclick="closeInventarioEntryModal()"
+                    class="flex-1 px-4 py-3 bg-mp-dark hover:bg-mp-border border border-mp-border rounded-xl text-white font-medium transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 px-4 py-3 bg-mp-purple hover:bg-mp-purple-dark rounded-xl text-white font-medium transition-colors shadow-lg shadow-mp-purple/20">
+                    Registrar Ingreso
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Salida (reutilizar el del dashboard) -->
 <div id="exitModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-mp-card border border-mp-border rounded-2xl max-w-lg w-full shadow-2xl">
@@ -197,6 +289,51 @@
 
 {% block extra_js %}
 <script>
+// ── Entry Modal ──────────────────────────────────────────────────────
+function openInventarioEntryModal() {
+    const modal = document.getElementById('inventarioEntryModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('invPlaca').value = '';
+    document.getElementById('invVehiculoEncontrado').classList.add('hidden');
+    document.getElementById('invVisitanteFields').classList.add('hidden');
+    setTimeout(() => document.getElementById('invPlaca').focus(), 100);
+}
+
+function closeInventarioEntryModal() {
+    const modal = document.getElementById('inventarioEntryModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+function buscarPlacaInventario() {
+    const placa = document.getElementById('invPlaca').value.trim().toUpperCase();
+    if (!placa) return;
+
+    document.getElementById('invVehiculoEncontrado').classList.add('hidden');
+    document.getElementById('invVisitanteFields').classList.add('hidden');
+
+    fetch(`{% url 'admin_buscar_vehiculo' %}?placa=${encodeURIComponent(placa)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.found) {
+                document.getElementById('invFoundNombre').textContent = data.nombre || 'Sin nombre';
+                document.getElementById('invFoundTipo').textContent = data.es_visitante ? 'Visitante' : 'Registrado';
+                document.getElementById('invVehiculoEncontrado').classList.remove('hidden');
+            } else {
+                document.getElementById('invVisitanteFields').classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            document.getElementById('invVisitanteFields').classList.remove('hidden');
+        });
+}
+
+document.getElementById('invPlaca').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); buscarPlacaInventario(); }
+});
+
+// ── Exit Modal ───────────────────────────────────────────────────────
 let currentExitRegistroId = null;
 
 function openExitModal(registroId, espacioNumero) {
@@ -302,9 +439,12 @@ function closeExitModal() {
     currentExitRegistroId = null;
 }
 
-// Cerrar modal con ESC
+// Cerrar modales con ESC
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeExitModal();
+    if (e.key === 'Escape') {
+        closeExitModal();
+        closeInventarioEntryModal();
+    }
 });
 
 // Cerrar modal al hacer clic fuera

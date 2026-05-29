@@ -201,8 +201,17 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# ── Email via SendGrid HTTP API (evita bloqueo de puertos SMTP en Render) ─────
-EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+# ── Email: Gmail SMTP con App Password (prioritario) / SendGrid (fallback) ────
+_gmail_app_password = os.getenv('GMAIL_APP_PASSWORD', '')
+if _gmail_app_password:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('GMAIL_USER', '')
+    EMAIL_HOST_PASSWORD = _gmail_app_password
+else:
+    EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+    SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
+    SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Multiparking <pintololpez53@gmail.com>')

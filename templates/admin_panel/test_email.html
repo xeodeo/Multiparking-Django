@@ -86,7 +86,7 @@
             El envío es síncrono — si hay un error con SendGrid, se mostrará aquí inmediatamente.
         </p>
 
-        <form method="POST" class="space-y-4">
+        <form method="POST" action="{% url 'admin_test_email' %}" class="space-y-4">
             {% csrf_token %}
             <div>
                 <label class="block text-sm font-medium text-mp-muted mb-2">
