@@ -35,9 +35,10 @@ from fidelidad.models import ConfiguracionFidelidad, Sticker
 print("=" * 60)
 print("  CARGANDO DATOS DE PRUEBA - MultiParking (Render)")
 print("=" * 60)
+TOTAL_PASOS = 13
 
 # ── 1. LIMPIAR TODO ─────────────────────────────────────────
-print("\n[1/11] Limpiando base de datos...")
+print(f"\n[1/{TOTAL_PASOS}] Limpiando base de datos...")
 # Se elimina en orden para respetar las restricciones de FK (dependientes primero)
 Sticker.objects.all().delete()
 Novedad.objects.all().delete()
@@ -56,7 +57,7 @@ ConfiguracionFidelidad.objects.all().delete()
 print("  [OK] Base de datos limpiada completamente")
 
 # ── 2. USUARIOS ─────────────────────────────────────────────
-print("\n[2/11] Creando usuarios...")
+print(f"\n[2/{TOTAL_PASOS}] Creando usuarios...")
 
 admin = Usuario.objects.create(
     usuCorreo='admin@multiparking.com',
@@ -103,13 +104,13 @@ cliente2 = Usuario.objects.create(
 print(f"  [OK] Cliente 2: maria@test.com / test123")
 
 # ── 3. TIPOS DE ESPACIO (Solo Carro y Moto) ─────────────────
-print("\n[3/11] Creando tipos de espacio...")
+print(f"\n[3/{TOTAL_PASOS}] Creando tipos de espacio...")
 tipo_carro = TipoEspacio.objects.create(nombre='Carro')
 tipo_moto = TipoEspacio.objects.create(nombre='Moto')
 print("  [OK] Tipos: Carro, Moto")
 
 # ── 4. PISOS ────────────────────────────────────────────────
-print("\n[4/11] Creando pisos...")
+print(f"\n[4/{TOTAL_PASOS}] Creando pisos...")
 
 pisos_config = [
     ('Piso 1 - Subsuelo', True),
@@ -126,7 +127,7 @@ for nombre, estado in pisos_config:
     print(f"  [OK] {nombre} ({estado_txt})")
 
 # ── 5. ESPACIOS ─────────────────────────────────────────────
-print("\n[5/11] Creando espacios...")
+print(f"\n[5/{TOTAL_PASOS}] Creando espacios...")
 
 espacios_config = [
     # (piso_index, prefijo_numeración, tipo_espacio, cantidad)
@@ -155,7 +156,7 @@ motos = Espacio.objects.filter(fkIdTipoEspacio=tipo_moto).count()
 print(f"  [OK] {total_espacios} espacios creados (Carros: {carros}, Motos: {motos})")
 
 # ── 6. TARIFAS ──────────────────────────────────────────────
-print("\n[6/11] Creando tarifas...")
+print(f"\n[6/{TOTAL_PASOS}] Creando tarifas...")
 
 Tarifa.objects.create(
     nombre='Tarifa Carros 2026',
@@ -208,7 +209,7 @@ Tarifa.objects.create(
 print("  [OK] Tarifa Motos 2025 (DESACTIVADA)")
 
 # ── 7. VEHICULOS ────────────────────────────────────────────
-print("\n[7/11] Creando vehiculos...")
+print(f"\n[7/{TOTAL_PASOS}] Creando vehiculos...")
 
 vehiculos_demo = [
     ('ABC-123', 'Carro', 'Rojo', 'Toyota', 'Corolla', cliente1),
@@ -231,7 +232,7 @@ for placa, tipo, color, marca, modelo, propietario in vehiculos_demo:
 print(f"  [OK] {len(vehiculos)} vehiculos de clientes")
 
 # ── 8. CUPONES ──────────────────────────────────────────────
-print("\n[8/11] Creando cupones...")
+print(f"\n[8/{TOTAL_PASOS}] Creando cupones...")
 
 hoy = date.today()
 cupones_demo = [
@@ -303,7 +304,7 @@ for cupon_data in cupones_demo:
     print(f"  [OK] {cupon_data['cupNombre']} -> {cupon_data['cupCodigo']} ({estado})")
 
 # ── 9. ESPACIOS OCUPADOS ────────────────────────────────────
-print("\n[9/11] Simulando vehiculos estacionados...")
+print(f"\n[9/{TOTAL_PASOS}] Simulando vehiculos estacionados...")
 
 espacios_disponibles = list(Espacio.objects.filter(espEstado='DISPONIBLE')[:6])
 vehiculos_a_parquear = vehiculos[:6]
@@ -337,7 +338,7 @@ for espacio in espacios_inactivar:
 print(f"  [OK] {len(espacios_inactivar)} espacios en mantenimiento (INACTIVO)")
 
 # ── 10. RESERVAS ────────────────────────────────────────────
-print("\n[10/11] Creando reservas...")
+print(f"\n[10/{TOTAL_PASOS}] Creando reservas...")
 
 reservas_data = [
     # (fecha, hora_inicio, hora_fin, estado, vehiculo)
@@ -354,6 +355,7 @@ reservas_data = [
 ]
 
 espacios_disponibles_reserva = list(Espacio.objects.filter(espEstado='DISPONIBLE'))
+espacios_usados_reserva = set()
 
 for idx, (fecha, hora_inicio, hora_fin, estado, vehiculo) in enumerate(reservas_data):
     espacio = espacios_disponibles_reserva[idx % len(espacios_disponibles_reserva)]
@@ -362,11 +364,16 @@ for idx, (fecha, hora_inicio, hora_fin, estado, vehiculo) in enumerate(reservas_
         resHoraFin=hora_fin, resEstado=estado,
         fkIdEspacio=espacio, fkIdVehiculo=vehiculo,
     )
+    # Marcar como RESERVADO los espacios de reservas activas de hoy
+    if fecha == hoy and estado in ('PENDIENTE', 'CONFIRMADA') and espacio.pk not in espacios_usados_reserva:
+        espacio.espEstado = 'RESERVADO'
+        espacio.save()
+        espacios_usados_reserva.add(espacio.pk)
 
-print(f"  [OK] {len(reservas_data)} reservas creadas")
+print(f"  [OK] {len(reservas_data)} reservas creadas ({len(espacios_usados_reserva)} espacios marcados RESERVADO)")
 
 # ── 11. PAGOS (ultimos 5 dias para la grafica) ──────────────
-print("\n[11/11] Generando pagos de los ultimos 5 dias...")
+print(f"\n[11/{TOTAL_PASOS}] Generando pagos de los ultimos 5 dias...")
 
 now = timezone.now()
 hoy_local = timezone.localtime(now).date()
@@ -416,13 +423,66 @@ if tarifa:
 
 print(f"  [OK] {pagos_creados} pagos generados (5 dias x 3 pagos)")
 
-# ── CONFIGURACIÓN FIDELIDAD ──────────────────────────────────
-print("\n[12/12] Inicializando configuración de fidelidad...")
+# ── FIDELIDAD ────────────────────────────────────────────────
+print(f"\n[12/{TOTAL_PASOS}] Configurando fidelidad y creando stickers demo...")
 config = ConfiguracionFidelidad.get()
 config.metaStickers = 10
 config.diasVencimientoBono = 30
+config.porcentajeBono = 100
 config.save()
-print(f"  [OK] Meta: {config.metaStickers} stickers | Bono válido: {config.diasVencimientoBono} días")
+print(f"  [OK] Meta: {config.metaStickers} stickers | Bono: {config.porcentajeBono}% | Válido: {config.diasVencimientoBono} días")
+
+# Stickers para Carlos Perez (cliente1): 7 de 10 — casi listo para el bono
+registros_carlos = list(InventarioParqueo.objects.filter(fkIdVehiculo__fkIdUsuario=cliente1))
+stickers_creados = 0
+for registro in registros_carlos[:7]:
+    Sticker.objects.get_or_create(fkIdUsuario=cliente1, fkIdParqueo=registro)
+    stickers_creados += 1
+# Completar con stickers extra si faltan
+for _ in range(7 - stickers_creados):
+    registro_extra = InventarioParqueo.objects.filter(
+        fkIdVehiculo__fkIdUsuario=cliente1
+    ).exclude(sticker__isnull=False).first()
+    if registro_extra:
+        Sticker.objects.get_or_create(fkIdUsuario=cliente1, fkIdParqueo=registro_extra)
+        stickers_creados += 1
+
+# Stickers para Maria Lopez (cliente2): 3 de 10 — en progreso
+registros_maria = list(InventarioParqueo.objects.filter(fkIdVehiculo__fkIdUsuario=cliente2))
+stickers_maria = 0
+for registro in registros_maria[:3]:
+    Sticker.objects.get_or_create(fkIdUsuario=cliente2, fkIdParqueo=registro)
+    stickers_maria += 1
+
+print(f"  [OK] Stickers: Carlos Pérez {Sticker.objects.filter(fkIdUsuario=cliente1).count()}/{config.metaStickers} | María López {Sticker.objects.filter(fkIdUsuario=cliente2).count()}/{config.metaStickers}")
+
+# ── NOVEDADES DEMO ───────────────────────────────────────────
+print(f"\n[13/{TOTAL_PASOS}] Creando novedades de ejemplo...")
+novedades_demo = [
+    {
+        'novDescripcion': 'Rayón en la puerta trasera derecha del vehículo al ingresar.',
+        'novEstado': 'PENDIENTE',
+        'fkIdVehiculo': vehiculos[0],
+        'fkIdReportador': vigilante,
+    },
+    {
+        'novDescripcion': 'Vehículo encontrado con llanta desinflada en el espacio C2-05.',
+        'novEstado': 'EN_PROCESO',
+        'fkIdVehiculo': vehiculos[2],
+        'fkIdReportador': vigilante,
+        'novComentario': 'Se notificó al propietario por teléfono.',
+    },
+    {
+        'novDescripcion': 'Fuga de aceite detectada en el espacio M1-03. Requiere limpieza.',
+        'novEstado': 'RESUELTO',
+        'fkIdVehiculo': vehiculos[4],
+        'fkIdReportador': vigilante,
+        'novComentario': 'Área limpiada. Propietario informado.',
+    },
+]
+for nov_data in novedades_demo:
+    Novedad.objects.create(**nov_data)
+print(f"  [OK] {len(novedades_demo)} novedades creadas (1 pendiente, 1 en proceso, 1 resuelta)")
 
 # ── RESUMEN FINAL ───────────────────────────────────────────
 print("\n" + "=" * 60)
@@ -435,12 +495,15 @@ print(f"""
   Espacios:    {Espacio.objects.count()} total
     Disponible:  {Espacio.objects.filter(espEstado='DISPONIBLE').count()}
     Ocupado:     {Espacio.objects.filter(espEstado='OCUPADO').count()}
+    Reservado:   {Espacio.objects.filter(espEstado='RESERVADO').count()}
     Inactivo:    {Espacio.objects.filter(espEstado='INACTIVO').count()}
   Tarifas:     {Tarifa.objects.filter(activa=True).count()} activas + {Tarifa.objects.filter(activa=False).count()} desactivadas
   Vehiculos:   {Vehiculo.objects.count()}
   Cupones:     {Cupon.objects.filter(cupActivo=True).count()} activos + {Cupon.objects.filter(cupActivo=False).count()} desactivados
   Reservas:    {Reserva.objects.count()}
   Pagos:       {Pago.objects.count()}
+  Novedades:   {Novedad.objects.count()}
+  Stickers:    {Sticker.objects.count()} (Carlos Pérez: {Sticker.objects.filter(fkIdUsuario=cliente1).count()}/10, María López: {Sticker.objects.filter(fkIdUsuario=cliente2).count()}/10)
 """)
 
 print("=" * 60)

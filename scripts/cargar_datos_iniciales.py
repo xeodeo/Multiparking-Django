@@ -24,6 +24,7 @@ from tarifas.models import Tarifa
 from usuarios.models import Usuario
 from vehiculos.models import Vehiculo
 from cupones.models import Cupon
+from fidelidad.models import ConfiguracionFidelidad
 from datetime import date, timedelta
 
 print("=" * 60)
@@ -262,7 +263,15 @@ for cupon_data in cupones_demo:
     else:
         print(f"  [--] '{cupon_data['cupCodigo']}' ya existe")
 
-# ── 8. RESUMEN ───────────────────────────────────────────────
+# ── 8. FIDELIDAD ─────────────────────────────────────────────
+print("\n[8/9] Inicializando configuración de fidelidad...")
+config = ConfiguracionFidelidad.get()
+if config.metaStickers == 10 and config.porcentajeBono == 100:
+    print(f"  [OK] Meta: {config.metaStickers} stickers | Bono: {config.porcentajeBono}% | Vencimiento: {config.diasVencimientoBono} días (valores por defecto)")
+else:
+    print(f"  [--] Ya configurado: {config.metaStickers} stickers | {config.porcentajeBono}%")
+
+# ── 9. RESUMEN ───────────────────────────────────────────────
 print("\n" + "=" * 60)
 print(">> DATOS INICIALES CARGADOS EXITOSAMENTE")
 print("=" * 60)

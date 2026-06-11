@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentación Multiparking — Dashboard de Auditoría</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    /* HEADER */
+    header { background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 1px solid #334155; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.4rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em; }
+    header h1 span { color: #38bdf8; }
+    .version-badge { background: #1e3a5f; color: #38bdf8; font-size: 0.7rem; padding: 3px 10px; border-radius: 999px; border: 1px solid #2563eb44; }
+
+    /* LAYOUT */
+    .container { max-width: 1400px; margin: 0 auto; padding: 28px 32px; }
+
+    /* CARDS ROW */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; }
+    .card .label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .card .value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .card .sub { font-size: 0.72rem; color: #64748b; margin-top: 4px; }
+    .card.green .value { color: #4ade80; }
+    .card.yellow .value { color: #facc15; }
+    .card.red .value { color: #f87171; }
+    .card.blue .value { color: #38bdf8; }
+    .card.purple .value { color: #c084fc; }
+
+    /* COMPLIANCE BAR */
+    .compliance-section { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; }
+    .compliance-section h2 { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .bar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+    .bar-label { font-size: 0.8rem; color: #cbd5e1; width: 200px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 8px; background: #334155; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+    .bar-fill.green { background: #4ade80; }
+    .bar-fill.yellow { background: #facc15; }
+    .bar-fill.red { background: #f87171; }
+    .bar-pct { font-size: 0.8rem; color: #94a3b8; width: 36px; text-align: right; }
+
+    /* SEMAPHORE */
+    .semaphore-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 28px; }
+    .sem-item { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+    .sem-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .sem-dot.green { background: #4ade80; box-shadow: 0 0 8px #4ade8066; }
+    .sem-dot.yellow { background: #facc15; box-shadow: 0 0 8px #facc1566; }
+    .sem-dot.red { background: #f87171; box-shadow: 0 0 8px #f8717166; }
+    .sem-area { font-size: 0.82rem; color: #e2e8f0; flex: 1; }
+    .sem-pct { font-size: 0.78rem; color: #64748b; }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+    .filters label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .filter-btn { background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover { border-color: #38bdf8; color: #e2e8f0; }
+    .filter-btn.active { background: #0f3460; border-color: #38bdf8; color: #38bdf8; }
+    .search-input { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; width: 220px; outline: none; }
+    .search-input:focus { border-color: #38bdf8; }
+    .search-input::placeholder { color: #475569; }
+
+    /* FINDINGS TABLE */
+    .findings-section { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
+    .findings-section h2 { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; padding: 18px 24px 14px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    .count-badge { background: #334155; color: #94a3b8; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 1px solid #1e293b; background: #162032; }
+    td { padding: 11px 16px; font-size: 0.82rem; border-bottom: 1px solid #243044; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #162032; }
+    .hidden { display: none; }
+
+    /* BADGES */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge.critico { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }
+    .badge.alto { background: #431407; color: #fb923c; border: 1px solid #7c2d12; }
+    .badge.medio { background: #422006; color: #fbbf24; border: 1px solid #78350f; }
+    .badge.bajo { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .status-badge.pendiente { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .status-badge.confirmado { background: #1e3a5f; color: #38bdf8; border: 1px solid #1d4ed8; }
+    .status-badge.parcial { background: #2d1b4e; color: #c084fc; border: 1px solid #6b21a8; }
+    .status-badge.resuelto { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+
+    .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.68rem; color: #94a3b8; background: #0f172a; border: 1px solid #334155; }
+
+    .id-cell { font-family: monospace; font-size: 0.78rem; color: #38bdf8; font-weight: 600; white-space: nowrap; }
+    .name-cell { color: #f1f5f9; }
+    .desc-cell { color: #94a3b8; font-size: 0.78rem; line-height: 1.5; max-width: 320px; }
+
+    /* AGENTS SECTION */
+    .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .agent-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; }
+    .agent-card h3 { font-size: 0.82rem; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .agent-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .agent-status.done { background: #4ade80; box-shadow: 0 0 6px #4ade8066; }
+    .agent-status.pending { background: #facc15; box-shadow: 0 0 6px #facc1566; }
+    .agent-status.todo { background: #475569; }
+    .agent-desc { font-size: 0.75rem; color: #64748b; line-height: 1.5; }
+
+    /* SECTION TITLE */
+    .section-title { font-size: 0.82rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: #334155; }
+
+    /* FOOTER */
+    footer { text-align: center; padding: 20px; font-size: 0.72rem; color: #334155; border-top: 1px solid #1e293b; margin-top: 8px; }
+
+    /* CHECKBOX */
+    input[type="checkbox"] { accent-color: #38bdf8; width: 14px; height: 14px; cursor: pointer; }
+
+    /* DOC CHECKLIST */
+    .doc-group { background: #1e293b; border: 1px solid #334155; border-radius: 10px; overflow: hidden; }
+    .doc-group-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .doc-group-header:hover { background: #243044; }
+    .doc-group-arrow { font-size: 0.65rem; color: #475569; transition: transform 0.2s; width: 12px; }
+    .doc-group-arrow.open { transform: rotate(90deg); color: #38bdf8; }
+    .doc-group-num { background: #0f172a; color: #38bdf8; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; font-family: monospace; min-width: 28px; text-align: center; }
+    .doc-group-title { flex: 1; font-size: 0.85rem; color: #e2e8f0; font-weight: 600; }
+    .doc-group-prog { font-size: 0.72rem; color: #475569; font-family: monospace; }
+    .doc-group-prog.done { color: #4ade80; }
+    .doc-group-items { border-top: 1px solid #334155; padding: 6px 0; }
+    .doc-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 20px 8px 44px; transition: background 0.1s; }
+    .doc-item:hover { background: #162032; }
+    .doc-item-num { font-size: 0.7rem; color: #475569; font-family: monospace; min-width: 32px; padding-top: 1px; }
+    .doc-item span:last-child { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
+    .doc-item.doc-item-missing span:last-child { color: #94a3b8; }
+    .doc-item.doc-item-partial span:last-child { color: #94a3b8; }
+    .missing-tag { background: #450a0a; color: #f87171; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; vertical-align: middle; }
+    .partial-tag { background: #422006; color: #fbbf24; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Multiparking — <span>Auditoría Documental</span></h1>
+    <div style="font-size:0.72rem; color:#64748b; margin-top:4px;">SENA ADSO · Proyecto Formativo · 2026</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span class="version-badge">v1.1 — Sesión 2</span>
+    <span style="font-size:0.72rem; color:#475569;">Actualizado: 2026-05-29</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- CARDS RESUMEN -->
+  <div class="cards">
+    <div class="card blue">
+      <div class="label">Cumplimiento global</div>
+      <div class="value">68%</div>
+      <div class="sub">Meta: 100% SENA</div>
+    </div>
+    <div class="card red">
+      <div class="label">Hallazgos críticos</div>
+      <div class="value">14</div>
+      <div class="sub">de 39 totales</div>
+    </div>
+    <div class="card yellow">
+      <div class="label">Hallazgos altos</div>
+      <div class="value">14</div>
+      <div class="sub">+2 vs sesión 1</div>
+    </div>
+    <div class="card purple">
+      <div class="label">Inconsistencias</div>
+      <div class="value">9</div>
+      <div class="sub">2 confirmadas en código</div>
+    </div>
+    <div class="card green">
+      <div class="label">Docs analizados</div>
+      <div class="value">22</div>
+      <div class="sub">Drive + repo</div>
+    </div>
+    <div class="card yellow">
+      <div class="label">Endpoints mapeados</div>
+      <div class="value">~80</div>
+      <div class="sub">0 REST real · 7 JSON/AJAX</div>
+    </div>
+  </div>
+
+  <!-- COMPLIANCE BARS -->
+  <div class="compliance-section">
+    <h2>Cumplimiento por sección SENA</h2>
+    <div class="bar-row"><span class="bar-label">1 — Planteamiento y Justificación</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><span class="bar-pct">100%</span></div>
+    <div class="bar-row"><span class="bar-label">2 — Objetivos</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><span class="bar-pct">100%</span></div>
+    <div class="bar-row"><span class="bar-label">3 — Matriz de Riesgo</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><span class="bar-pct">100%</span></div>
+    <div class="bar-row"><span class="bar-label">4 — Elicitación de Requisitos</span><div class="bar-track"><div class="bar-fill green" style="width:95%"></div></div><span class="bar-pct">95%</span></div>
+    <div class="bar-row"><span class="bar-label">5 — Especificación de Requerimientos</span><div class="bar-track"><div class="bar-fill yellow" style="width:80%"></div></div><span class="bar-pct">80%</span></div>
+    <div class="bar-row"><span class="bar-label">6 — Análisis de Especificación</span><div class="bar-track"><div class="bar-fill red" style="width:35%"></div></div><span class="bar-pct">35%</span></div>
+    <div class="bar-row"><span class="bar-label">7 — Diseño de la Solución</span><div class="bar-track"><div class="bar-fill red" style="width:55%"></div></div><span class="bar-pct">55%</span></div>
+    <div class="bar-row"><span class="bar-label">8 — Construcción del Software</span><div class="bar-track"><div class="bar-fill yellow" style="width:70%"></div></div><span class="bar-pct">70%</span></div>
+    <div class="bar-row"><span class="bar-label">9 — Codificación</span><div class="bar-track"><div class="bar-fill yellow" style="width:65%"></div></div><span class="bar-pct">65%</span></div>
+    <div class="bar-row"><span class="bar-label">10 — Pruebas del Software</span><div class="bar-track"><div class="bar-fill yellow" style="width:60%"></div></div><span class="bar-pct">60%</span></div>
+    <div class="bar-row"><span class="bar-label">11 — Plan de Despliegue</span><div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div><span class="bar-pct">90%</span></div>
+    <div class="bar-row"><span class="bar-label">12 — Implantación</span><div class="bar-track"><div class="bar-fill red" style="width:40%"></div></div><span class="bar-pct">40%</span></div>
+    <div class="bar-row"><span class="bar-label">13 — Buenas Prácticas</span><div class="bar-track"><div class="bar-fill red" style="width:0%"></div></div><span class="bar-pct">0%</span></div>
+  </div>
+
+  <!-- SEMÁFORO -->
+  <div class="section-title">Estado por área</div>
+  <div class="semaphore-section" style="margin-bottom:28px;">
+    <div class="sem-item"><div class="sem-dot green"></div><span class="sem-area">Análisis de Requisitos</span><span class="sem-pct">95%</span></div>
+    <div class="sem-item"><div class="sem-dot green"></div><span class="sem-area">Despliegue / Infraestructura</span><span class="sem-pct">90%</span></div>
+    <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Modelo de Datos / BD</span><span class="sem-pct">75%</span></div>
+    <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Código / Codificación</span><span class="sem-pct">70%</span></div>
+    <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Pruebas</span><span class="sem-pct">60%</span></div>
+    <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Implantación / Manual</span><span class="sem-pct">55%</span></div>
+    <div class="sem-item"><div class="sem-dot red"></div><span class="sem-area">API / Servicios Web</span><span class="sem-pct">25%</span></div>
+    <div class="sem-item"><div class="sem-dot red"></div><span class="sem-area">Diagramas UML</span><span class="sem-pct">20%</span></div>
+  </div>
+
+  <!-- AGENTES -->
+  <div class="section-title">Agentes del sistema</div>
+  <div class="agents-grid">
+    <div class="agent-card"><h3><span class="agent-status done"></span>COORDINADOR</h3><div class="agent-desc">Auditoría general · 22 docs analizados · 39 hallazgos catalogados · v1.1 activa</div></div>
+    <div class="agent-card"><h3><span class="agent-status done"></span>AGENTE-LOCAL-ESTRUCTURA</h3><div class="agent-desc">9 apps Django inspeccionadas · espEstado=INACTIVO confirmado · porcentajeBono detectado</div></div>
+    <div class="agent-card"><h3><span class="agent-status done"></span>AGENTE-API-MODELOS</h3><div class="agent-desc">~80 endpoints mapeados · 0 serializers · DRF sin implementar · PSE enum detectado</div></div>
+    <div class="agent-card"><h3><span class="agent-status done"></span>AGENTE-DRIVE</h3><div class="agent-desc">34 archivos catalogados · 25 descargados · drawio + casos de uso obtenidos</div></div>
+    <div class="agent-card"><h3><span class="agent-status todo"></span>AGENTE-QA</h3><div class="agent-desc">Pendiente · Implementar tests Django automatizados (0% cobertura actual)</div></div>
+    <div class="agent-card"><h3><span class="agent-status todo"></span>AGENTE-DIAGRAMAS</h3><div class="agent-desc">Pendiente · Analizar casos_de_uso_V1.pdf + MultiParking.drawio</div></div>
+    <div class="agent-card"><h3><span class="agent-status todo"></span>AGENTE-SEGURIDAD</h3><div class="agent-desc">Pendiente · Verificar middleware CSP, CSRF, PBKDF2 vs documentación</div></div>
+    <div class="agent-card"><h3><span class="agent-status todo"></span>AGENTE-BD</h3><div class="agent-desc">Pendiente · Comparar SQL scripts Drive vs modelos Django actuales</div></div>
+  </div>
+
+  <!-- CONSTRUCCIÓN DEL DOCUMENTO -->
+  <div class="section-title">Construcción del Documento — Checklist SENA ADSO</div>
+  <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:18px 24px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">Basado en: <strong style="color:#38bdf8;">GUIA PARA APRENDIZ - TRABAJO FINAL DEL PROYECTO FORMATIVO (SENA ADSO)</strong></div>
+      <div style="font-size:0.72rem; color:#475569;">Referencia: GUIA_APRENDIZ_TRABAJO_FINAL.docx · 13 secciones · 43 subsecciones obligatorias · Normas APA 7ma edición</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:1.6rem; font-weight:700; color:#38bdf8;" id="doc-pct">0%</div>
+      <div style="font-size:0.7rem; color:#475569;"><span id="doc-done">0</span> / <span id="doc-total">43</span> completadas</div>
+    </div>
+  </div>
+
+  <!-- Progress bar del documento -->
+  <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px 20px; margin-bottom:20px;">
+    <div style="height:10px; background:#334155; border-radius:999px; overflow:hidden;">
+      <div id="doc-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#38bdf8,#818cf8); border-radius:999px; transition:width 0.4s ease;"></div>
+    </div>
+  </div>
+
+  <div id="doc-checklist" style="display:flex; flex-direction:column; gap:8px; margin-bottom:32px;">
+
+    <!-- PORTADA Y PRELIMINARES -->
+    <div class="doc-group" data-group="0">
+      <div class="doc-group-header" onclick="toggleGroup('0')">
+        <span class="doc-group-arrow" id="arrow-0">▶</span>
+        <span class="doc-group-num">0</span>
+        <span class="doc-group-title">Portada, Resumen y Preliminares</span>
+        <span class="doc-group-prog" id="prog-0">0/4</span>
+      </div>
+      <div class="doc-group-items" id="group-0" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">0.1</span><span>Portada (título, integrantes, ficha, SENA, año)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">0.2</span><span>Resumen en español (máx. 300 palabras)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">0.3</span><span>Abstract en inglés (máx. 300 palabras)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">0.4</span><span>Introducción</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1 -->
+    <div class="doc-group" data-group="1">
+      <div class="doc-group-header" onclick="toggleGroup('1')">
+        <span class="doc-group-arrow" id="arrow-1">▶</span>
+        <span class="doc-group-num">1</span>
+        <span class="doc-group-title">Planteamiento y Justificación del Problema</span>
+        <span class="doc-group-prog" id="prog-1">0/4</span>
+      </div>
+      <div class="doc-group-items" id="group-1" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">1.1</span><span>Planteamiento del problema</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">1.2</span><span>Árbol del problema (causas, efectos, problema central)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">1.3</span><span>Justificación (con referencias académicas APA 7)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">1.4</span><span>Alcance (incluye limitaciones)</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2 -->
+    <div class="doc-group" data-group="2">
+      <div class="doc-group-header" onclick="toggleGroup('2')">
+        <span class="doc-group-arrow" id="arrow-2">▶</span>
+        <span class="doc-group-num">2</span>
+        <span class="doc-group-title">Objetivos del TFPF</span>
+        <span class="doc-group-prog" id="prog-2">0/3</span>
+      </div>
+      <div class="doc-group-items" id="group-2" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">2.1</span><span>Objetivo general</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">2.2</span><span>Objetivos específicos (por fase del proyecto)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">2.3</span><span>Alcance del proyecto (módulos, límites)</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3 -->
+    <div class="doc-group" data-group="3">
+      <div class="doc-group-header" onclick="toggleGroup('3')">
+        <span class="doc-group-arrow" id="arrow-3">▶</span>
+        <span class="doc-group-num">3</span>
+        <span class="doc-group-title">Matriz de Riesgo</span>
+        <span class="doc-group-prog" id="prog-3">0/1</span>
+      </div>
+      <div class="doc-group-items" id="group-3" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">3.1</span><span>Matriz de riesgo (probabilidad, impacto, estrategia de mitigación)</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4 -->
+    <div class="doc-group" data-group="4">
+      <div class="doc-group-header" onclick="toggleGroup('4')">
+        <span class="doc-group-arrow" id="arrow-4">▶</span>
+        <span class="doc-group-num">4</span>
+        <span class="doc-group-title">Elicitación de Requisitos</span>
+        <span class="doc-group-prog" id="prog-4">0/4</span>
+      </div>
+      <div class="doc-group-items" id="group-4" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">4.1</span><span>Identificación de procesos del negocio</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">4.2</span><span>Recolección de información (encuesta, observación)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">4.3</span><span>Técnica e instrumento aplicado (análisis n=X)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">4.4</span><span>Análisis de la información recolectada</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 5 -->
+    <div class="doc-group" data-group="5">
+      <div class="doc-group-header" onclick="toggleGroup('5')">
+        <span class="doc-group-arrow" id="arrow-5">▶</span>
+        <span class="doc-group-num">5</span>
+        <span class="doc-group-title">Especificación de Requerimientos</span>
+        <span class="doc-group-prog" id="prog-5">0/5</span>
+      </div>
+      <div class="doc-group-items" id="group-5" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">5.1</span><span>Requisitos Funcionales (RF) — por módulo</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">5.2</span><span>Requisitos No Funcionales (RNF) — ISO/IEC 25010</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">5.3</span><span>Requerimientos Normativos (leyes, decretos, normas)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">5.4</span><span>Reglas del Negocio</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">5.5</span><span>Propuesta técnica (cronograma, costos, hardware, software)</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 6 -->
+    <div class="doc-group" data-group="6">
+      <div class="doc-group-header" onclick="toggleGroup('6')">
+        <span class="doc-group-arrow" id="arrow-6">▶</span>
+        <span class="doc-group-num">6</span>
+        <span class="doc-group-title">Análisis de la Especificación <span style="color:#f87171;font-size:0.7rem;margin-left:6px;">⚠ CRÍTICO</span></span>
+        <span class="doc-group-prog" id="prog-6">0/6</span>
+      </div>
+      <div class="doc-group-items" id="group-6" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.1</span><span>Mockups / Prototipos de interfaz (capturas o imágenes)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.2</span><span>Historias de Usuario <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.3</span><span>Diagrama UML de Casos de Uso <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.4</span><span>Diagramas de Actividades <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.5</span><span>Diagramas de Secuencias <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.6</span><span>Modelo de Dominio (Diagrama de Clases UML) <span class="missing-tag">FALTANTE</span></span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 7 -->
+    <div class="doc-group" data-group="7">
+      <div class="doc-group-header" onclick="toggleGroup('7')">
+        <span class="doc-group-arrow" id="arrow-7">▶</span>
+        <span class="doc-group-num">7</span>
+        <span class="doc-group-title">Diseño de la Solución</span>
+        <span class="doc-group-prog" id="prog-7">0/6</span>
+      </div>
+      <div class="doc-group-items" id="group-7" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.1</span><span>Metodología de desarrollo (SCRUM, ágil, etc.)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.2</span><span>Arquitectura del software — Diagrama de Componentes <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.3</span><span>Diagrama de Despliegue <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.4</span><span>Diseño Front-end (interfaces web)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.5</span><span>Mapa de Navegación <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">7.6</span><span>Políticas de Seguridad del sistema</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 8 -->
+    <div class="doc-group" data-group="8">
+      <div class="doc-group-header" onclick="toggleGroup('8')">
+        <span class="doc-group-arrow" id="arrow-8">▶</span>
+        <span class="doc-group-num">8</span>
+        <span class="doc-group-title">Construcción del Software — Base de Datos</span>
+        <span class="doc-group-prog" id="prog-8">0/6</span>
+      </div>
+      <div class="doc-group-items" id="group-8" style="display:none;">
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.1</span><span>Modelo Entidad-Relación (MER) — imagen integrada <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.2</span><span>Diagrama ER / Modelo Relacional <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.3</span><span>Diccionario de Datos (DD-01 a DD-14)</span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.4</span><span>Objetos de BD — Triggers, Vistas, SP <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.5</span><span>Script SQL de creación de BD</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">8.6</span><span>Esquemas de seguridad de BD</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 9 -->
+    <div class="doc-group" data-group="9">
+      <div class="doc-group-header" onclick="toggleGroup('9')">
+        <span class="doc-group-arrow" id="arrow-9">▶</span>
+        <span class="doc-group-num">9</span>
+        <span class="doc-group-title">Codificación</span>
+        <span class="doc-group-prog" id="prog-9">0/5</span>
+      </div>
+      <div class="doc-group-items" id="group-9" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">9.1</span><span>Estándar de codificación (convenciones, naming)</span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">9.2</span><span>Código fuente de los módulos principales <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">9.3</span><span>Servicios Web / API REST documentada <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">9.4</span><span>Control de versiones (Git/GitHub, ramas, CI/CD)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">9.5</span><span>Front-end implementado (HTML, CSS, JS / Tailwind)</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 10 -->
+    <div class="doc-group" data-group="10">
+      <div class="doc-group-header" onclick="toggleGroup('10')">
+        <span class="doc-group-arrow" id="arrow-10">▶</span>
+        <span class="doc-group-num">10</span>
+        <span class="doc-group-title">Pruebas del Software</span>
+        <span class="doc-group-prog" id="prog-10">0/5</span>
+      </div>
+      <div class="doc-group-items" id="group-10" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">10.1</span><span>Plan de Pruebas Unitarias (casos PU01–PUnn)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">10.2</span><span>Ejecución pruebas + evidencias/screenshots <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">10.3</span><span>Plan de Pruebas de Sistema (casos PS01–PSnn)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">10.4</span><span>Ejecución pruebas de sistema + evidencias <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">10.5</span><span>Manejo de alertas y excepciones</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 11 -->
+    <div class="doc-group" data-group="11">
+      <div class="doc-group-header" onclick="toggleGroup('11')">
+        <span class="doc-group-arrow" id="arrow-11">▶</span>
+        <span class="doc-group-num">11</span>
+        <span class="doc-group-title">Plan de Despliegue</span>
+        <span class="doc-group-prog" id="prog-11">0/3</span>
+      </div>
+      <div class="doc-group-items" id="group-11" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">11.1</span><span>Hosting, dominio y plataforma (Render.com)</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">11.2</span><span>Variables de entorno y configuración de producción</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">11.3</span><span>Proceso CI/CD y herramientas de despliegue</span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 12 -->
+    <div class="doc-group" data-group="12">
+      <div class="doc-group-header" onclick="toggleGroup('12')">
+        <span class="doc-group-arrow" id="arrow-12">▶</span>
+        <span class="doc-group-num">12</span>
+        <span class="doc-group-title">Implantación <span style="color:#f87171;font-size:0.7rem;margin-left:6px;">⚠ INCOMPLETO</span></span>
+        <span class="doc-group-prog" id="prog-12">0/5</span>
+      </div>
+      <div class="doc-group-items" id="group-12" style="display:none;">
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">12.1</span><span>Plan de implantación <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">12.2</span><span>Plan de capacitación por rol (Admin, Vigilante, Cliente) <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">12.3</span><span>Manual de usuario PDF formal (por rol con screenshots) <span class="partial-tag">PARCIAL</span></span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">12.4</span><span>Plan de copias de seguridad (pg_dump, Render snapshots)</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">12.5</span><span>Garantía / SLA post-implantación <span class="missing-tag">FALTANTE</span></span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 13 -->
+    <div class="doc-group" data-group="13">
+      <div class="doc-group-header" onclick="toggleGroup('13')">
+        <span class="doc-group-arrow" id="arrow-13">▶</span>
+        <span class="doc-group-num">13</span>
+        <span class="doc-group-title">Buenas Prácticas en el Desarrollo <span style="color:#f87171;font-size:0.7rem;margin-left:6px;">⚠ AUSENTE</span></span>
+        <span class="doc-group-prog" id="prog-13">0/1</span>
+      </div>
+      <div class="doc-group-items" id="group-13" style="display:none;">
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">13.1</span><span>Adopción de buenas prácticas (metodología ágil, principios SOLID, code review) <span class="missing-tag">FALTANTE</span></span></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN FINAL -->
+    <div class="doc-group" data-group="fin">
+      <div class="doc-group-header" onclick="toggleGroup('fin')">
+        <span class="doc-group-arrow" id="arrow-fin">▶</span>
+        <span class="doc-group-num">—</span>
+        <span class="doc-group-title">Secciones Finales</span>
+        <span class="doc-group-prog" id="prog-fin">0/4</span>
+      </div>
+      <div class="doc-group-items" id="group-fin" style="display:none;">
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">F.1</span><span>Conclusiones</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">F.2</span><span>Bibliografía — Normas APA 7ma edición</span></div>
+        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">F.3</span><span>Glosario de términos</span></div>
+        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">F.4</span><span>Anexos (índice de diagramas, tablas, evidencias) <span class="missing-tag">FALTANTE</span></span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HALLAZGOS -->
+  <div class="section-title">Hallazgos</div>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <label>Filtrar:</label>
+    <button class="filter-btn active" onclick="filterFindings('all', this)">Todos <span id="cnt-all"></span></button>
+    <button class="filter-btn" onclick="filterFindings('faltante', this)">Faltantes</button>
+    <button class="filter-btn" onclick="filterFindings('inconsistencia', this)">Inconsistencias</button>
+    <button class="filter-btn" onclick="filterFindings('obsoleto', this)">Obsoletos</button>
+    <button class="filter-btn" onclick="filterPriority('critico', this)">🔴 Crítico</button>
+    <button class="filter-btn" onclick="filterPriority('alto', this)">🟠 Alto</button>
+    <button class="filter-btn" onclick="filterPriority('medio', this)">🟡 Medio</button>
+    <input class="search-input" type="text" placeholder="Buscar hallazgo..." oninput="searchFindings(this.value)">
+  </div>
+
+  <div class="findings-section">
+    <h2>Listado de hallazgos <span class="count-badge" id="visible-count">39</span></h2>
+    <table id="findings-table">
+      <thead>
+        <tr>
+          <th style="width:36px"></th>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Tipo</th>
+          <th>Prioridad</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="findings-body">
+        <!-- FALTANTES -->
+        <tr data-type="faltante" data-priority="critico">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-001</td>
+          <td class="name-cell">Historias de Usuario</td>
+          <td class="desc-cell">No existe ningún documento HU en formato estándar. Ausente en Drive y doc principal.</td>
+          <td><span class="type-badge">Faltante</span></td>
+          <td><span class="badge critico">Crítico</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="critico">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-002</td>
+          <td class="name-cell">Diagrama UML Casos de Uso</td>
+          <td class="desc-cell">PDF en Drive existe (86.6KB) pero no está integrado en el documento. Sin diagrama UML formal.</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge critico">Crítico</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="critico">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-003</td>
+          <td class="name-cell">Diagramas de Actividades</td>
+          <td class="desc-cell">Sin diagramas de actividades para flujos críticos: ingreso, salida+pago, reserva, fidelización.</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge critico">Crítico</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="critico">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-004</td>
+          <td class="name-cell">Diagramas de Secuencias</td>
+          <td class="desc-cell">Sin diagramas de secuencias UML para interacciones entre capas del sistema.</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge critico">Crítico</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-005</td>
+          <td class="name-cell">Diagrama de Clases UML</td>
+          <td class="desc-cell">Sin representación visual con atributos, métodos y relaciones entre las 14 clases.</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-006</td>
+          <td class="name-cell">Diagrama de Componentes</td>
+          <td class="desc-cell">Sin diagrama UML de componentes que muestre las 9 apps Django, dependencias y capas.</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-007</td>
+          <td class="name-cell">Mapa de Navegación</td>
+          <td class="desc-cell">Sin diagrama de navegación entre pantallas por rol (Admin, Vigilante, Cliente).</td>
+          <td><span class="type-badge">Diagrama</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-008</td>
+          <td class="name-cell">Plan de Capacitación</td>
+          <td class="desc-cell">Sin plan de capacitación para admins, vigilantes y clientes. Sección 12.2 SENA.</td>
+          <td><span class="type-badge">Faltante</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-009</td>
+          <td class="name-cell">Manual de Usuario (PDF formal)</td>
+          <td class="desc-cell">Texto básico en doc v2 pero sin PDF independiente con capturas, pasos numerados por rol.</td>
+          <td><span class="type-badge">Faltante</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="bajo">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-010</td>
+          <td class="name-cell">Garantía / SLA</td>
+          <td class="desc-cell">Sin documento de garantía o acuerdo de nivel de servicio post-implantación.</td>
+          <td><span class="type-badge">Faltante</span></td>
+          <td><span class="badge bajo">Bajo</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-011</td>
+          <td class="name-cell">Buenas Prácticas (Sección 13)</td>
+          <td class="desc-cell">Sección 13 completamente ausente: metodología ágil, principios SOLID, code review, etc.</td>
+          <td><span class="type-badge">Sección</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-012</td>
+          <td class="name-cell">Tests automatizados Django</td>
+          <td class="desc-cell">Todos los tests.py vacíos. 0% cobertura automatizable. 9 apps = 0 tests reales.</td>
+          <td><span class="type-badge">Código</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-013</td>
+          <td class="name-cell">Documentación API REST (OpenAPI)</td>
+          <td class="desc-cell">DRF instalado pero SIN serializers ni ViewSets. La mención de API en doc v2 es incorrecta.</td>
+          <td><span class="type-badge">API</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-014</td>
+          <td class="name-cell">Evidencias de Ejecución de Pruebas</td>
+          <td class="desc-cell">PU01–PU20 y PS01–PS08 reportan "PASÓ" pero sin screenshots, videos ni logs de evidencia.</td>
+          <td><span class="type-badge">Evidencia</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-015</td>
+          <td class="name-cell">Propuesta Técnica — Costos y Hardware</td>
+          <td class="desc-cell">Falta tabla de costos estimados, requisitos de hardware servidor/cliente y software.</td>
+          <td><span class="type-badge">Sección</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-016</td>
+          <td class="name-cell">Diagrama MER/ER integrado</td>
+          <td class="desc-cell">Imágenes MER existen en Drive pero ninguna está integrada al documento principal.</td>
+          <td><span class="type-badge">Evidencia</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-017</td>
+          <td class="name-cell">Procedimientos Almacenados y Vistas BD</td>
+          <td class="desc-cell">Solo triggers documentados. Sin Stored Procedures ni Vistas SQL formales.</td>
+          <td><span class="type-badge">BD</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+        </tr>
+        <tr data-type="faltante" data-priority="bajo">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-018</td>
+          <td class="name-cell">Índices de Diagramas y Tablas</td>
+          <td class="desc-cell">Índice de diagramas e índice de tablas están vacíos en el documento v2.</td>
+          <td><span class="type-badge">Sección</span></td>
+          <td><span class="badge bajo">Bajo</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <!-- HALLAZGOS v1.1 -->
+        <tr data-type="inconsistencia" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-019</td>
+          <td class="name-cell">pagMetodo: valor PSE no documentado</td>
+          <td class="desc-cell">ENUM pagMetodo tiene: EFECTIVO/TARJETA/TRANSFERENCIA/<strong>PSE</strong>. DD-09 omite PSE.</td>
+          <td><span class="type-badge">Inconsistencia</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge confirmado" onclick="cycleStatus(this)">Confirmado</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">F-020</td>
+          <td class="name-cell">porcentajeBono no documentado en DD-13</td>
+          <td class="desc-cell">ConfiguracionFidelidad.porcentajeBono existe en el modelo pero no en DD-13 ni en reglas de negocio.</td>
+          <td><span class="type-badge">Inconsistencia</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge confirmado" onclick="cycleStatus(this)">Confirmado</span></td>
+        </tr>
+        <!-- INCONSISTENCIAS -->
+        <tr data-type="inconsistencia" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-001</td>
+          <td class="name-cell">Integrante faltante en doc principal</td>
+          <td class="desc-cell">Jhorman Steven Cortes Lasso aparece en el ACTA pero no en la portada del doc v2.</td>
+          <td><span class="type-badge">Inconsistencia</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-002</td>
+          <td class="name-cell">Documentacion_V4.docx — stack React/Node</td>
+          <td class="desc-cell">Versión con tecnología incorrecta (React/Node) sin marcar como OBSOLETO en Drive.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-003</td>
+          <td class="name-cell">espEstado: MANTENIMIENTO vs INACTIVO ✓</td>
+          <td class="desc-cell">Doc v2 dice MANTENIMIENTO. Migration 0002 confirma: INACTIVO. El código es correcto.</td>
+          <td><span class="type-badge">Inconsistencia</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge confirmado" onclick="cycleStatus(this)">Confirmado</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-004</td>
+          <td class="name-cell">DD-13 faltante (fidelidad_configuracion)</td>
+          <td class="desc-cell">La tabla fidelidad_configuracion no tiene entrada en el diccionario de datos.</td>
+          <td><span class="type-badge">Omisión BD</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-005</td>
+          <td class="name-cell">DD-14 faltante (cupones_aplicados)</td>
+          <td class="desc-cell">La tabla cupones_aplicados no tiene entrada en el diccionario de datos.</td>
+          <td><span class="type-badge">Omisión BD</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="critico">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-006</td>
+          <td class="name-cell">DRF instalado pero NO implementado ✓</td>
+          <td class="desc-cell">0 serializers en 9 apps. Las ~80 rutas son CBV Django. Los 7 JSON son AJAX helpers, no REST.</td>
+          <td><span class="type-badge">Inconsistencia</span></td>
+          <td><span class="badge critico">Crítico</span></td>
+          <td><span class="status-badge confirmado" onclick="cycleStatus(this)">Confirmado</span></td>
+        </tr>
+        <tr data-type="inconsistencia" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">I-007</td>
+          <td class="name-cell">Docs duplicados vacíos en Drive</td>
+          <td class="desc-cell">2 archivos "Documentacion Multiparking COMPLETA" de 1KB sin versión. Generan confusión.</td>
+          <td><span class="type-badge">Duplicado</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <!-- OBSOLETOS -->
+        <tr data-type="obsoleto" data-priority="alto">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-001</td>
+          <td class="name-cell">Documentacion_V4.docx</td>
+          <td class="desc-cell">Tecnología React/Node/MySQL — DESCARTADA. Mover a carpeta Obsoletos.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge alto">Alto</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="obsoleto" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-002</td>
+          <td class="name-cell">Documentacion_V3.docx</td>
+          <td class="desc-cell">Versión superada. Mover a carpeta Obsoletos.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="obsoleto" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-003</td>
+          <td class="name-cell">Documentacion_V2.docx</td>
+          <td class="desc-cell">Versión superada. Mover a carpeta Obsoletos.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="obsoleto" data-priority="medio">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-004</td>
+          <td class="name-cell">Documentacion_Final_V1.docx</td>
+          <td class="desc-cell">Versión superada. Mover a carpeta Obsoletos.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge medio">Medio</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="obsoleto" data-priority="bajo">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-005</td>
+          <td class="name-cell">Docs duplicados vacíos (x2)</td>
+          <td class="desc-cell">2 Google Docs "Documentacion Multiparking COMPLETA" de 1KB. Eliminar.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge bajo">Bajo</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+        <tr data-type="obsoleto" data-priority="bajo">
+          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+          <td class="id-cell">O-006</td>
+          <td class="name-cell">Bd provisional_ (sin extensión)</td>
+          <td class="desc-cell">Archivo temporal sin identificar. Revisar y eliminar si no aplica.</td>
+          <td><span class="type-badge">Obsoleto</span></td>
+          <td><span class="badge bajo">Bajo</span></td>
+          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>Multiparking — Auditoría Documental v1.1 · SENA ADSO · 2026 · Actualizado: 2026-05-29</footer>
+
+<script>
+  let activeTypeFilter = 'all';
+  let activePriorityFilter = null;
+  let searchTerm = '';
+
+  function updateCount() {
+    const rows = document.querySelectorAll('#findings-body tr');
+    let visible = 0;
+    rows.forEach(r => { if (!r.classList.contains('hidden')) visible++; });
+    document.getElementById('visible-count').textContent = visible;
+  }
+
+  function applyFilters() {
+    const rows = document.querySelectorAll('#findings-body tr');
+    rows.forEach(row => {
+      const type = row.dataset.type;
+      const priority = row.dataset.priority;
+      const text = row.innerText.toLowerCase();
+      const typeOk = activeTypeFilter === 'all' || type === activeTypeFilter;
+      const prioOk = !activePriorityFilter || priority === activePriorityFilter;
+      const searchOk = !searchTerm || text.includes(searchTerm.toLowerCase());
+      row.classList.toggle('hidden', !(typeOk && prioOk && searchOk));
+    });
+    updateCount();
+  }
+
+  function filterFindings(type, btn) {
+    activeTypeFilter = type;
+    activePriorityFilter = null;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  }
+
+  function filterPriority(priority, btn) {
+    if (activePriorityFilter === priority) {
+      activePriorityFilter = null;
+      btn.classList.remove('active');
+    } else {
+      activePriorityFilter = priority;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    applyFilters();
+  }
+
+  function searchFindings(val) {
+    searchTerm = val;
+    applyFilters();
+  }
+
+  function cycleStatus(el) {
+    const states = ['pendiente', 'confirmado', 'parcial', 'resuelto'];
+    const labels = { pendiente: 'Pendiente', confirmado: 'Confirmado', parcial: 'Parcial', resuelto: 'Resuelto' };
+    let cur = states.findIndex(s => el.classList.contains(s));
+    states.forEach(s => el.classList.remove(s));
+    const next = states[(cur + 1) % states.length];
+    el.classList.add(next);
+    el.textContent = labels[next];
+  }
+
+  function toggleResolved(cb) {
+    const row = cb.closest('tr');
+    row.style.opacity = cb.checked ? '0.4' : '1';
+    const statusEl = row.querySelector('.status-badge');
+    if (cb.checked) {
+      ['pendiente','confirmado','parcial'].forEach(s => statusEl.classList.remove(s));
+      statusEl.classList.add('resuelto');
+      statusEl.textContent = 'Resuelto';
+    }
+  }
+
+  updateCount();
+
+  // DOC CHECKLIST
+  const groupSizes = { '0':4,'1':4,'2':3,'3':1,'4':4,'5':5,'6':6,'7':6,'8':6,'9':5,'10':5,'11':3,'12':5,'13':1,'fin':4 };
+  const totalItems = Object.values(groupSizes).reduce((a,b)=>a+b,0);
+  document.getElementById('doc-total').textContent = totalItems;
+
+  function toggleGroup(id) {
+    const el = document.getElementById('group-'+id);
+    const arrow = document.getElementById('arrow-'+id);
+    const open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : 'block';
+    arrow.classList.toggle('open', !open);
+  }
+
+  function updateDocProgress() {
+    const allChecks = document.querySelectorAll('.doc-check');
+    let done = 0;
+    allChecks.forEach(c => { if(c.checked) done++; });
+    const pct = Math.round((done/totalItems)*100);
+    document.getElementById('doc-done').textContent = done;
+    document.getElementById('doc-pct').textContent = pct+'%';
+    document.getElementById('doc-bar').style.width = pct+'%';
+
+    // Update per-group progress
+    Object.keys(groupSizes).forEach(gid => {
+      const items = document.querySelectorAll(`#group-${gid} .doc-check`);
+      let gdone = 0;
+      items.forEach(c => { if(c.checked) gdone++; });
+      const progEl = document.getElementById('prog-'+gid);
+      if(progEl) {
+        progEl.textContent = gdone+'/'+groupSizes[gid];
+        progEl.classList.toggle('done', gdone === groupSizes[gid]);
+      }
+    });
+
+    // Save to localStorage
+    const state = {};
+    allChecks.forEach((c,i) => { state[i] = c.checked; });
+    localStorage.setItem('docChecklist', JSON.stringify(state));
+  }
+
+  // Restore state from localStorage
+  (function restoreState() {
+    const saved = localStorage.getItem('docChecklist');
+    if(!saved) return;
+    const state = JSON.parse(saved);
+    const allChecks = document.querySelectorAll('.doc-check');
+    allChecks.forEach((c,i) => {
+      if(state[i]) { c.checked = true; }
+    });
+    updateDocProgress();
+  })();
+</script>
+</body>
+</html>

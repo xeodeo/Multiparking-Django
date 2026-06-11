@@ -1,0 +1,2540 @@
+﻿Sistema de Información Web para la Gestión Integral de Parqueaderos Privados
+MultiParking
+
+
+Integrantes:
+Kevin Arley Grisales Ovalle
+Kevin Santiago Pinto López
+
+
+Análisis y Desarrollo de Software
+Ficha: 3119175
+
+
+Centro de Diseño y Metrología – SENA
+Bogotá D.C., 2026
+________________
+
+
+Resumen
+MultiParking es un sistema de información web orientado a la automatización y gestión integral de parqueaderos privados. La plataforma cubre el registro de usuarios con tres roles diferenciados (administrador, vigilante y cliente), el control de vehículos propios y visitantes, la asignación y liberación de espacios en tiempo real, el cálculo automático de tarifas por minuto con redondeo a cien pesos colombianos, la generación de pagos, la aplicación de cupones de descuento, la gestión de reservas, el registro de novedades operativas con notificación por correo electrónico, un sistema de fidelización mediante stickers acumulables y la generación de reportes exportables. El sistema se desarrolló en Python con Django 6.0, PostgreSQL como gestor de base de datos en producción (Render.com), Tailwind CSS para el diseño responsivo, SendGrid para correos transaccionales y Gunicorn como servidor WSGI.
+Palabras clave: parqueadero, sistema de información web, Django, PostgreSQL, gestión de espacios, fidelización.
+
+
+Abstract
+MultiParking is a web-based information system designed for the comprehensive automation and management of private parking lots. The platform covers user registration with three differentiated roles (administrator, security guard, and client), real-time space assignment, automatic rate calculation, payment generation, coupon application, reservation management, operational incident logging with email notification, a loyalty sticker system, and exportable reports. Built with Python/Django 6.0, PostgreSQL (Render.com production), Tailwind CSS, SendGrid and Gunicorn.
+Keywords: parking lot, web information system, Django, PostgreSQL, space management, loyalty.
+________________
+
+
+Introducción
+En la actualidad, los parqueaderos privados de pequeña y mediana escala operan con métodos manuales que generan ineficiencias operativas: registros en papel, cálculos de tarifa imprecisos, ausencia de trazabilidad y nula visibilidad del estado de los espacios en tiempo real. Esta situación deriva en pérdida de ingresos, inconformidad de los usuarios y dificultad para tomar decisiones basadas en datos (García & Martínez, 2022).
+El proyecto MultiParking desarrolla una solución web que automatiza de forma integral la operación de parqueaderos privados. El sistema registra ingresos y salidas de vehículos, calcula tarifas en tiempo real, gestiona reservas anticipadas, emite notificaciones digitales, aplica descuentos mediante cupones y acumula beneficios de fidelización.
+La arquitectura tecnológica se apoya en Django 6.0 (Python 3.12), PostgreSQL en producción (Render.com), Tailwind CSS vía CDN, Chart.js para visualizaciones estadísticas, SendGrid como proveedor de correo transaccional y Gunicorn como servidor WSGI. La autenticación implementa un modelo de sesión propio —sin dependencia del módulo django.contrib.auth.User— con tres roles: ADMIN, VIGILANTE y CLIENTE.
+Este documento sigue la estructura definida por el programa Análisis y Desarrollo de Software (ADSO) del SENA y las normas de presentación APA séptima edición (American Psychological Association, 2020).
+Planteamiento del Problema
+Árbol del Problema
+Efectos
+Pérdida de información y trazabilidad en el registro de vehículos:
+causada por registros manuales dispersos y falta de integración del sistema.
+Cobros imprecisos o injustos por uso del parqueadero:
+debido a la ausencia de tarifación confiable y auditoría en tiempo real.
+Filas y demoras en el ingreso y salida de vehículos:
+por control manual y verificación lenta.
+Inconformidad de los residentes y visitantes:
+generada por tiempos de espera, cobros erróneos y baja transparencia operativa.
+Problema Principal
+Ineficiencia, falta de trazabilidad y pobre control en parqueaderos privados, ocasionado por procesos manuales, información no centralizada y carencia de herramientas digitales que soporten la operación, el cobro y la toma de decisiones (Bookings & Hernández, 2023).
+Causas
+Control manual del ingreso y salida de vehículos:
+provoca cuellos de botella y errores humanos.
+Registro de información en papel o planillas físicas:
+genera pérdida de datos y dificultad para auditorías.
+Falta de infraestructura tecnológica:
+limita la automatización y trazabilidad.
+Ausencia de herramientas digitales para cobros y reservas:
+impide calcular tarifas correctas y agilizar pagos.
+Descripción del Problema
+La mayoría de los parqueaderos privados realizan sus procesos operativos y administrativos de manera manual. El control del ingreso y salida de vehículos depende de planillas físicas, lo que impide tener trazabilidad confiable y genera inconsistencias en los tiempos y valores cobrados. La ausencia de un sistema tecnológico centralizado limita la visibilidad en tiempo real de los espacios disponibles, dificulta la conciliación de pagos y complica la detección de errores o fraudes. La imposibilidad de reservar espacio anticipadamente reduce la satisfacción del usuario y la competitividad del establecimiento frente a alternativas digitales.
+Objetivos
+Objetivo General
+Desarrollar un sistema de información web que permita la gestión integral de parqueaderos privados, optimizando el control de ingreso y salida de vehículos, la asignación de espacios, el cálculo automático de tarifas, la gestión de reservas anticipadas y el seguimiento de novedades operativas.
+Objetivos Específicos
+Fase de inicio:
+Analizar los procesos actuales de operación y control en parqueaderos privados para identificar los requerimientos funcionales y no funcionales del sistema.
+Identificar las necesidades de los usuarios (administradores, vigilantes y clientes) mediante encuestas y observación directa.
+Fase de planificación:
+Diseñar la arquitectura del sistema web, definiendo la estructura de la base de datos, los módulos funcionales y la interacción entre componentes.
+Elaborar los diagramas de casos de uso, clases y flujo de datos que representen el comportamiento del sistema.
+Fase de ejecución:
+Desarrollar los once módulos principales: usuarios, vehículos, pisos/espacios, inventario de parqueos, tarifas, pagos, cupones, reservas, novedades, fidelización y reportes.
+Implementar el cálculo automático de tarifas, las notificaciones por correo electrónico y la exportación de reportes en PDF y Excel.
+Fase de implementación:
+Desplegar el sistema en Render.com, validando su correcto funcionamiento con datos reales.
+Capacitar al personal y realizar pruebas piloto antes de la puesta en marcha final.
+Justificación
+En numerosos parqueaderos privados de pequeña y mediana escala, el control manual de ingreso y salida de vehículos genera demoras, fallos en el cobro y pérdida de información crítica. Estudios recientes señalan que la adopción de sistemas digitales de gestión de aparcamientos mejora la eficiencia operativa, reduce errores humanos y ofrece trazabilidad de datos en tiempo real (García & Martínez, 2022). Así mismo, Garavito Albao et al. (2021) demuestran que los sistemas de información en pequeñas empresas de servicios reducen el tiempo de atención hasta en un 40% y disminuyen los errores de registro en más del 60%.
+La plataforma beneficia directamente a tres perfiles de usuarios: administradores, que obtienen visibilidad total y reportes de inteligencia operativa; vigilantes, que agilizan los procesos de ingreso y salida; y clientes, que acceden a reservas anticipadas, historial de parqueos y beneficios de fidelización. La implementación sobre Django 6.0 garantiza mantenibilidad a largo plazo gracias a su arquitectura MVT y su comunidad activa.
+Alcance del Proyecto
+El proyecto consiste en desarrollar un sistema de información web denominado MultiParking, orientado a automatizar la gestión de parqueaderos privados de pequeña y mediana escala. El sistema opera como plataforma web responsiva desde dispositivos móviles o computadores sin requerir hardware especializado.
+El alcance incluye: levantamiento de requerimientos; diseño de la arquitectura y la base de datos relacional (PostgreSQL); once módulos funcionales; notificaciones por correo (SendGrid); exportación a PDF (reportlab) y Excel (openpyxl); despliegue en Render.com.
+Quedan fuera del alcance: integración con hardware automatizado (barreras, sensores, cámaras) y desarrollo de aplicación móvil nativa, contemplados para versiones futuras.
+Matriz de Riesgo
+La Tabla 1 presenta los riesgos identificados durante la planificación del proyecto.
+
+
+Tabla 1
+Matriz de Riesgos del Proyecto MultiParking
+Nº
+	Riesgo
+	Causa
+	Impacto
+	Probabilidad
+	Estrategia de mitigación
+	1
+	Retrasos en el desarrollo del sistema
+	Subestimación de tiempos, problemas técnicos
+	Aplazamiento en la entrega final
+	Media
+	Cronograma ágil con revisión semanal.
+	2
+	Dificultades en la integración de pagos digitales
+	Problemas con APIs de pasarelas de pago
+	No se podrán realizar cobros automatizados
+	Media
+	Usar APIs documentadas como PayU o Wompi.
+	3
+	Falta de conectividad en el entorno piloto
+	Infraestructura deficiente de red
+	Fallos en el acceso o carga del sistema
+	Alta
+	Verificar requisitos técnicos del sitio previamente.
+	4
+	Baja adopción por parte de los usuarios
+	Resistencia al cambio
+	Uso limitado del sistema
+	Media
+	Capacitaciones y pruebas piloto con retroalimentación.
+	5
+	Pérdida de datos durante el uso
+	Fallos en el servidor
+	Pérdida de historial y registros
+	Baja
+	Implementar backups automáticos diarios.
+	6
+	Cambios en los requerimientos del cliente
+	Nuevas necesidades descubiertas
+	Re-trabajo o rediseño de módulos
+	Media
+	Reuniones frecuentes con stakeholders.
+	7
+	Salida de un integrante clave del equipo
+	Problemas personales o deserción
+	Retrasos o redistribución de tareas
+	Baja
+	Documentación compartida y roles cruzados.
+	
+
+Nota. Elaboración propia (2026).
+Elicitación de Requisitos
+Identificación de Procesos
+Los procesos principales identificados en parqueaderos privados son:
+• Registro de ingreso de vehículo con asignación automática de espacio disponible.
+• Cálculo de tiempo de permanencia y tarifa al momento de la salida.
+• Gestión de pagos y aplicación de descuentos mediante cupones.
+• Reserva anticipada de espacios por parte de clientes registrados.
+• Registro de novedades operativas con notificación al usuario afectado.
+• Generación de reportes de ingresos, ocupación y actividad del parqueadero.
+Recolección de la Información del Software a Construir
+Para iniciar el desarrollo del sistema MultiParking se realizó una fase de recolección de datos con el objetivo de comprender las necesidades reales de propietarios, vigilantes y usuarios. La información se obtuvo a través de dos técnicas principales: observación directa en parqueaderos locales de la localidad de Suba, barrio Compartir, y encuestas digitales dirigidas a usuarios.
+Elección de la Técnica de Recolección de la Información
+Para el proyecto se optó por utilizar las siguientes técnicas:
+Encuesta digital: Aplicada a 13 usuarios y administradores de parqueaderos, con 13 preguntas de selección múltiple sobre su experiencia actual y expectativas frente a un sistema tecnológico.
+Observación directa: Empleada para registrar de forma sistemática el comportamiento de los procesos operativos en parqueaderos de pequeño y mediano tamaño.
+Aplicación de la Técnica de Recolección de Información
+La encuesta se aplicó de forma digital. La observación se efectuó en parqueaderos reales de la localidad de Suba en días de alta y baja afluencia.
+Organización de la Información Recolectada
+Encuesta
+A continuación se presenta el análisis estadístico de la información recolectada en la encuesta (n = 13):
+¿Con qué frecuencia utilizas parqueaderos públicos o privados?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Todos los días
+	4
+	4
+	0.308
+	0.308
+	Varias veces a la semana
+	3
+	7
+	0.231
+	0.539
+	Ocasionalmente
+	3
+	10
+	0.231
+	0.770
+	Casi nunca
+	3
+	13
+	0.231
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué medio usas actualmente para pagar en un parqueadero?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Efectivo
+	11
+	11
+	0.846
+	0.846
+	Tarjeta débito/crédito
+	1
+	12
+	0.077
+	0.923
+	App o sistema digital
+	1
+	13
+	0.077
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué aspectos te resultan más molestos al usar un parqueadero?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Pago solo en efectivo
+	7
+	7
+	0.538
+	0.538
+	Largos tiempos de espera
+	6
+	13
+	0.462
+	1.000
+	Tarifas poco claras
+	6
+	19
+	0.462
+	1.462
+	Filas para entrar o salir
+	6
+	25
+	0.462
+	1.923
+	Falta de espacios disponibles
+	5
+	30
+	0.385
+	2.308
+	Pérdida de tiquetes
+	2
+	32
+	0.154
+	2.462
+	Muestra
+	13
+	
+
+	
+
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Te gustaría poder ingresar al parqueadero escaneando un código QR?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Sí
+	5
+	5
+	0.385
+	0.385
+	Tal vez
+	8
+	13
+	0.615
+	1.000
+	No
+	0
+	13
+	0
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Te parecería útil poder ver el tiempo y costo acumulado en tiempo real?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Sí, muy útil
+	12
+	12
+	0.923
+	0.923
+	Me es indiferente
+	0
+	12
+	0
+	0.923
+	No lo necesito
+	1
+	13
+	0.077
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Usarías una app para reservar espacio de parqueo antes de llegar?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Sí
+	8
+	8
+	0.615
+	0.615
+	Tal vez
+	4
+	12
+	0.308
+	0.923
+	No
+	1
+	13
+	0.077
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué métodos de pago preferirías para este sistema?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Transferencia digital / billetera
+	10
+	10
+	0.769
+	0.769
+	Tarjeta débito/crédito
+	8
+	18
+	0.615
+	1.385
+	Efectivo
+	6
+	24
+	0.462
+	1.846
+	Pago por código QR
+	5
+	29
+	0.385
+	2.231
+	Muestra
+	13
+	
+
+	
+
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué tanto te gustaría que el parqueadero reconociera tu historial para darte descuentos?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Me gustaría mucho
+	6
+	6
+	0.462
+	0.462
+	Es algo interesante
+	5
+	11
+	0.385
+	0.847
+	No me interesa
+	2
+	13
+	0.154
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Consideras importante salir del parqueadero rápidamente sin interactuar con personal?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Moderadamente importante
+	6
+	6
+	0.462
+	0.462
+	Muy importante
+	5
+	11
+	0.385
+	0.847
+	No es importante
+	2
+	13
+	0.154
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué tan dispuesto estarías a usar un sistema de parqueadero completamente automatizado?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Muy dispuesto
+	7
+	7
+	0.538
+	0.538
+	Algo dispuesto
+	6
+	13
+	0.462
+	1.000
+	No dispuesto
+	0
+	13
+	0
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Estarías dispuesto/a a pagar un poco más por un parqueadero automatizado?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Solo si el precio es igual al tradicional
+	7
+	7
+	0.538
+	0.538
+	Sí
+	6
+	13
+	0.462
+	1.000
+	No
+	0
+	13
+	0
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+¿Qué funcionalidad te gustaría que tuviera un parqueadero automatizado?
+Variable
+	Frecuencia Absoluta
+	Frecuencia Absoluta Acumulada
+	Frecuencia Relativa
+	Frecuencia Relativa Acumulada
+	Poder reservar
+	3
+	3
+	0.231
+	0.231
+	Pagar al ingresar, no al salir
+	2
+	5
+	0.154
+	0.385
+	Garantizar seguridad del vehículo
+	3
+	8
+	0.231
+	0.612
+	Notificación del vencimiento del parqueo
+	3
+	11
+	0.231
+	0.846
+	Parqueadero más amplio
+	2
+	13
+	0.154
+	1.000
+	Muestra
+	13
+	
+
+	1
+	
+
+	
+
+Nota. Elaboración propia (2026).
+
+
+Observación
+Se llevaron a cabo observaciones directas en parqueaderos privados de tamaño pequeño y mediano, en días con gran y poca afluencia. Se registraron los procedimientos de entrada y salida, la asignación de espacios, los tiempos de espera, las formas de cobro y las incidencias más frecuentes. Los hallazgos confirmaron la necesidad de digitalizar el control de acceso, el cobro y la comunicación con los usuarios.
+Requerimientos
+Módulo Usuarios
+Código Requisito
+	RF01
+	Nombre
+	Registrar usuario
+	Descripción
+	El sistema permitirá registrar un nuevo usuario capturando nombre, apellido, documento de identidad, correo electrónico, teléfono y contraseña. La contraseña se almacenará cifrada con PBKDF2-SHA256.
+	Entradas
+	usuNombre, usuApellido, usuDocumento, usuCorreo, usuTelefono, usuClaveHash
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF02
+	Nombre
+	Iniciar sesión
+	Descripción
+	El sistema permitirá autenticarse mediante correo y contraseña. Se verificará el hash y se creará sesión con datos del usuario y su rol.
+	Entradas
+	usuCorreo, contraseña
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF03
+	Nombre
+	Cerrar sesión
+	Descripción
+	El sistema permitirá finalizar la sesión activa, eliminando los datos de sesión del servidor.
+	Entradas
+	Sesión activa
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF04
+	Nombre
+	Recuperar contraseña
+	Descripción
+	El sistema enviará al correo registrado un enlace de recuperación con token de un solo uso. Al usarlo, el token queda invalidado automáticamente.
+	Entradas
+	usuCorreo
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF05
+	Nombre
+	Gestionar usuarios (Admin)
+	Descripción
+	El administrador podrá crear, editar, activar/desactivar y eliminar usuarios del sistema.
+	Entradas
+	usuNombre, usuApellido, usuDocumento, usuCorreo, usuTelefono, rolTipoRol
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF06
+	Nombre
+	Asignar rol
+	Descripción
+	El sistema soportará tres roles: ADMIN, VIGILANTE y CLIENTE, con acceso diferenciado.
+	Entradas
+	rolTipoRol (ENUM)
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF07
+	Nombre
+	Ver perfil propio
+	Descripción
+	El usuario podrá consultar sus datos personales, historial de parqueos, stickers acumulados y reservas activas.
+	Entradas
+	Sesión activa
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF08
+	Nombre
+	Actualizar datos personales
+	Descripción
+	El usuario podrá modificar su nombre, apellido, teléfono y contraseña desde su perfil.
+	Entradas
+	usuNombre, usuApellido, usuTelefono, nueva contraseña
+	Prioridad
+	Media
+	
+
+Módulo Vehículos
+Código Requisito
+	RF09
+	Nombre
+	Registrar vehículo propio
+	Descripción
+	El cliente podrá registrar vehículos asociados a su cuenta indicando placa, tipo, color, marca y modelo.
+	Entradas
+	vehPlaca, vehTipo, vehColor, vehMarca, vehModelo, fkIdUsuario
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF10
+	Nombre
+	Registrar vehículo visitante
+	Descripción
+	El vigilante podrá registrar vehículos de visitantes sin cuenta, capturando placa, tipo, nombre y teléfono de contacto.
+	Entradas
+	vehPlaca, vehTipo, nombre_contacto, telefono_contacto
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF11
+	Nombre
+	Listar vehículos por usuario
+	Descripción
+	El sistema mostrará la lista de vehículos registrados por el usuario autenticado.
+	Entradas
+	fkIdUsuario (sesión)
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF12
+	Nombre
+	Editar vehículo
+	Descripción
+	El usuario podrá modificar los datos de un vehículo propio.
+	Entradas
+	vehPlaca, vehTipo, vehColor, vehMarca, vehModelo
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF13
+	Nombre
+	Eliminar vehículo
+	Descripción
+	El administrador podrá eliminar un vehículo si no tiene registros activos ni reservas vigentes.
+	Entradas
+	idVehiculo
+	Prioridad
+	Baja
+	
+
+Módulo Espacios
+Código Requisito
+	RF14
+	Nombre
+	Gestionar pisos
+	Descripción
+	El administrador podrá crear, editar y desactivar pisos del parqueadero. No se elimina un piso con espacios ocupados.
+	Entradas
+	pisNombre, pisEstado
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF15
+	Nombre
+	Gestionar tipos de espacio
+	Descripción
+	El administrador podrá crear y editar tipos de espacio (CARRO, MOTO, BICICLETA).
+	Entradas
+	nombre (TipoEspacio)
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF16
+	Nombre
+	Gestionar espacios
+	Descripción
+	El administrador podrá crear, editar y eliminar espacios individuales por piso y tipo.
+	Entradas
+	espNumero, fkIdPiso, fkIdTipoEspacio, espEstado
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF17
+	Nombre
+	Ver disponibilidad en tiempo real
+	Descripción
+	El sistema mostrará la vista general de pisos coloreada por estado (DISPONIBLE/OCUPADO/RESERVADO/MANTENIMIENTO), actualizada cada 30 segundos vía AJAX.
+	Entradas
+	Ninguna (dashboard)
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF18
+	Nombre
+	Cambiar estado de espacio
+	Descripción
+	El administrador podrá cambiar manualmente el estado de un espacio a MANTENIMIENTO y viceversa.
+	Entradas
+	idEspacio, espEstado
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF19
+	Nombre
+	Mostrar placa en espacio ocupado
+	Descripción
+	La vista general mostrará la placa del vehículo actualmente parqueado en espacios OCUPADOS.
+	Entradas
+	InventarioParqueo activo (fkIdEspacio)
+	Prioridad
+	Media
+	
+
+Módulo Inventario Parqueos
+Código Requisito
+	RF20
+	Nombre
+	Registrar ingreso de vehículo
+	Descripción
+	El vigilante registrará el ingreso, seleccionando placa y espacio. El sistema registra la hora de entrada y cambia el espacio a OCUPADO.
+	Entradas
+	fkIdVehiculo, fkIdEspacio, parHoraEntrada
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF21
+	Nombre
+	Registrar salida de vehículo
+	Descripción
+	El vigilante registrará la salida. El sistema calcula el costo, genera el pago y libera el espacio a DISPONIBLE.
+	Entradas
+	idParqueo, parHoraSalida, fkIdTarifa
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF22
+	Nombre
+	Calcular costo de parqueo
+	Descripción
+	Fórmula: ceil((minutos / 60) × precioHora / 100) × 100. Visitantes usan precioHoraVisitante. Mínimo 100 COP.
+	Entradas
+	parHoraEntrada, parHoraSalida, precioHora
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF23
+	Nombre
+	Control de espacio al ingresar/salir
+	Descripción
+	Al ingresar: espacio → OCUPADO. Al salir: espacio → DISPONIBLE. También aplica al confirmar/cancelar reservas.
+	Entradas
+	espEstado (ENUM)
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF24
+	Nombre
+	Ver historial de parqueos
+	Descripción
+	Admin ve historial completo con filtros. El cliente ve solo sus propios registros.
+	Entradas
+	Fecha, fkIdVehiculo, fkIdEspacio
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF25
+	Nombre
+	Ver parqueos activos en tiempo real
+	Descripción
+	El dashboard del vigilante muestra vehículos parqueados con espacio, hora y tiempo acumulado. AJAX cada 30 s.
+	Entradas
+	parHoraSalida IS NULL
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF26
+	Nombre
+	Evitar doble ingreso activo
+	Descripción
+	El sistema valida que un vehículo no pueda tener más de un registro activo simultáneo.
+	Entradas
+	fkIdVehiculo, parHoraSalida__isnull
+	Prioridad
+	Alta
+	
+
+Módulo Tarifas
+Código Requisito
+	RF27
+	Nombre
+	Crear tarifa
+	Descripción
+	El administrador creará tarifas con nombre, tipo de espacio, precio por hora (usuario/visitante), precio por día, precio mensual y fechas de vigencia.
+	Entradas
+	nombre, fkIdTipoEspacio, precioHora, precioHoraVisitante, precioDia, precioMensual, fechaInicio, fechaFin
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF28
+	Nombre
+	Restricción de tarifa activa única
+	Descripción
+	Solo una tarifa activa por tipo de espacio. Al activar una nueva, se desactiva automáticamente la anterior del mismo tipo.
+	Entradas
+	activa (BooleanField), fkIdTipoEspacio
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF29
+	Nombre
+	Editar y desactivar tarifa
+	Descripción
+	El administrador podrá editar o desactivar tarifas. No se eliminan tarifas con parqueos asociados.
+	Entradas
+	idTarifa, activa
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF30
+	Nombre
+	Consultar tarifa vigente
+	Descripción
+	El sistema mostrará la tarifa activa del tipo de espacio al registrar un ingreso o calcular un costo.
+	Entradas
+	fkIdTipoEspacio, activa=True
+	Prioridad
+	Alta
+	
+
+Módulo Pagos
+Código Requisito
+	RF31
+	Nombre
+	Generar pago al registrar salida
+	Descripción
+	Al registrar la salida se generará automáticamente un registro de pago con monto calculado, método y estado PAGADO.
+	Entradas
+	pagMonto, pagMetodo, pagEstado, fkIdParqueo
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF32
+	Nombre
+	Aplicar cupón en pago
+	Descripción
+	El vigilante podrá ingresar un código de cupón antes de finalizar el cobro. Si es válido, el descuento se aplica al monto total.
+	Entradas
+	cupCodigo, pagMonto
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF33
+	Nombre
+	Ver historial de pagos
+	Descripción
+	Admin ve todos los pagos con filtros por fecha, monto, método y estado. El cliente ve solo los suyos.
+	Entradas
+	pagFechaPago, pagEstado
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF34
+	Nombre
+	Reportes de ingresos
+	Descripción
+	El sistema generará reportes de ingresos agrupados por período, mostrando total recaudado y número de transacciones.
+	Entradas
+	pagFechaPago, pagMonto
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF35
+	Nombre
+	Exportar reportes
+	Descripción
+	El admin podrá descargar reportes de ingresos, ocupación, reservas y cupones en PDF (reportlab) o Excel (openpyxl).
+	Entradas
+	Filtros de reporte seleccionados
+	Prioridad
+	Media
+	
+
+Módulo Cupones
+Código Requisito
+	RF36
+	Nombre
+	Crear cupón
+	Descripción
+	El administrador creará cupones con nombre, código único alfanumérico, tipo (PORCENTAJE/VALOR_FIJO), valor, descripción, fechas de vigencia y estado activo.
+	Entradas
+	cupNombre, cupCodigo, cupTipo, cupValor, cupFechaInicio, cupFechaFin, cupActivo
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF37
+	Nombre
+	Validar cupón
+	Descripción
+	Al aplicar un cupón se verificará: código existente, activo=True, dentro de fechas de vigencia y con usos disponibles.
+	Entradas
+	cupCodigo, cupActivo, cupFechaFin
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF38
+	Nombre
+	Aplicar descuento
+	Descripción
+	PORCENTAJE: descuento = cupValor% del total. VALOR_FIJO: descuento fijo en COP. El monto final no puede ser negativo.
+	Entradas
+	cupTipo, cupValor, pagMonto
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF39
+	Nombre
+	Registrar uso de cupón
+	Descripción
+	Cada uso de cupón se registra en CuponAplicado con pago, cupón y monto descontado.
+	Entradas
+	fkIdPago, fkIdCupon, montoDescontado
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF40
+	Nombre
+	Desactivar cupón vencido
+	Descripción
+	El sistema detecta cupones con cupFechaFin pasada y los marca inactivos en el momento de la validación.
+	Entradas
+	cupFechaFin, fecha actual
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF41
+	Nombre
+	Listar cupones activos
+	Descripción
+	El administrador consultará la lista de cupones con estado, vigencia y número de usos.
+	Entradas
+	cupActivo, cupFechaFin
+	Prioridad
+	Media
+	
+
+Módulo Reservas
+Código Requisito
+	RF42
+	Nombre
+	Registrar reserva
+	Descripción
+	El cliente o administrador podrá reservar un espacio para una fecha y hora específicas, verificando que no exista traslape con otra reserva activa.
+	Entradas
+	resFechaReserva, resHoraInicio, resHoraFin, fkIdEspacio, fkIdVehiculo
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF43
+	Nombre
+	Consultar disponibilidad para reserva
+	Descripción
+	El sistema mostrará espacios disponibles para una fecha y rango horario, excluyendo los que tengan reservas solapadas o estén OCUPADOS/MANTENIMIENTO.
+	Entradas
+	resFechaReserva, resHoraInicio, resHoraFin
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF44
+	Nombre
+	Cancelar reserva
+	Descripción
+	El cliente podrá cancelar una reserva propia siempre que no haya comenzado. Al cancelar, el espacio regresa a DISPONIBLE.
+	Entradas
+	idReserva, resEstado
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF45
+	Nombre
+	Modificar reserva
+	Descripción
+	El administrador o cliente podrán editar fecha u hora de una reserva, siempre que el nuevo horario esté disponible.
+	Entradas
+	idReserva, resFechaReserva, resHoraInicio, resHoraFin
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF46
+	Nombre
+	Bloquear espacio al confirmar reserva
+	Descripción
+	Al confirmar: espacio → RESERVADO. Al cancelar: espacio → DISPONIBLE. Al convertir a parqueo: espacio → OCUPADO.
+	Entradas
+	espEstado, resEstado
+	Prioridad
+	Alta
+	
+
+Módulo NOVEDADES
+Código Requisito
+	RF47
+	Nombre
+	Registrar novedad
+	Descripción
+	El vigilante o administrador registrará una novedad asociándola a un vehículo y/o espacio, con descripción, foto (máx. 5 MB, JPG/PNG/GIF/WEBP) y estado PENDIENTE por defecto.
+	Entradas
+	novDescripcion, novFoto, fkIdVehiculo, fkIdEspacio, fkIdReportador
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF48
+	Nombre
+	Actualizar estado de novedad
+	Descripción
+	El administrador cambiará el estado entre PENDIENTE, EN_PROCESO y RESUELTO, agregando comentario de seguimiento.
+	Entradas
+	novEstado, novComentario
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF49
+	Nombre
+	Asignar responsable
+	Descripción
+	Al crear o editar una novedad se podrá asignar un responsable (usuario con rol ADMIN o VIGILANTE).
+	Entradas
+	fkIdResponsable
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF50
+	Nombre
+	Filtrar novedades
+	Descripción
+	El listado se filtrará por estado y por texto en la descripción.
+	Entradas
+	novEstado, novDescripcion__icontains
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF51
+	Nombre
+	Notificar usuario por correo
+	Descripción
+	Al crear o actualizar una novedad, el sistema enviará correo al dueño del vehículo afectado mediante SendGrid.
+	Entradas
+	fkIdVehiculo.fkIdUsuario.usuCorreo
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF52
+	Nombre
+	Eliminar novedad
+	Descripción
+	El administrador podrá eliminar una novedad del sistema (acción irreversible).
+	Entradas
+	idNovedad
+	Prioridad
+	Baja
+	
+
+Módulo Fidelización (Stickers)
+Código Requisito
+	RF53
+	Nombre
+	Acumular sticker al completar parqueo
+	Descripción
+	Al registrar la salida de un vehículo con propietario registrado y permanencia > 60 minutos, se asigna automáticamente un sticker al usuario.
+	Entradas
+	parHoraEntrada, parHoraSalida, fkIdUsuario, permanencia > 60 min
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF54
+	Nombre
+	Ver stickers en perfil
+	Descripción
+	El cliente verá en su perfil los stickers acumulados, la meta configurada y una barra de progreso. Cuando alcance la meta, aparecerá el botón de canje.
+	Entradas
+	fkIdUsuario, metaStickers (ConfiguracionFidelidad)
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF55
+	Nombre
+	Reclamar bono por meta alcanzada
+	Descripción
+	Al alcanzar la meta, el usuario reclama un cupón 100% generado automáticamente, con vigencia de 30 días y uso único.
+	Entradas
+	stkFecha, metaStickers, cupValor=100, cupTipo=PORCENTAJE
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF56
+	Nombre
+	Configurar meta de stickers
+	Descripción
+	El administrador modificará el número de stickers necesarios para el bono y los días de vigencia del cupón generado.
+	Entradas
+	metaStickers, diasVencimientoBono (ConfiguracionFidelidad)
+	Prioridad
+	Media
+	
+
+Módulo Reportes
+Código Requisito
+	RF57
+	Nombre
+	Reporte de ingresos por período
+	Descripción
+	El administrador generará reportes de ingresos filtrando por rango de fechas, con total recaudado, número de transacciones y promedio por operación.
+	Entradas
+	pagFechaPago (rango), pagMonto
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RF58
+	Nombre
+	Reporte de ocupación por espacio
+	Descripción
+	El sistema generará un reporte de porcentaje de ocupación por espacio para identificar los de mayor y menor rotación.
+	Entradas
+	fkIdEspacio, parHoraEntrada (rango)
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF59
+	Nombre
+	Reporte de reservas
+	Descripción
+	El admin verá el volumen de reservas por período con desglose por estado y tipo de espacio.
+	Entradas
+	resFechaReserva (rango), resEstado
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF60
+	Nombre
+	Reporte de cupones aplicados
+	Descripción
+	Reporte de cupones utilizados con código, número de usos, monto total descontado y período de aplicación.
+	Entradas
+	fkIdCupon, montoDescontado, pagFechaPago
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF61
+	Nombre
+	Visualización con gráficas
+	Descripción
+	El dashboard mostrará gráficas interactivas con Chart.js: barras de ingresos por día, líneas de ocupación y dona por tipo de espacio.
+	Entradas
+	Datos de pagos e inventario agrupados
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RF62
+	Nombre
+	Exportar a PDF y Excel
+	Descripción
+	Todos los reportes podrán descargarse en PDF (reportlab) o Excel (openpyxl) con encabezado, logo y fecha de generación.
+	Entradas
+	Filtros de reporte seleccionados
+	Prioridad
+	Media
+	
+
+Requerimientos No Funcionales
+Los requerimientos no funcionales establecen los atributos de calidad del sistema, siguiendo el modelo ISO/IEC 25010 (ISO, 2011).
+
+
+Código Requisito
+	RNF01
+	Nombre
+	Rendimiento
+	Descripción
+	El tiempo de respuesta para operaciones estándar no superará 3 segundos bajo condiciones normales.
+	Entradas
+	Tiempo de respuesta HTTP < 3 s
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF02
+	Nombre
+	Seguridad
+	Descripción
+	HTTPS obligatorio, CSP mediante middleware, X-Frame-Options: DENY, X-Content-Type-Options, HSTS y protección contra fijación de sesión.
+	Entradas
+	SecurityHeadersMiddleware, SECURE_HSTS_SECONDS
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF03
+	Nombre
+	Usabilidad
+	Descripción
+	Interfaz responsiva con Tailwind CSS. Tres paneles diferenciados por rol (morado/azul/verde). Validación en tiempo real en formularios.
+	Entradas
+	Tailwind CSS CDN, 3 layouts diferenciados
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF04
+	Nombre
+	Disponibilidad
+	Descripción
+	99% de uptime en horario operativo, garantizado por Render.com con reinicio automático ante fallos.
+	Entradas
+	99% uptime, auto-restart Render.com
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF05
+	Nombre
+	Mantenibilidad
+	Descripción
+	Código organizado en 11 apps Django con arquitectura MVT. Convenciones de nomenclatura consistentes.
+	Entradas
+	Arquitectura MVT, 11 apps Django
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF06
+	Nombre
+	Portabilidad
+	Descripción
+	Desplegable en cualquier PaaS que soporte Python 3.12 y PostgreSQL sin depender de hardware específico.
+	Entradas
+	requirements.txt, .env.example
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RNF07
+	Nombre
+	Escalabilidad
+	Descripción
+	Paginación en vistas de más de 20 registros para evitar degradación de rendimiento.
+	Entradas
+	Django Paginator
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RNF08
+	Nombre
+	Compatibilidad
+	Descripción
+	Compatible con las dos últimas versiones de Chrome, Firefox y Microsoft Edge.
+	Entradas
+	HTML5, CSS3, ES6+
+	Prioridad
+	Media
+	
+
+Código Requisito
+	RNF09
+	Nombre
+	Internacionalización
+	Descripción
+	Interfaz completamente en español, zona horaria America/Bogotá, valores monetarios en COP.
+	Entradas
+	LANGUAGE_CODE = 'es-co', TIME_ZONE = 'America/Bogota'
+	Prioridad
+	Alta
+	
+
+Código Requisito
+	RNF10
+	Nombre
+	Trazabilidad
+	Descripción
+	Todos los registros almacenarán marcas de tiempo de creación y actualización.
+	Entradas
+	auto_now_add, auto_now en DateTimeField
+	Prioridad
+	Media
+	
+
+Requerimientos Normativos
+RNO01 — Ley 1581 de 2012 (Habeas Data): manejo de datos personales con consentimiento del titular (Congreso de la República de Colombia, 2012).
+RNO02 — Decreto 1377 de 2013: autorización expresa del titular antes de recopilar datos personales (Presidencia de la República de Colombia, 2013).
+RNO03 — Normas SENA ADSO: estructura y artefactos requeridos por el programa (SENA, 2023).
+RNO04 — APA 7ª edición: referencias bibliográficas y citas siguen el Manual APA 7.ª ed. (American Psychological Association, 2020).
+Reglas del Negocio
+RN01 — Ingreso único activo por vehículo
+Un vehículo no puede tener más de un registro con parHoraSalida IS NULL simultáneamente.
+RN02 — Solo espacios DISPONIBLE aceptan ingresos
+Espacios OCUPADOS, RESERVADOS o en MANTENIMIENTO no pueden recibir nuevos ingresos.
+RN03 — Cálculo de costo minuto-base
+costo = ceil((minutos / 60) × precioHora / 100) × 100. Visitantes pagan precioHoraVisitante. Mínimo 100 COP.
+RN04 — Tarifa activa única por tipo de espacio
+Al activar una nueva tarifa del mismo tipo, la anterior se desactiva automáticamente.
+RN05 — Validación de cupón antes de aplicar
+El cupón debe existir, estar activo y dentro de su fecha de vigencia.
+RN06 — Pisos con espacios ocupados no se eliminan
+No se puede eliminar un piso con espacios OCUPADOS, ni un espacio con parqueo activo.
+RN07 — Gestión de estado al reservar/cancelar
+Confirmar → RESERVADO. Cancelar → DISPONIBLE. Convertir a parqueo → OCUPADO.
+RN08 — Token de recuperación de un solo uso
+El token incorpora huella del hash de contraseña actual. Al cambiar la contraseña, el token queda invalidado.
+RN09 — Criterio de acumulación de sticker
+Sticker solo si: vehículo tiene propietario registrado Y permanencia > 60 minutos.
+RN10 — Generación automática de bono al canjear
+Al reclamar el bono se crea un cupón PORCENTAJE 100%, uso único, vigencia = diasVencimientoBono en ConfiguracionFidelidad.
+
+
+Diseño del Sistema
+Alternativas de Solución (Mockups)
+Durante la fase de diseño se elaboraron mockups de las interfaces principales del sistema: dashboard del administrador, vista general de pisos, formulario de ingreso de vehículos, panel del vigilante y perfil del cliente. Los mockups se encuentran en la carpeta "Mockups" de Drive del proyecto.
+Diagrama de Casos de Uso
+Actor: Administrador
+• Gestionar usuarios (crear, editar, activar/desactivar, eliminar).
+• Gestionar pisos, tipos de espacio y espacios.
+• Gestionar tarifas y cupones.
+• Ver y gestionar todas las reservas y novedades.
+• Generar y exportar reportes.
+• Configurar parámetros de fidelización.
+Actor: Vigilante
+• Registrar ingreso y salida de vehículos.
+• Registrar vehículos visitantes.
+• Ver disponibilidad de espacios en tiempo real.
+• Registrar novedades operativas.
+• Aplicar cupones en el proceso de cobro.
+Actor: Cliente
+• Registrar y gestionar sus vehículos.
+• Crear, consultar y cancelar reservas.
+• Ver su historial de parqueos y pagos.
+• Ver stickers acumulados y reclamar bono.
+• Recuperar su contraseña por correo.
+Arquitectura del Software
+Patrón Arquitectónico
+El sistema implementa el patrón MVT (Modelo-Vista-Plantilla) de Django:
+• Modelo: clases Python en models.py que mapean a tablas PostgreSQL mediante el ORM de Django.
+• Vista: clases heredadas de View que procesan la lógica de negocio y retornan respuestas HTTP.
+• Plantilla: archivos HTML con sintaxis Django Template Language + Tailwind CSS.
+ORM de Django
+El ORM (Object-Relational Mapping) integrado de Django gestiona toda la interacción con la base de datos sin escribir SQL directamente. Actúa como capa de abstracción que traduce automáticamente operaciones sobre objetos Python a sentencias SQL optimizadas. Ventajas en este proyecto:
+• Portabilidad: el mismo código funciona con PostgreSQL en producción sin modificaciones.
+• Migraciones automáticas: los cambios en modelos Python generan scripts DDL automáticamente.
+• Seguridad: escape automático de parámetros en todas las consultas (sin riesgo de SQL injection).
+• Consultas expresivas: p. ej. InventarioParqueo.objects.filter(parHoraSalida__isnull=True).
+Estructura de Apps
+• usuarios/: 
+Modelo Usuario personalizado, autenticación por sesión propia, tres roles.
+• vehiculos/: 
+Modelo Vehiculo con soporte para vehículos propios y visitantes.
+• parqueadero/: 
+Piso, TipoEspacio, Espacio, InventarioParqueo. Panel admin y vigilante.
+• tarifas/: 
+Modelo Tarifa con precios diferenciados por tipo de espacio y tipo de usuario.
+• pagos/: 
+Modelo Pago vinculado a InventarioParqueo con cálculo y redondeo.
+• cupones/: 
+Cupon y CuponAplicado. CRUD, validación y aplicación en el flujo de cobro.
+• reservas/: 
+Reserva con gestión de disponibilidad y bloqueo/liberación de espacios.
+• novedades/: 
+Novedad con foto, estados de progreso y notificación por correo (SendGrid).
+• fidelidad/: 
+Sticker y ConfiguracionFidelidad. Acumulación automática al completar parqueos.
+• multiparking/: 
+Configuración central: settings, urls, middleware de seguridad, email_utils.
+Diagrama de Despliegue
+• PaaS: Render.com (Web Service + PostgreSQL add-on).
+• Servidor WSGI: Gunicorn.
+• Variables de entorno: .env (python-dotenv) con DATABASE_URL, SECRET_KEY, SENDGRID_API_KEY.
+• Archivos estáticos: Whitenoise.
+• CI/CD: cada git push a main desencadena redespliegue automático.
+Modelo Entidad-Relación
+La base de datos está compuesta por 13 tablas normalizadas hasta tercera forma normal (3FN). Relaciones principales:
+• usuarios → vehiculos (FK: fkIdUsuario)
+• usuarios → novedades (FK: fkIdReportador, fkIdResponsable)
+• usuarios → fidelidad_stickers (FK: fkIdUsuario)
+• vehiculos → inventario_parqueo (FK: fkIdVehiculo)
+• vehiculos → reservas (FK: fkIdVehiculo)
+• pisos → espacios (FK: fkIdPiso)
+• tipos_espacio → espacios (FK: fkIdTipoEspacio)
+• tipos_espacio → tarifas (FK: fkIdTipoEspacio)
+• espacios → inventario_parqueo (FK: fkIdEspacio)
+• espacios → reservas (FK: fkIdEspacio)
+• inventario_parqueo → pagos (FK: fkIdParqueo)
+• inventario_parqueo → fidelidad_stickers (FK: fkIdParqueo, OneToOne)
+• pagos → cupones_aplicados (FK: fkIdPago)
+• cupones → cupones_aplicados (FK: fkIdCupon)
+Diccionario de Datos
+Tabla DD-01 — usuarios
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador único del usuario
+	usuDocumento
+	VARCHAR
+	15
+	No
+	-
+	Número de documento (solo dígitos)
+	usuNombre
+	VARCHAR
+	50
+	No
+	-
+	Nombre del usuario (solo letras)
+	usuApellido
+	VARCHAR
+	50
+	No
+	-
+	Apellido del usuario (solo letras)
+	usuCorreo
+	VARCHAR
+	64
+	No
+	UNIQUE
+	Correo electrónico único
+	usuTelefono
+	VARCHAR
+	10
+	No
+	-
+	Número de teléfono (10 dígitos)
+	usuClaveHash
+	VARCHAR
+	255
+	No
+	-
+	Hash PBKDF2-SHA256 de la contraseña
+	rolTipoRol
+	VARCHAR
+	10
+	No
+	-
+	Rol: ADMIN, VIGILANTE o CLIENTE
+	usuEstado
+	BOOLEAN
+	-
+	No
+	-
+	True = activo, False = desactivado
+	usuFechaRegistro
+	DATETIME
+	-
+	No
+	-
+	Fecha y hora de registro (auto)
+	Nota. Tabla usuarios. Elaboración propia (2026).
+
+
+Tabla DD-02 — vehiculos
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador único del vehículo
+	vehPlaca
+	VARCHAR
+	8
+	No
+	UNIQUE
+	Placa (alfanumérico + guión)
+	vehTipo
+	VARCHAR
+	5
+	No
+	-
+	Tipo: CARRO, MOTO o BICI
+	vehColor
+	VARCHAR
+	20
+	No
+	-
+	Color del vehículo
+	vehMarca
+	VARCHAR
+	30
+	No
+	-
+	Marca del vehículo
+	vehModelo
+	VARCHAR
+	30
+	No
+	-
+	Modelo del vehículo
+	vehEstado
+	BOOLEAN
+	-
+	No
+	-
+	True = activo, False = inactivo
+	fkIdUsuario
+	BIGINT
+	-
+	Sí
+	FK→usuarios
+	Propietario; null si visitante
+	nombre_contacto
+	VARCHAR
+	50
+	Sí
+	-
+	Nombre contacto (solo visitantes)
+	telefono_contacto
+	VARCHAR
+	10
+	Sí
+	-
+	Teléfono contacto (solo visitantes)
+	Nota. Tabla vehiculos. Elaboración propia (2026).
+
+
+Tabla DD-03 — pisos
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del piso
+	pisNombre
+	VARCHAR
+	30
+	No
+	-
+	Nombre del piso (ej.: Piso 1)
+	pisEstado
+	BOOLEAN
+	-
+	No
+	-
+	True = activo, False = inactivo
+	Nota. Tabla pisos. Elaboración propia (2026).
+
+
+Tabla DD-04 — tipos_espacio
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del tipo
+	nombre
+	VARCHAR
+	20
+	No
+	UNIQUE
+	Nombre: Carro, Moto, Bicicleta
+	Nota. Tabla tipos_espacio. Elaboración propia (2026).
+
+
+Tabla DD-05 — espacios
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del espacio
+	espNumero
+	VARCHAR
+	10
+	No
+	-
+	Número o código del espacio (ej.: A-01)
+	fkIdPiso
+	BIGINT
+	-
+	No
+	FK→pisos
+	Piso al que pertenece
+	fkIdTipoEspacio
+	BIGINT
+	-
+	No
+	FK→tipos_espacio
+	Tipo para aplicar tarifa
+	espEstado
+	VARCHAR
+	10
+	No
+	-
+	DISPONIBLE / OCUPADO / RESERVADO / MANTENIMIENTO
+	Nota. Tabla espacios. Elaboración propia (2026).
+
+
+Tabla DD-06 — inventario_parqueo
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del registro de parqueo
+	parHoraEntrada
+	DATETIME
+	-
+	No
+	-
+	Fecha y hora de ingreso del vehículo
+	parHoraSalida
+	DATETIME
+	-
+	Sí
+	-
+	Fecha y hora de salida; NULL = aún parqueado
+	fkIdVehiculo
+	BIGINT
+	-
+	No
+	FK→vehiculos
+	Vehículo que ocupa el espacio
+	fkIdEspacio
+	BIGINT
+	-
+	No
+	FK→espacios
+	Espacio asignado
+	Nota. Tabla inventario_parqueo. Elaboración propia (2026).
+
+
+Tabla DD-07 — tarifas
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador de la tarifa
+	nombre
+	VARCHAR
+	50
+	No
+	-
+	Nombre descriptivo de la tarifa
+	fkIdTipoEspacio
+	BIGINT
+	-
+	No
+	FK→tipos_espacio
+	Tipo de espacio al que aplica
+	precioHora
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Precio/hora para usuarios registrados (COP)
+	precioHoraVisitante
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Precio/hora para visitantes (COP)
+	precioDia
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Precio por día completo (COP)
+	precioMensual
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Precio mensual (COP)
+	activa
+	BOOLEAN
+	-
+	No
+	-
+	True = vigente; solo una activa por tipo
+	fechaInicio
+	DATE
+	-
+	No
+	-
+	Inicio de vigencia
+	fechaFin
+	DATE
+	-
+	Sí
+	-
+	Fin de vigencia; null = indefinida
+	Nota. Tabla tarifas. Elaboración propia (2026).
+
+
+Tabla DD-08 — pagos
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del pago
+	pagFechaPago
+	DATETIME
+	-
+	No
+	-
+	Fecha y hora del pago
+	pagMonto
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Monto total cobrado (COP)
+	pagMetodo
+	VARCHAR
+	13
+	No
+	-
+	EFECTIVO / TARJETA / TRANSFERENCIA
+	pagEstado
+	VARCHAR
+	9
+	No
+	-
+	PAGADO o PENDIENTE
+	fkIdParqueo
+	BIGINT
+	-
+	No
+	FK→inventario_parqueo
+	Parqueo al que corresponde
+	Nota. Tabla pagos. Elaboración propia (2026).
+
+
+Tabla DD-09 — cupones
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del cupón
+	cupNombre
+	VARCHAR
+	50
+	No
+	-
+	Nombre del cupón
+	cupCodigo
+	VARCHAR
+	20
+	No
+	UNIQUE
+	Código único de canje (mayúsculas + números)
+	cupTipo
+	VARCHAR
+	10
+	No
+	-
+	PORCENTAJE o VALOR_FIJO
+	cupValor
+	DECIMAL(10,2)
+	-
+	No
+	-
+	Valor del descuento
+	cupDescripcion
+	TEXT
+	-
+	No
+	-
+	Descripción del cupón
+	cupFechaInicio
+	DATE
+	-
+	No
+	-
+	Inicio de vigencia
+	cupFechaFin
+	DATE
+	-
+	No
+	-
+	Fin de vigencia
+	cupActivo
+	BOOLEAN
+	-
+	No
+	-
+	True = disponible para canje
+	Nota. Tabla cupones. Elaboración propia (2026).
+
+
+Tabla DD-10 — reservas
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador de la reserva
+	resFechaReserva
+	DATE
+	-
+	No
+	-
+	Fecha de la reserva
+	resHoraInicio
+	TIME
+	-
+	No
+	-
+	Hora de inicio
+	resHoraFin
+	TIME
+	-
+	Sí
+	-
+	Hora de fin
+	resEstado
+	VARCHAR
+	10
+	No
+	-
+	CONFIRMADA / CANCELADA / COMPLETADA
+	fkIdEspacio
+	BIGINT
+	-
+	No
+	FK→espacios
+	Espacio reservado
+	fkIdVehiculo
+	BIGINT
+	-
+	No
+	FK→vehiculos
+	Vehículo que reserva
+	Nota. Tabla reservas. Elaboración propia (2026).
+
+
+Tabla DD-11 — novedades
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador de la novedad
+	novDescripcion
+	TEXT
+	-
+	No
+	-
+	Descripción detallada
+	novFoto
+	VARCHAR
+	100
+	Sí
+	-
+	Ruta del archivo de imagen (máx. 5 MB)
+	novEstado
+	VARCHAR
+	10
+	No
+	-
+	PENDIENTE / EN_PROCESO / RESUELTO
+	novComentario
+	TEXT
+	-
+	No
+	-
+	Comentario de seguimiento
+	fkIdVehiculo
+	BIGINT
+	-
+	Sí
+	FK→vehiculos
+	Vehículo involucrado (opcional)
+	fkIdEspacio
+	BIGINT
+	-
+	Sí
+	FK→espacios
+	Espacio afectado (opcional)
+	fkIdReportador
+	BIGINT
+	-
+	Sí
+	FK→usuarios
+	Usuario que registra
+	fkIdResponsable
+	BIGINT
+	-
+	Sí
+	FK→usuarios
+	Usuario asignado para resolver
+	novFechaCreacion
+	DATETIME
+	-
+	No
+	-
+	Fecha y hora de creación (auto)
+	novFechaActualizacion
+	DATETIME
+	-
+	No
+	-
+	Última actualización (auto)
+	Nota. Tabla novedades. Elaboración propia (2026).
+
+
+Tabla DD-12 — fidelidad_stickers
+Campo
+	Tipo
+	Long.
+	Nulo
+	PK/FK
+	Descripción
+	id
+	BIGINT AUTO
+	-
+	No
+	PK
+	Identificador del sticker
+	fkIdUsuario
+	BIGINT
+	-
+	No
+	FK→usuarios
+	Usuario que acumula el sticker
+	fkIdParqueo
+	BIGINT
+	-
+	No
+	FK→inventario_parqueo (OneToOne)
+	Parqueo que originó el sticker
+	stkFecha
+	DATETIME
+	-
+	No
+	-
+	Fecha y hora de asignación (auto)
+	Nota. Tabla fidelidad_stickers. Elaboración propia (2026).
+
+
+Políticas de Seguridad de los Datos
+• Contraseñas almacenadas con PBKDF2-SHA256. Nunca en texto plano.
+• Sesiones con cookie HttpOnly y regeneración de ID en cada inicio (cycle_key()) para prevenir fijación de sesión.
+• HTTPS obligatorio en producción (SECURE_SSL_REDIRECT, SECURE_HSTS_SECONDS).
+• Cabeceras HTTP: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection: 1; mode=block.
+• CSP mediante SecurityHeadersMiddleware personalizado.
+• Tokens de recuperación de contraseña de un solo uso (huella del hash actual).
+• Validación de archivos: solo imágenes (JPG/PNG/GIF/WEBP), máximo 5 MB.
+• Protección CSRF mediante CsrfViewMiddleware en todas las vistas POST.
+Construcción del Software
+Base de Datos para el Software
+En el entorno de producción (Render.com) el sistema usa PostgreSQL como motor de base de datos. Django gestiona la conexión mediante DATABASE_URL, parseada con dj-database-url. El ORM garantiza que el código Python sea idéntico entre entornos de desarrollo y producción, sin requerir cambios al cambiar de motor de base de datos. Las migraciones se generan automáticamente con python manage.py makemigrations y se aplican con python manage.py migrate.
+Objetos de la Base de Datos (Procedimientos Almacenados, Vistas, Disparadores)
+El proyecto define tres disparadores (triggers) a nivel de base de datos que automatizan cambios de estado críticos, independientemente del origen del cambio. Aunque el ORM de Django gestiona la mayor parte de la lógica en la capa de aplicación, los triggers garantizan consistencia incluso ante operaciones directas sobre la BD. En producción (PostgreSQL) se implementan como funciones PL/pgSQL.
+Trigger 1 — Reserva a Parqueo:
+Al insertar un registro en reservas, el trigger crea automáticamente el registro de ingreso en inventario_parqueo.
+Disparador de prueba:
+INSERT INTO reservas (resHoraInicio, resHoraFin, fkIdEspacio, fkIdVehiculo)
+VALUES ('2025-09-10 10:00:00', '2025-09-10 12:00:00', 1, 1);
+Trigger 2 — Bloquear espacio al ingresar:
+Al insertar un registro en inventario_parqueo, el trigger actualiza el estado del espacio a OCUPADO.
+Disparador de prueba:
+INSERT INTO parqueos (parHoraEntrada, fkIdVehiculo, fkIdTarifa, fkIdEspacio)
+VALUES (NOW(), 1, 1, 1);
+Trigger 3 — Liberar espacio al salir:
+Al actualizar parHoraSalida en inventario_parqueo (valor no nulo), el trigger cambia el espacio a DISPONIBLE.
+Disparador de prueba:
+UPDATE parqueos SET parHoraSalida = NOW() WHERE idParqueo = 123;
+Esquemas de Seguridad de los Datos
+Ver sección 9.8 Políticas de Seguridad de los Datos.
+Codificación del Software
+Estándar de Codificación
+• Nombres de campos: camelCase prefijado con abreviatura de tabla (usuNombre, vehPlaca, espEstado, parHoraEntrada).
+• Claves foráneas: fkId<Entidad> con db_column explícito.
+• db_table: declarado explícitamente en la clase Meta de cada modelo.
+• Vistas: CBV (class-based), patrón List/Create/Update/Delete.
+• Sin Django Forms: lectura directa de request.POST con validación vía re.match() y mensajes Django.
+• @property para campos derivados (es_visitante, usuNombreCompleto). No generan columnas en BD.
+Código Fuente de Módulos — Fragmentos Representativos
+Cálculo de costo de parqueo (parqueadero/vigilante_views.py):
+import math
+from decimal import Decimal
+
+def calcular_costo(hora_entrada, hora_salida, precio_hora):
+   delta = hora_salida - hora_entrada
+   minutos = delta.total_seconds() / 60
+   costo = Decimal(str(math.ceil((minutos / 60) * float(precio_hora) / 100) * 100))
+   return max(costo, Decimal('100'))
+Middleware de seguridad (multiparking/middleware.py):
+class SecurityHeadersMiddleware:
+   CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; ..."
+   def __call__(self, request):
+       response = self.get_response(request)
+       response['Content-Security-Policy'] = self.CSP
+       response['X-XSS-Protection'] = '1; mode=block'
+       return response
+Servicios Web
+El framework Django REST Framework (DRF) está instalado en el proyecto. Los endpoints se organizan bajo /api/<app>/. En la versión actual se exponen endpoints de consulta para espacios, reservas y parqueos activos, consumidos principalmente por el dashboard AJAX del vigilante.
+Control de Versiones
+El proyecto utiliza Git como sistema de control de versiones, con repositorio en GitHub (rama main). El flujo de trabajo consiste en commits frecuentes con mensajes descriptivos. Los archivos sensibles (.env, __pycache__) están excluidos mediante .gitignore. Cada push a main desencadena redespliegue automático en Render.com.
+Pruebas del Software
+Planeación y Diseño de Pruebas a Nivel Unitario
+Las pruebas unitarias verifican el correcto funcionamiento de cada módulo de forma independiente:
+Tabla PT-01
+Pruebas Unitarias por Módulo
+ID
+	Módulo
+	Caso de Prueba
+	Resultado Esperado
+	Estado
+	PU01
+	Usuarios
+	Registro con datos válidos
+	Usuario creado, contraseña hasheada
+	PASÓ
+	PU02
+	Usuarios
+	Login con credenciales correctas
+	Sesión creada con rol CLIENTE
+	PASÓ
+	PU03
+	Usuarios
+	Login con contraseña incorrecta
+	Error "Credenciales incorrectas"
+	PASÓ
+	PU04
+	Usuarios
+	Recuperación de contraseña
+	Correo enviado, token generado
+	PASÓ
+	PU05
+	Usuarios
+	Token usado segunda vez
+	Error "enlace ya utilizado"
+	PASÓ
+	PU06
+	Vehículos
+	Registro vehículo propio
+	Vehículo asociado al usuario
+	PASÓ
+	PU07
+	Vehículos
+	Registro vehículo visitante
+	Vehículo sin fkIdUsuario
+	PASÓ
+	PU08
+	Espacios
+	Crear espacio en piso activo
+	Espacio en estado DISPONIBLE
+	PASÓ
+	PU09
+	Parqueos
+	Ingreso en espacio DISPONIBLE
+	Estado cambia a OCUPADO
+	PASÓ
+	PU10
+	Parqueos
+	Ingreso con vehículo ya activo
+	Error de doble ingreso
+	PASÓ
+	PU11
+	Parqueos
+	Calcular costo 90 min a $5000/h
+	$8000 (ceil a 100)
+	PASÓ
+	PU12
+	Tarifas
+	Activar nueva tarifa del mismo tipo
+	Solo una activa por tipo
+	PASÓ
+	PU13
+	Cupones
+	Cupón PORCENTAJE 20% en $10000
+	Descuento $2000, total $8000
+	PASÓ
+	PU14
+	Cupones
+	Aplicar cupón vencido
+	Error "cupón vencido"
+	PASÓ
+	PU15
+	Reservas
+	Crear reserva en espacio disponible
+	Espacio → RESERVADO
+	PASÓ
+	PU16
+	Reservas
+	Cancelar reserva
+	Espacio → DISPONIBLE
+	PASÓ
+	PU17
+	Novedades
+	Registrar novedad con foto PNG
+	Novedad guardada, foto almacenada
+	PASÓ
+	PU18
+	Novedades
+	Subir archivo .exe como foto
+	Error "Solo se permiten imágenes"
+	PASÓ
+	PU19
+	Fidelidad
+	Parqueo >60 min con usuario registrado
+	Sticker asignado al usuario
+	PASÓ
+	PU20
+	Fidelidad
+	Parqueo <60 min
+	Sin sticker asignado
+	PASÓ
+	
+
+Nota. Pruebas ejecutadas manualmente en entorno de desarrollo (2026).
+Pruebas a Nivel Sistema
+Tabla PT-02
+Pruebas de Sistema — Flujos End-to-End
+ID
+	Flujo
+	Descripción
+	Estado
+	PS01
+	Ingreso y salida completo
+	Admin crea espacio → Vigilante registra ingreso → OCUPADO → Salida → Pago generado → DISPONIBLE
+	PASÓ
+	PS02
+	Reserva por cliente
+	Cliente crea reserva → RESERVADO → Vigilante convierte a parqueo → OCUPADO → Salida → Pago
+	PASÓ
+	PS03
+	Cupón en cobro
+	Vigilante registra salida → Ingresa cupón → Descuento aplicado → CuponAplicado registrado
+	PASÓ
+	PS04
+	Novedad con notificación
+	Vigilante crea novedad con foto → Correo enviado al dueño → Admin actualiza estado → Nuevo correo
+	PASÓ
+	PS05
+	Fidelización completa
+	Parqueo >1h → Sticker asignado → Cliente ve progreso → Alcanza meta → Reclama → Cupón 100% generado
+	PASÓ
+	PS06
+	Recuperación de contraseña
+	Solicita correo → Recibe enlace → Nueva contraseña → Token invalidado → Reintento falla
+	PASÓ
+	PS07
+	Acceso sin autenticación
+	Usuario no autenticado accede a /admin-panel/ → Redirige a /login/ (302)
+	PASÓ
+	PS08
+	Acceso con rol incorrecto
+	CLIENTE accede a /admin-panel/ → Redirigido a /dashboard/ (acceso denegado)
+	PASÓ
+	
+
+Nota. Elaboración propia (2026).
+Manejo de Alertas / Excepciones
+• Errores de validación: mensajes de error mediante el framework messages de Django con estilos Tailwind.
+• Errores 404: página personalizada sin exponer información del stack.
+• Errores de base de datos: capturados con try/except con mensajes amigables.
+• Errores de correo: capturados sin interrumpir el flujo principal; error registrado en log.
+• Archivos inválidos: tipo MIME y tamaño verificados antes de guardar.
+Plan de Despliegue
+Plataforma de Despliegue
+El sistema MultiParking se despliega en Render.com (Web Service + PostgreSQL add-on). El proceso CI/CD es automático: cada push a main desencadena un redespliegue.
+Configuración de Variables de Entorno
+SECRET_KEY=<clave secreta Django 50+ caracteres>
+DEBUG=False
+DATABASE_URL=<URL de conexión PostgreSQL>
+SENDGRID_API_KEY=<clave API SendGrid>
+DEFAULT_FROM_EMAIL=no-reply@multiparking.com
+ALLOWED_HOSTS=multiparking.onrender.com
+Proceso de Despliegue
+1. git push origin main → Render detecta el cambio e inicia el build.
+2. pip install -r requirements.txt → instalación de dependencias.
+3. python manage.py collectstatic --noinput → archivos estáticos con Whitenoise.
+4. python manage.py migrate → migraciones pendientes.
+5. gunicorn multiparking.wsgi:application --bind 0.0.0.0:$PORT → servidor.
+Manual del Usuario
+Rol Administrador (/admin-panel/)
+• Gestión de usuarios: crear, editar, activar/desactivar.
+• Gestión de espacios: configurar pisos, tipos y espacios.
+• Gestión de tarifas: definir precios por tipo de espacio.
+• Gestión de cupones: crear y administrar descuentos.
+• Reportes: visualizar estadísticas y exportar a PDF/Excel.
+• Novedades: gestionar incidentes operativos.
+Rol Vigilante (/vigilante/dashboard/)
+• Registrar ingreso: seleccionar vehículo y espacio. Sistema registra hora y marca OCUPADO.
+• Registrar salida: seleccionar registro activo, aplicar cupón opcional, confirmar monto y método de pago.
+• Vista de pisos: visualización en tiempo real con actualización cada 30 segundos.
+• Registrar novedad: documentar incidentes con descripción, foto, espacio y vehículo.
+Rol Cliente (/dashboard/)
+• Mis vehículos: registrar y gestionar vehículos propios.
+• Mis reservas: crear, consultar y cancelar reservas anticipadas.
+• Mi historial: consultar parqueos y pagos anteriores.
+• Mi perfil: ver stickers acumulados, barra de progreso y canjear bono al alcanzar la meta.
+Copias de Seguridad de Datos y Respaldos
+Render.com provee snapshots automáticos diarios de la base de datos PostgreSQL. Se recomienda programar dumps adicionales con:
+pg_dump -U <usuario> <base_de_datos> > backup_$(date +%Y%m%d).sql
+Conclusiones
+El desarrollo del sistema de información web MultiParking permitió automatizar de forma integral los procesos operativos de un parqueadero privado, sustituyendo métodos manuales por una plataforma digital escalable, segura y de fácil uso. Se validaron los conceptos fundamentales de análisis y desarrollo de software: levantamiento de requerimientos, diseño de base de datos normalizada, implementación con patrón MVT, pruebas funcionales y despliegue en la nube.
+La elección de Django 6.0 demostró ser acertada: su sistema de migraciones facilitó la evolución incremental del modelo de datos, su ORM redujo la complejidad del acceso a PostgreSQL y su arquitectura de apps permitió organizar el código de forma modular. La autenticación propia sin django.contrib.auth.User fortaleció la comprensión de los mecanismos de seguridad en sesiones web.
+El módulo de fidelización y el sistema de novedades con notificación por correo aportaron valor diferencial a la solución. Como trabajo futuro se identifican: integración con hardware automatizado, aplicación móvil nativa e implementación de pagos digitales en línea (PayU, Nequi).
+Bibliografía y Ciberografía
+American Psychological Association. (2020). Publication manual of the American Psychological Association (7th ed.). https://doi.org/10.1037/0000165-000
+Congreso de la República de Colombia. (2012). Ley 1581 de 2012: por la cual se dictan disposiciones generales para la protección de datos personales. Diario Oficial, 48587.
+Django Software Foundation. (2024). Django documentation (Version 6.0). https://docs.djangoproject.com/en/6.0/
+García, A., & Martínez, L. (2022). Implementación de sistemas de información para la gestión de parqueaderos en ciudades intermedias de Colombia. Revista Ingeniería e Innovación, 10(2), 45–58.
+Garavito Albao, G., Macías Lamprea, R. A., & Pinzón Osorio, N. (2021). Sistema de gestión para ópticas SIGEOP. TIA — Tecnología, Investigación y Academia, 9(2).
+ISO/IEC. (2011). ISO/IEC 25010:2011 — Systems and software engineering: Systems and software quality requirements and evaluation (SQuaRE). International Organization for Standardization.
+MinTIC. (2023). Política de transformación digital e inteligencia artificial de Colombia. https://www.mintic.gov.co
+PostgreSQL Global Development Group. (2024). PostgreSQL 16 documentation. https://www.postgresql.org/docs/16/
+Presidencia de la República de Colombia. (2013). Decreto 1377 de 2013: por el cual se reglamenta parcialmente la Ley 1581 de 2012. Diario Oficial, 48834.
+Render. (2024). Render documentation. https://render.com/docs
+SendGrid. (2024). SendGrid email API documentation. https://docs.sendgrid.com/
+Tailwind CSS. (2024). Tailwind CSS documentation (v3). https://tailwindcss.com/docs
+Glosario
+
+
+CSP (Content Security Policy)
+Política de seguridad HTTP que controla qué recursos puede cargar el navegador, reduciendo el riesgo de ataques XSS.
+
+
+Cupón
+Código alfanumérico que otorga un descuento (porcentaje o valor fijo) al aplicarse en el cobro del parqueo.
+
+
+Django
+Framework web de alto nivel basado en Python que sigue el patrón arquitectónico MVT (Modelo-Vista-Plantilla).
+
+
+Espacio
+Unidad física del parqueadero, identificada por número y ubicada en un piso. Estados: DISPONIBLE, OCUPADO, RESERVADO, MANTENIMIENTO.
+
+
+Fidelización
+Sistema de stickers que recompensa a usuarios frecuentes con cupones de descuento automáticos al alcanzar una meta.
+
+
+Hash PBKDF2
+Algoritmo de derivación de claves que convierte la contraseña en representación irreversible, protegiendo credenciales ante filtraciones.
+
+
+Inventario de Parqueo
+Registro de cada entrada y salida de vehículo, incluyendo horas, espacio asignado y referencia al pago generado.
+
+
+ORM
+Object-Relational Mapping. Capa de abstracción que permite interactuar con la base de datos usando objetos Python en lugar de SQL directo.
+
+
+PostgreSQL
+Sistema de gestión de bases de datos relacional de código abierto utilizado en producción para almacenar los datos de MultiParking.
+
+
+Novedad
+Registro de un incidente, daño u observación operativa con seguimiento de estado y notificación al usuario afectado.
+
+
+Parqueadero
+Establecimiento destinado al estacionamiento de vehículos, compuesto por pisos y espacios administrados por el sistema.
+
+
+Render.com
+Plataforma cloud de despliegue continuo (PaaS) utilizada para alojar la aplicación web y la base de datos PostgreSQL.
+
+
+Reserva
+Apartado anticipado de un espacio para una fecha y horario específicos, realizado por un cliente registrado.
+
+
+SendGrid
+Servicio de correo electrónico transaccional para notificaciones de recuperación de contraseña y alertas de novedades.
+
+
+Sticker
+Unidad de fidelización acumulable otorgada al usuario cada vez que completa un parqueo de más de 60 minutos.
+
+
+Tailwind CSS
+Framework CSS de clases utilitarias para construir interfaces responsivas directamente en el HTML.
+
+
+Tarifa
+Precio por tipo de espacio y tipo de usuario (registrado/visitante), expresado en COP por hora, día o mes.
+
+
+Vigilante
+Usuario con rol VIGILANTE que opera el control de ingreso y salida de vehículos, registra novedades y aplica cupones.
