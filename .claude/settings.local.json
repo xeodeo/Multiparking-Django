@@ -130,7 +130,11 @@
       "Bash(python -c \":*)",
       "Bash(node -e \"require\\('docx'\\); console.log\\('docx OK'\\)\")",
       "Bash(NODE_PATH=\"C:\\\\Users\\\\xeodeo\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\" node gen_sec05.js)",
-      "Bash(start:*)"
+      "Bash(start:*)",
+      "Bash(npm info:*)",
+      "Bash(cmd /c npx plantuml-mcp-server --help)",
+      "Bash(where plantuml-mcp-server:*)",
+      "mcp__plantuml__generate_plantuml_diagram"
     ],
     "additionalDirectories": [
       "C:\\tmp",

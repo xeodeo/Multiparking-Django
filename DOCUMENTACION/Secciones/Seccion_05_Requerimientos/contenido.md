@@ -290,7 +290,7 @@
 
 ### 5.5.1 Cronograma
 
-	El proyecto se organizó en cuatro fases de desarrollo bajo metodología ágil, con un período de ejecución comprendido entre enero de 2025 y julio de 2026. Cada fase agrupa las actividades, los responsables y los entregables correspondientes.
+	El proyecto se organizó en cuatro fases de desarrollo bajo metodología ágil, con un período de ejecución comprendido entre enero de 2025 y julio de 2026. Cada fase agrupa las actividades, los responsables y los entregables correspondientes. El cronograma detallado en formato Excel se encuentra disponible en: **https://1drv.ms/x/c/e74b5240d84e2ed1/Ed33nlIdE6tFqSGtzU8L7t4BBeFdxyEzuO-S2t9dVuwhKg?e=auFApC**
 
 **Tabla 28**
 *Cronograma del proyecto MultiParking — Fase 1: Análisis (enero – abril 2025)*

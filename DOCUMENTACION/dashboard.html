@@ -128,6 +128,9 @@
     .doc-item span:last-child { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
     .doc-item.doc-item-missing span:last-child { color: #94a3b8; }
     .doc-item.doc-item-partial span:last-child { color: #94a3b8; }
+    .doc-item.doc-item-done { opacity: 0.6; }
+    .doc-item.doc-item-done span:not(.doc-item-num) { text-decoration: line-through; color: #4ade80; }
+    tr.resolved-row { opacity: 0.4; }
     .missing-tag { background: #450a0a; color: #f87171; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; vertical-align: middle; }
     .partial-tag { background: #422006; color: #fbbf24; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; vertical-align: middle; }
   </style>
@@ -141,7 +144,7 @@
   </div>
   <div style="display:flex; align-items:center; gap:12px;">
     <span class="version-badge">v1.1 — Sesión 2</span>
-    <span style="font-size:0.72rem; color:#475569;">Actualizado: 2026-05-29</span>
+    <span style="font-size:0.72rem; color:#475569;">Actualizado: 2026-06-12</span>
   </div>
 </header>
 
@@ -151,18 +154,18 @@
   <div class="cards">
     <div class="card blue">
       <div class="label">Cumplimiento global</div>
-      <div class="value">68%</div>
+      <div class="value">74%</div>
       <div class="sub">Meta: 100% SENA</div>
     </div>
     <div class="card red">
       <div class="label">Hallazgos críticos</div>
-      <div class="value">14</div>
-      <div class="sub">de 39 totales</div>
+      <div class="value">10</div>
+      <div class="sub">4 resueltos en sesión 3</div>
     </div>
     <div class="card yellow">
       <div class="label">Hallazgos altos</div>
-      <div class="value">14</div>
-      <div class="sub">+2 vs sesión 1</div>
+      <div class="value">13</div>
+      <div class="sub">1 resuelto en sesión 3</div>
     </div>
     <div class="card purple">
       <div class="label">Inconsistencias</div>
@@ -189,7 +192,7 @@
     <div class="bar-row"><span class="bar-label">3 — Matriz de Riesgo</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><span class="bar-pct">100%</span></div>
     <div class="bar-row"><span class="bar-label">4 — Elicitación de Requisitos</span><div class="bar-track"><div class="bar-fill green" style="width:95%"></div></div><span class="bar-pct">95%</span></div>
     <div class="bar-row"><span class="bar-label">5 — Especificación de Requerimientos</span><div class="bar-track"><div class="bar-fill yellow" style="width:80%"></div></div><span class="bar-pct">80%</span></div>
-    <div class="bar-row"><span class="bar-label">6 — Análisis de Especificación</span><div class="bar-track"><div class="bar-fill red" style="width:35%"></div></div><span class="bar-pct">35%</span></div>
+    <div class="bar-row"><span class="bar-label">6 — Análisis de Especificación</span><div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div><span class="bar-pct">100%</span></div>
     <div class="bar-row"><span class="bar-label">7 — Diseño de la Solución</span><div class="bar-track"><div class="bar-fill red" style="width:55%"></div></div><span class="bar-pct">55%</span></div>
     <div class="bar-row"><span class="bar-label">8 — Construcción del Software</span><div class="bar-track"><div class="bar-fill yellow" style="width:70%"></div></div><span class="bar-pct">70%</span></div>
     <div class="bar-row"><span class="bar-label">9 — Codificación</span><div class="bar-track"><div class="bar-fill yellow" style="width:65%"></div></div><span class="bar-pct">65%</span></div>
@@ -209,7 +212,7 @@
     <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Pruebas</span><span class="sem-pct">60%</span></div>
     <div class="sem-item"><div class="sem-dot yellow"></div><span class="sem-area">Implantación / Manual</span><span class="sem-pct">55%</span></div>
     <div class="sem-item"><div class="sem-dot red"></div><span class="sem-area">API / Servicios Web</span><span class="sem-pct">25%</span></div>
-    <div class="sem-item"><div class="sem-dot red"></div><span class="sem-area">Diagramas UML</span><span class="sem-pct">20%</span></div>
+    <div class="sem-item"><div class="sem-dot green"></div><span class="sem-area">Diagramas UML</span><span class="sem-pct">100%</span></div>
   </div>
 
   <!-- AGENTES -->
@@ -349,12 +352,12 @@
         <span class="doc-group-prog" id="prog-6">0/6</span>
       </div>
       <div class="doc-group-items" id="group-6" style="display:none;">
-        <div class="doc-item"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.1</span><span>Mockups / Prototipos de interfaz (capturas o imágenes)</span></div>
-        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.2</span><span>Historias de Usuario <span class="missing-tag">FALTANTE</span></span></div>
-        <div class="doc-item doc-item-partial"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.3</span><span>Diagrama UML de Casos de Uso <span class="partial-tag">PARCIAL</span></span></div>
-        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.4</span><span>Diagramas de Actividades <span class="missing-tag">FALTANTE</span></span></div>
-        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.5</span><span>Diagramas de Secuencias <span class="missing-tag">FALTANTE</span></span></div>
-        <div class="doc-item doc-item-missing"><input type="checkbox" class="doc-check" onchange="updateDocProgress()"><span class="doc-item-num">6.6</span><span>Modelo de Dominio (Diagrama de Clases UML) <span class="missing-tag">FALTANTE</span></span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.1</span><span>Mockups / Prototipos de interfaz</span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.2</span><span>Historias de Usuario (referenciadas en Trello)</span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.3</span><span>Diagrama UML de Casos de Uso (11 módulos)</span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.4</span><span>Diagramas de Actividades (4 flujos)</span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.5</span><span>Diagramas de Secuencias (2 flujos)</span></div>
+        <div class="doc-item doc-item-done"><input type="checkbox" class="doc-check" checked onchange="updateDocProgress()"><span class="doc-item-num">6.6</span><span>Modelo de Dominio (Diagrama de Clases UML)</span></div>
       </div>
     </div>
 
@@ -523,50 +526,50 @@
       </thead>
       <tbody id="findings-body">
         <!-- FALTANTES -->
-        <tr data-type="faltante" data-priority="critico">
-          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+        <tr data-type="faltante" data-priority="critico" class="resolved-row">
+          <td><input type="checkbox" checked onchange="toggleResolved(this)"></td>
           <td class="id-cell">F-001</td>
           <td class="name-cell">Historias de Usuario</td>
-          <td class="desc-cell">No existe ningún documento HU en formato estándar. Ausente en Drive y doc principal.</td>
+          <td class="desc-cell">Gestionadas en Trello (9 sprints). Referenciadas en Sección 6.2 con tabla de sprints y URL del tablero.</td>
           <td><span class="type-badge">Faltante</span></td>
           <td><span class="badge critico">Crítico</span></td>
-          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+          <td><span class="status-badge resuelto" onclick="cycleStatus(this)">Resuelto</span></td>
         </tr>
-        <tr data-type="faltante" data-priority="critico">
-          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+        <tr data-type="faltante" data-priority="critico" class="resolved-row">
+          <td><input type="checkbox" checked onchange="toggleResolved(this)"></td>
           <td class="id-cell">F-002</td>
           <td class="name-cell">Diagrama UML Casos de Uso</td>
-          <td class="desc-cell">PDF en Drive existe (86.6KB) pero no está integrado en el documento. Sin diagrama UML formal.</td>
+          <td class="desc-cell">11 diagramas PlantUML por módulo (incluyendo Fidelidad y Novedades). Integrados en Sección 6.3.</td>
           <td><span class="type-badge">Diagrama</span></td>
           <td><span class="badge critico">Crítico</span></td>
-          <td><span class="status-badge parcial" onclick="cycleStatus(this)">Parcial</span></td>
+          <td><span class="status-badge resuelto" onclick="cycleStatus(this)">Resuelto</span></td>
         </tr>
-        <tr data-type="faltante" data-priority="critico">
-          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+        <tr data-type="faltante" data-priority="critico" class="resolved-row">
+          <td><input type="checkbox" checked onchange="toggleResolved(this)"></td>
           <td class="id-cell">F-003</td>
           <td class="name-cell">Diagramas de Actividades</td>
-          <td class="desc-cell">Sin diagramas de actividades para flujos críticos: ingreso, salida+pago, reserva, fidelización.</td>
+          <td class="desc-cell">4 diagramas PlantUML: Ingreso, Salida+Pago, Reserva, Fidelidad. Integrados en Sección 6.4.</td>
           <td><span class="type-badge">Diagrama</span></td>
           <td><span class="badge critico">Crítico</span></td>
-          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+          <td><span class="status-badge resuelto" onclick="cycleStatus(this)">Resuelto</span></td>
         </tr>
-        <tr data-type="faltante" data-priority="critico">
-          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+        <tr data-type="faltante" data-priority="critico" class="resolved-row">
+          <td><input type="checkbox" checked onchange="toggleResolved(this)"></td>
           <td class="id-cell">F-004</td>
           <td class="name-cell">Diagramas de Secuencias</td>
-          <td class="desc-cell">Sin diagramas de secuencias UML para interacciones entre capas del sistema.</td>
+          <td class="desc-cell">2 diagramas PlantUML: Login/Autenticación, Ingreso+Salida+Pago. Integrados en Sección 6.5.</td>
           <td><span class="type-badge">Diagrama</span></td>
           <td><span class="badge critico">Crítico</span></td>
-          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+          <td><span class="status-badge resuelto" onclick="cycleStatus(this)">Resuelto</span></td>
         </tr>
-        <tr data-type="faltante" data-priority="alto">
-          <td><input type="checkbox" onchange="toggleResolved(this)"></td>
+        <tr data-type="faltante" data-priority="alto" class="resolved-row">
+          <td><input type="checkbox" checked onchange="toggleResolved(this)"></td>
           <td class="id-cell">F-005</td>
           <td class="name-cell">Diagrama de Clases UML</td>
-          <td class="desc-cell">Sin representación visual con atributos, métodos y relaciones entre las 14 clases.</td>
+          <td class="desc-cell">Diagrama de dominio con 14 clases, atributos y relaciones generado con PlantUML. Integrado en Sección 6.6.</td>
           <td><span class="type-badge">Diagrama</span></td>
           <td><span class="badge alto">Alto</span></td>
-          <td><span class="status-badge pendiente" onclick="cycleStatus(this)">Pendiente</span></td>
+          <td><span class="status-badge resuelto" onclick="cycleStatus(this)">Resuelto</span></td>
         </tr>
         <tr data-type="faltante" data-priority="alto">
           <td><input type="checkbox" onchange="toggleResolved(this)"></td>
@@ -829,7 +832,7 @@
 
 </div>
 
-<footer>Multiparking — Auditoría Documental v1.1 · SENA ADSO · 2026 · Actualizado: 2026-05-29</footer>
+<footer>Multiparking — Auditoría Documental v1.1 · SENA ADSO · 2026 · Actualizado: 2026-06-12</footer>
 
 <script>
   let activeTypeFilter = 'all';
