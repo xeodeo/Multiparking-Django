@@ -8,5 +8,27 @@
     "additionalDirectories": [
       "c:\\Users\\xeodeo\\.claude\\projects\\c--Users-xeodeo-Desktop-Multiparking-Django\\memory"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/xeodeo/.local/bin/graphify.EXE hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/xeodeo/.local/bin/graphify.EXE hook-guard read"
+          }
+        ]
+      }
+    ]
   }
 }

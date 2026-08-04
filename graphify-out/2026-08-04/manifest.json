@@ -1,0 +1,2587 @@
+{
+  ".agents/skills/database-schema-designer/assets/templates/migration-template.sql": {
+    "mtime": 1785874475.1727283,
+    "ast_hash": "d626a082986288643bb4ed156d7c240d",
+    "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1785874595.0420525,
+    "ast_hash": "4007906b66d6457abd23ef1ed8e16be4",
+    "semantic_hash": ""
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1785874545.8902457,
+    "ast_hash": "cc68102bea9fd8923fe4e931621b5274",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/SQL/BD_multiparking.sql": {
+    "mtime": 1785874475.4226434,
+    "ast_hash": "c1fd8dc7b6e3ca1bf3b6506c6f1994d6",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/SQL/BD_multiparking_V2.sql": {
+    "mtime": 1785874475.423646,
+    "ast_hash": "e26b3163038a58d51de4fad5ccd0170a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/SQL/bdMultiparking_v1.sql": {
+    "mtime": 1785874475.4246488,
+    "ast_hash": "42248f24184e810c92dffa861aff764a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/SQL/multiparking_copia.sql": {
+    "mtime": 1785874475.4246488,
+    "ast_hash": "aeba3e942a087870f4b877a1ca42f3e8",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/add_toc.py": {
+    "mtime": 1785874475.492059,
+    "ast_hash": "c945bb6408b2c309a646f9bfdabc9914",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/fusionar.py": {
+    "mtime": 1785874475.493062,
+    "ast_hash": "f0eeeb2871cedfeadb46c464bfe6250c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_charts_04.py": {
+    "mtime": 1785874475.493062,
+    "ast_hash": "5d6c2dee0142ed13beb4fd43be8d25b1",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_fusionado.js": {
+    "mtime": 1785874475.4940646,
+    "ast_hash": "35eece62b7b8ba42b5d2a7424741e7b9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_sec06.js": {
+    "mtime": 1785874475.495067,
+    "ast_hash": "a02878912392a6e1a9748b990f039c47",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_seccion_00.js": {
+    "mtime": 1785874475.495067,
+    "ast_hash": "f2c3360d1d035d8c60c665ca17c3ca4b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_seccion_01.js": {
+    "mtime": 1785874475.495067,
+    "ast_hash": "82641f512d03590ff0b40c6bb7df1d80",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_seccion_02.js": {
+    "mtime": 1785874475.4960692,
+    "ast_hash": "1ecc5856fb926ac971c9bfa1476ee6af",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_seccion_03.js": {
+    "mtime": 1785874475.4960692,
+    "ast_hash": "90d8d9ed02e940684131871a8e2c54e9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/gen_seccion_04.js": {
+    "mtime": 1785874475.497072,
+    "ast_hash": "e351d1120311b1597b1d5a8b544c8c92",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/package.json": {
+    "mtime": 1785874475.6975138,
+    "ast_hash": "035667a38c7a58f5eb65f21c42df7f44",
+    "semantic_hash": ""
+  },
+  "build.sh": {
+    "mtime": 1785874475.6985164,
+    "ast_hash": "18911dbe02d58cdf38db3be8334a018b",
+    "semantic_hash": ""
+  },
+  "build_docx.py": {
+    "mtime": 1785874475.6995194,
+    "ast_hash": "9d8944749d78fe5445f3a4a2730c2d51",
+    "semantic_hash": ""
+  },
+  "cupones/__init__.py": {
+    "mtime": 1785874475.7005217,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cupones/admin.py": {
+    "mtime": 1785874475.7035294,
+    "ast_hash": "68007fb11bbeab1e59531e34a11a61df",
+    "semantic_hash": ""
+  },
+  "cupones/apps.py": {
+    "mtime": 1785874475.7035294,
+    "ast_hash": "45635c49f0760e41225062e9ca132efc",
+    "semantic_hash": ""
+  },
+  "cupones/migrations/0001_initial.py": {
+    "mtime": 1785874475.704795,
+    "ast_hash": "55ccc0db598fa79e75789eef4c9f1bc7",
+    "semantic_hash": ""
+  },
+  "cupones/migrations/__init__.py": {
+    "mtime": 1785874475.704795,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cupones/models.py": {
+    "mtime": 1785874475.7057943,
+    "ast_hash": "7001a0a4679f36e8830e1839f694ddc1",
+    "semantic_hash": ""
+  },
+  "cupones/tests.py": {
+    "mtime": 1785874475.7067974,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "cupones/urls.py": {
+    "mtime": 1785874475.7067974,
+    "ast_hash": "343bc16e5a09d1c81367b98628962b5d",
+    "semantic_hash": ""
+  },
+  "cupones/views.py": {
+    "mtime": 1785874475.7067974,
+    "ast_hash": "f10da5cf9dc4804099f8b55d6bc80af3",
+    "semantic_hash": ""
+  },
+  "current_doc_clean.json": {
+    "mtime": 1785874475.709805,
+    "ast_hash": "fb3c9beb8e0ee63b00daf69c5ed92e28",
+    "semantic_hash": ""
+  },
+  "current_doc_full.json": {
+    "mtime": 1785874475.7128134,
+    "ast_hash": "a13666f86b6a3128ab3a4ee0776622a7",
+    "semantic_hash": ""
+  },
+  "fidelidad/__init__.py": {
+    "mtime": 1785874475.7148187,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "fidelidad/admin.py": {
+    "mtime": 1785874475.7148187,
+    "ast_hash": "cadd9c7edc1fe4a3a48813776e4b2c49",
+    "semantic_hash": ""
+  },
+  "fidelidad/apps.py": {
+    "mtime": 1785874475.7148187,
+    "ast_hash": "3287124bd6900202770b3ff2780b47c3",
+    "semantic_hash": ""
+  },
+  "fidelidad/migrations/0001_initial.py": {
+    "mtime": 1785874475.7158215,
+    "ast_hash": "fd8ff2b0d8a2de5decb16205e812cbe8",
+    "semantic_hash": ""
+  },
+  "fidelidad/migrations/0002_alter_configuracionfidelidad_id.py": {
+    "mtime": 1785874475.7158215,
+    "ast_hash": "fdd14050523eadeeb5aff5a2e53e67ee",
+    "semantic_hash": ""
+  },
+  "fidelidad/migrations/0003_add_porcentaje_bono.py": {
+    "mtime": 1785874475.7158215,
+    "ast_hash": "4cac97f883077b6f473cc6a77edcd3b4",
+    "semantic_hash": ""
+  },
+  "fidelidad/migrations/__init__.py": {
+    "mtime": 1785874475.7168233,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "fidelidad/models.py": {
+    "mtime": 1785874475.7168233,
+    "ast_hash": "a173b72ec05b37f7b9b996905055733d",
+    "semantic_hash": ""
+  },
+  "fidelidad/views.py": {
+    "mtime": 1785874475.7168233,
+    "ast_hash": "e5e6c3153d2e8172fa07cbc490d64023",
+    "semantic_hash": ""
+  },
+  "gws_tmp/build_doc.py": {
+    "mtime": 1785874475.7178266,
+    "ast_hash": "46354aa44b1254566d8365e9d3601bad",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_000.json": {
+    "mtime": 1785874475.718829,
+    "ast_hash": "a2e60967fecefd637b7c4173ba668714",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_001.json": {
+    "mtime": 1785874475.718829,
+    "ast_hash": "ce488fe647d930a2f71087bee09f4534",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_002.json": {
+    "mtime": 1785874475.718829,
+    "ast_hash": "0f72ff4c081364ad62961ea0309dffd3",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_003.json": {
+    "mtime": 1785874475.7198315,
+    "ast_hash": "49ddd73da4b2ac5e0a88d54e53d7b6d4",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_004.json": {
+    "mtime": 1785874475.7198315,
+    "ast_hash": "4ecd263a2945e573f27cfd094c1b4180",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_005.json": {
+    "mtime": 1785874475.7198315,
+    "ast_hash": "39feac58fde6b7ce614be33044a20bb3",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_006.json": {
+    "mtime": 1785874475.720834,
+    "ast_hash": "793e57f3aea365d57466aaa60d591dbf",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_007.json": {
+    "mtime": 1785874475.720834,
+    "ast_hash": "6a1ee2400cf7c4b651e6a06c9a5bf92d",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_008.json": {
+    "mtime": 1785874475.720834,
+    "ast_hash": "a76a77c1705ac0d435e45a017a981918",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_009.json": {
+    "mtime": 1785874475.7218366,
+    "ast_hash": "9780274a42caab2e653854e2f4f3d72f",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_010.json": {
+    "mtime": 1785874475.7218366,
+    "ast_hash": "b22bc4f907c87bdd25a78c1fd6055438",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_011.json": {
+    "mtime": 1785874475.722839,
+    "ast_hash": "bf04c9ad1feeab72c6240c69cc0dfb64",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_012.json": {
+    "mtime": 1785874475.722839,
+    "ast_hash": "49988a630d318a37142fa59dff8a7f31",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_013.json": {
+    "mtime": 1785874475.722839,
+    "ast_hash": "acf344c2ee1f25ffff7fa6c3c09be41d",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_014.json": {
+    "mtime": 1785874475.723842,
+    "ast_hash": "c7488fd9cdbb420b2e896f0025c5545b",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_015.json": {
+    "mtime": 1785874475.723842,
+    "ast_hash": "ed3aaefb2388f846775027f3ad3e9351",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_016.json": {
+    "mtime": 1785874475.723842,
+    "ast_hash": "1380923b5942a5181a7b047c0205b087",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_017.json": {
+    "mtime": 1785874475.7248454,
+    "ast_hash": "158ef70cb8c4628cf6ca2b7dad055cd3",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_018.json": {
+    "mtime": 1785874475.7248454,
+    "ast_hash": "6ca87117a108222e9545cd1402c2070d",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_019.json": {
+    "mtime": 1785874475.7258472,
+    "ast_hash": "45ef77ea3eadf005c87fdcf4f15988f0",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_020.json": {
+    "mtime": 1785874475.7258472,
+    "ast_hash": "1167ecd3fcc94f7d931db3b3f9a81af9",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_021.json": {
+    "mtime": 1785874475.7268503,
+    "ast_hash": "e395dedde195e8c15650fae48336dc4d",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_022.json": {
+    "mtime": 1785874475.7268503,
+    "ast_hash": "7ad7c69c87442aee6a8daa36beba217a",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_023.json": {
+    "mtime": 1785874475.7268503,
+    "ast_hash": "b81971b4dfaf1cd2ddf477d569e0f932",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_024.json": {
+    "mtime": 1785874475.7278526,
+    "ast_hash": "a567608bef237c61739ff95bc5e9e119",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_025.json": {
+    "mtime": 1785874475.728856,
+    "ast_hash": "37176869f86f99327ba831ece4a0ee02",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_026.json": {
+    "mtime": 1785874475.728856,
+    "ast_hash": "70969811aff38b3d9943f8e0901115a1",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_027.json": {
+    "mtime": 1785874475.728856,
+    "ast_hash": "ff35943e3a81592f67e451464af48e95",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_028.json": {
+    "mtime": 1785874475.7298589,
+    "ast_hash": "28a92d291e59ebd7200c3103efa4c06b",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_029.json": {
+    "mtime": 1785874475.7298589,
+    "ast_hash": "5a1765574054b08d6bf48f998cb91765",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_030.json": {
+    "mtime": 1785874475.7298589,
+    "ast_hash": "34be06784c72457e641974c372523259",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_031.json": {
+    "mtime": 1785874475.730861,
+    "ast_hash": "600d21e7a21e8b462aeb0db0cd02a978",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_032.json": {
+    "mtime": 1785874475.730861,
+    "ast_hash": "592e209fd2f4a5056c03fe98eb184b9d",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_033.json": {
+    "mtime": 1785874475.730861,
+    "ast_hash": "e97caae808216d120fc9095cd9577198",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_034.json": {
+    "mtime": 1785874475.7318635,
+    "ast_hash": "18b2d2f753b7a0440febb44539b74023",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_035.json": {
+    "mtime": 1785874475.7318635,
+    "ast_hash": "9c4d19158ed7e9c2c9a4cec0352ba0a4",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_036.json": {
+    "mtime": 1785874475.7318635,
+    "ast_hash": "bfeb3eb24326feaa1c7d6b7deafd29e6",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_037.json": {
+    "mtime": 1785874475.7328656,
+    "ast_hash": "b6b8b6124b0dac6984e59d594b24f488",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_038.json": {
+    "mtime": 1785874475.7328656,
+    "ast_hash": "3f719ca0a1c1597861d300d76ff206c1",
+    "semantic_hash": ""
+  },
+  "gws_tmp/chunk_039.json": {
+    "mtime": 1785874475.7328656,
+    "ast_hash": "ec6f71bd3874ef614f4d12fa03769d16",
+    "semantic_hash": ""
+  },
+  "gws_tmp/doc_batch_000.json": {
+    "mtime": 1785874475.733868,
+    "ast_hash": "42ecd21ad569c7c19f8b6f5eccc10480",
+    "semantic_hash": ""
+  },
+  "gws_tmp/doc_batch_001.json": {
+    "mtime": 1785874475.733868,
+    "ast_hash": "15046f74f6809e8851f0b2a518fe9b8f",
+    "semantic_hash": ""
+  },
+  "gws_tmp/run_batch.ps1": {
+    "mtime": 1785874475.743894,
+    "ast_hash": "c36a08cfba524101fb7dab543a84a1d7",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_000.json": {
+    "mtime": 1785874475.7448976,
+    "ast_hash": "be50e72625ba87b83a9391bf071398a3",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_001.json": {
+    "mtime": 1785874475.7448976,
+    "ast_hash": "76f2118218d4f6c6c1100790cb77a612",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_002.json": {
+    "mtime": 1785874475.7458994,
+    "ast_hash": "92b21369fc7057b3dc3b65ee444b4730",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_003.json": {
+    "mtime": 1785874475.7458994,
+    "ast_hash": "b785acdf76d02feaab180edcf45d7399",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_004.json": {
+    "mtime": 1785874475.7458994,
+    "ast_hash": "ab6ecb91d785d2a47de4b548ff6a757f",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_005.json": {
+    "mtime": 1785874475.746902,
+    "ast_hash": "f4ec6728aa6c4574b883b06cd2756894",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_006.json": {
+    "mtime": 1785874475.746902,
+    "ast_hash": "1d05ef65b63cd6b2e79222bce218dfea",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_007.json": {
+    "mtime": 1785874475.746902,
+    "ast_hash": "fc69d46eebb0bc7dbd4dee883fe7a2c6",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_008.json": {
+    "mtime": 1785874475.7479045,
+    "ast_hash": "f70f0368a8c7cb99701e8514a016dea5",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_009.json": {
+    "mtime": 1785874475.7479045,
+    "ast_hash": "99d9c45dda26d133fd22907400a98a58",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_010.json": {
+    "mtime": 1785874475.7489073,
+    "ast_hash": "2d9c1f8a0b4765901f7bf1ea3467a175",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_011.json": {
+    "mtime": 1785874475.7489073,
+    "ast_hash": "e263505976b618b171022a73256962ed",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_012.json": {
+    "mtime": 1785874475.7489073,
+    "ast_hash": "e362a059b73228f0ff978ef16aa15884",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_013.json": {
+    "mtime": 1785874475.7499104,
+    "ast_hash": "58b2f299e308912b0f00ae5a3d996343",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_014.json": {
+    "mtime": 1785874475.7499104,
+    "ast_hash": "53fb6bfadda288660e5de13ac86fe012",
+    "semantic_hash": ""
+  },
+  "gws_tmp/text_chunk_015.json": {
+    "mtime": 1785874475.7509131,
+    "ast_hash": "cf1207c2166f40ec0bc84fdad1cb1b82",
+    "semantic_hash": ""
+  },
+  "manage.py": {
+    "mtime": 1785874475.7509131,
+    "ast_hash": "225e96250f51ea9ab53c2573e5523b97",
+    "semantic_hash": ""
+  },
+  "multiparking/__init__.py": {
+    "mtime": 1785874475.7519157,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "multiparking/asgi.py": {
+    "mtime": 1785874475.7539208,
+    "ast_hash": "ca7605939586841676a9cf432ba31c64",
+    "semantic_hash": ""
+  },
+  "multiparking/context_processors.py": {
+    "mtime": 1785874475.7539208,
+    "ast_hash": "42160f9808eaa29fd0334a7822470de5",
+    "semantic_hash": ""
+  },
+  "multiparking/email_utils.py": {
+    "mtime": 1785874475.7549233,
+    "ast_hash": "c789c87e5015e091183f84f8c96ab34d",
+    "semantic_hash": ""
+  },
+  "multiparking/error_views.py": {
+    "mtime": 1785874475.7549233,
+    "ast_hash": "93d03730bb192b8df589215b0c492d6f",
+    "semantic_hash": ""
+  },
+  "multiparking/middleware.py": {
+    "mtime": 1785874475.7549233,
+    "ast_hash": "2d3028c0b16a7a3226404b210a2d350f",
+    "semantic_hash": ""
+  },
+  "multiparking/settings copy.py": {
+    "mtime": 1785874475.755926,
+    "ast_hash": "f2be9eec5b0f77c41ee8193ba03c4a5f",
+    "semantic_hash": ""
+  },
+  "multiparking/settings.py": {
+    "mtime": 1785874475.755926,
+    "ast_hash": "2f47ebfddc7d6a933f332c853f90d696",
+    "semantic_hash": ""
+  },
+  "multiparking/urls.py": {
+    "mtime": 1785874475.7569287,
+    "ast_hash": "855fe0c50b11c14cd64659b208edb600",
+    "semantic_hash": ""
+  },
+  "multiparking/validators.py": {
+    "mtime": 1785874475.7569287,
+    "ast_hash": "89f9c43ee6c881340374acc5d8774754",
+    "semantic_hash": ""
+  },
+  "multiparking/wsgi.py": {
+    "mtime": 1785874475.7569287,
+    "ast_hash": "ee42363eb923b0f6cfe1428250bc03c5",
+    "semantic_hash": ""
+  },
+  "novedades/__init__.py": {
+    "mtime": 1785874475.7569287,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "novedades/admin.py": {
+    "mtime": 1785874475.757931,
+    "ast_hash": "916c88a9c119b4a961398b5d00789bca",
+    "semantic_hash": ""
+  },
+  "novedades/apps.py": {
+    "mtime": 1785874475.757931,
+    "ast_hash": "84fc5730c39af520e335574e3e780cc9",
+    "semantic_hash": ""
+  },
+  "novedades/migrations/0001_initial.py": {
+    "mtime": 1785874475.7589338,
+    "ast_hash": "f03eacbc23203d8fc36c6f9d6bb126bb",
+    "semantic_hash": ""
+  },
+  "novedades/migrations/__init__.py": {
+    "mtime": 1785874475.7589338,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "novedades/models.py": {
+    "mtime": 1785874475.7589338,
+    "ast_hash": "99d0e2719d7df8ec1ba3d15f2204c05c",
+    "semantic_hash": ""
+  },
+  "novedades/views.py": {
+    "mtime": 1785874475.7589338,
+    "ast_hash": "61fde8247820683d3e4815d94e30a00b",
+    "semantic_hash": ""
+  },
+  "pagos/__init__.py": {
+    "mtime": 1785874475.7599363,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "pagos/admin.py": {
+    "mtime": 1785874475.7619417,
+    "ast_hash": "d431f7b9182129a648ef94b5fa270d57",
+    "semantic_hash": ""
+  },
+  "pagos/apps.py": {
+    "mtime": 1785874475.7619417,
+    "ast_hash": "94d6e79ebb79e8843741682f2813f84b",
+    "semantic_hash": ""
+  },
+  "pagos/migrations/0001_initial.py": {
+    "mtime": 1785874475.7629445,
+    "ast_hash": "a7aee3efe09bc6180ee1d03d19236492",
+    "semantic_hash": ""
+  },
+  "pagos/migrations/__init__.py": {
+    "mtime": 1785874475.7629445,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "pagos/models.py": {
+    "mtime": 1785874475.7649498,
+    "ast_hash": "c0b3c475053d51231da38499846f94af",
+    "semantic_hash": ""
+  },
+  "pagos/tests.py": {
+    "mtime": 1785874475.7649498,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "pagos/urls.py": {
+    "mtime": 1785874475.7649498,
+    "ast_hash": "c9c107d4848b832c26fd2f55c9ceebdd",
+    "semantic_hash": ""
+  },
+  "pagos/views.py": {
+    "mtime": 1785874475.7659523,
+    "ast_hash": "39a873c56ac509ea9e4c1ffa6d933941",
+    "semantic_hash": ""
+  },
+  "parqueadero/__init__.py": {
+    "mtime": 1785874475.7659523,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "parqueadero/admin.py": {
+    "mtime": 1785874475.7689602,
+    "ast_hash": "b53cd634aff9986276b84de9ad13a14e",
+    "semantic_hash": ""
+  },
+  "parqueadero/apps.py": {
+    "mtime": 1785874475.769963,
+    "ast_hash": "9f92c9b30f50140632c742b518577be8",
+    "semantic_hash": ""
+  },
+  "parqueadero/cliente_views.py": {
+    "mtime": 1785874475.769963,
+    "ast_hash": "227f5a73937d9c25c55a45ef3e2beacd",
+    "semantic_hash": ""
+  },
+  "parqueadero/management/__init__.py": {
+    "mtime": 1785874475.769963,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "parqueadero/management/commands/__init__.py": {
+    "mtime": 1785874475.7709653,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "parqueadero/management/commands/seed_data.py": {
+    "mtime": 1785874475.7729707,
+    "ast_hash": "3c71da623dbdf50caee9f1bf1e314779",
+    "semantic_hash": ""
+  },
+  "parqueadero/migrations/0001_initial.py": {
+    "mtime": 1785874475.7729707,
+    "ast_hash": "236010c7b025ce74db36770b9acee215",
+    "semantic_hash": ""
+  },
+  "parqueadero/migrations/0002_alter_espacio_espestado.py": {
+    "mtime": 1785874475.773973,
+    "ast_hash": "99722dc26d4b69721a228c36c77782e2",
+    "semantic_hash": ""
+  },
+  "parqueadero/migrations/__init__.py": {
+    "mtime": 1785874475.773973,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "parqueadero/models.py": {
+    "mtime": 1785874475.774976,
+    "ast_hash": "0c168c4eedfa024e15e58d24542ca38e",
+    "semantic_hash": ""
+  },
+  "parqueadero/reportes_views.py": {
+    "mtime": 1785874475.7759783,
+    "ast_hash": "d959d70edc3c3d16bdf1e69875766d3a",
+    "semantic_hash": ""
+  },
+  "parqueadero/services.py": {
+    "mtime": 1785874475.7759783,
+    "ast_hash": "1d635237ee67d19c0b5acd1344436860",
+    "semantic_hash": ""
+  },
+  "parqueadero/tests.py": {
+    "mtime": 1785874475.7769809,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "parqueadero/urls.py": {
+    "mtime": 1785874475.7769809,
+    "ast_hash": "179d008ae5e6073c78513c3cebf25325",
+    "semantic_hash": ""
+  },
+  "parqueadero/utils.py": {
+    "mtime": 1785874475.7769809,
+    "ast_hash": "38d08ea01d4260feab1e01bf6d78b251",
+    "semantic_hash": ""
+  },
+  "parqueadero/views.py": {
+    "mtime": 1785874475.777984,
+    "ast_hash": "7c772ce75eaa941b28cb52452bc4723f",
+    "semantic_hash": ""
+  },
+  "parqueadero/vigilante_views.py": {
+    "mtime": 1785874475.777984,
+    "ast_hash": "8b37a81787ef9d3259bbc8fe8681f322",
+    "semantic_hash": ""
+  },
+  "reservas/__init__.py": {
+    "mtime": 1785874475.791018,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "reservas/admin.py": {
+    "mtime": 1785874475.7930233,
+    "ast_hash": "c4aadce0e1d34e98c018fe2f1bf54fd2",
+    "semantic_hash": ""
+  },
+  "reservas/apps.py": {
+    "mtime": 1785874475.7930233,
+    "ast_hash": "29e7036038aa0368336a18c83da50e25",
+    "semantic_hash": ""
+  },
+  "reservas/cliente_views.py": {
+    "mtime": 1785874475.7940264,
+    "ast_hash": "7ac731db173ed37a1b4033b732575ecb",
+    "semantic_hash": ""
+  },
+  "reservas/management/__init__.py": {
+    "mtime": 1785874475.7940264,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "reservas/management/commands/__init__.py": {
+    "mtime": 1785874475.7940264,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "reservas/management/commands/enviar_recordatorios.py": {
+    "mtime": 1785874475.7950284,
+    "ast_hash": "7dab178ea0a06e7a2cc57643957c3348",
+    "semantic_hash": ""
+  },
+  "reservas/migrations/0001_initial.py": {
+    "mtime": 1785874475.7950284,
+    "ast_hash": "86e1d383a56fdb36d175e43c7e4106de",
+    "semantic_hash": ""
+  },
+  "reservas/migrations/__init__.py": {
+    "mtime": 1785874475.7950284,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "reservas/models.py": {
+    "mtime": 1785874475.7970338,
+    "ast_hash": "84113289391fd9ad5d10ab58b184ea80",
+    "semantic_hash": ""
+  },
+  "reservas/tests.py": {
+    "mtime": 1785874475.7970338,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "reservas/urls.py": {
+    "mtime": 1785874475.7970338,
+    "ast_hash": "07f8a721f597a0cbf21ff27b77716b77",
+    "semantic_hash": ""
+  },
+  "reservas/views.py": {
+    "mtime": 1785874475.7970338,
+    "ast_hash": "ce730f7fe86303068d379f6981f10cca",
+    "semantic_hash": ""
+  },
+  "scripts/cargar_datos_iniciales.py": {
+    "mtime": 1785874475.7990394,
+    "ast_hash": "e3b2792043b8b8ad87a8ff790e59c4b8",
+    "semantic_hash": ""
+  },
+  "scripts/check_pagos.py": {
+    "mtime": 1785874475.7990394,
+    "ast_hash": "c8062b1c22a90a16ff42968c64871e24",
+    "semantic_hash": ""
+  },
+  "scripts/check_pisos.py": {
+    "mtime": 1785874475.7990394,
+    "ast_hash": "bb344097c9843ab5b5f8f25595d75762",
+    "semantic_hash": ""
+  },
+  "scripts/create_admin.py": {
+    "mtime": 1785874475.8000417,
+    "ast_hash": "f2291e3af1bf6b868d4748be0adc44e9",
+    "semantic_hash": ""
+  },
+  "scripts/debug_dashboard_view.py": {
+    "mtime": 1785874475.8000417,
+    "ast_hash": "3dc548901ee8815f486b42db5cad0da6",
+    "semantic_hash": ""
+  },
+  "scripts/generar_datos_prueba.py": {
+    "mtime": 1785874475.8010445,
+    "ast_hash": "a7748d116396cb4fdead49e2573fc216",
+    "semantic_hash": ""
+  },
+  "scripts/mantener_datos_demo.py": {
+    "mtime": 1785874475.8010445,
+    "ast_hash": "525828b84324a3e674bc2017810856e4",
+    "semantic_hash": ""
+  },
+  "scripts/reiniciar_base_datos.py": {
+    "mtime": 1785874475.8010445,
+    "ast_hash": "4a875cde176b18830c0e93693c79adcd",
+    "semantic_hash": ""
+  },
+  "scripts/reiniciar_base_datos_v2.py": {
+    "mtime": 1785874475.8020468,
+    "ast_hash": "47e4e725044e89bf444c7b912224859a",
+    "semantic_hash": ""
+  },
+  "scripts/render_datos_prueba.py": {
+    "mtime": 1785874475.8020468,
+    "ast_hash": "d4b29408e8b324d09d6b9f3750140d10",
+    "semantic_hash": ""
+  },
+  "scripts/render_limpiar_bd.py": {
+    "mtime": 1785874475.8020468,
+    "ast_hash": "af307508c149bd41fe91467bcadfd07c",
+    "semantic_hash": ""
+  },
+  "scripts/schema.sql": {
+    "mtime": 1785874475.8030496,
+    "ast_hash": "e4622b7ab4e72752d78762168f4e649a",
+    "semantic_hash": ""
+  },
+  "scripts/verify_dashboard_features.py": {
+    "mtime": 1785874475.8030496,
+    "ast_hash": "2815b15b917e1a563c180a3f87b597ef",
+    "semantic_hash": ""
+  },
+  "scripts/verify_js_syntax.py": {
+    "mtime": 1785874475.8030496,
+    "ast_hash": "54d0615985288f2e400989564ef9e954",
+    "semantic_hash": ""
+  },
+  "scripts/verify_template.py": {
+    "mtime": 1785874475.8030496,
+    "ast_hash": "89321757bf65303d489951dcc8a87813",
+    "semantic_hash": ""
+  },
+  "tarifas/__init__.py": {
+    "mtime": 1785874475.8050547,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "tarifas/admin.py": {
+    "mtime": 1785874475.8080626,
+    "ast_hash": "8537cf1d50dd9fc24b9fca56c7d712e4",
+    "semantic_hash": ""
+  },
+  "tarifas/apps.py": {
+    "mtime": 1785874475.8080626,
+    "ast_hash": "c10a1a087d9ce0b695aeeafd56b6a46c",
+    "semantic_hash": ""
+  },
+  "tarifas/migrations/0001_initial.py": {
+    "mtime": 1785874475.809065,
+    "ast_hash": "ae72ba065a3ec31d3655e5883e53ba6a",
+    "semantic_hash": ""
+  },
+  "tarifas/migrations/__init__.py": {
+    "mtime": 1785874475.809065,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "tarifas/models.py": {
+    "mtime": 1785874475.8100677,
+    "ast_hash": "f9166b0cbd55b80445e0f49407624675",
+    "semantic_hash": ""
+  },
+  "tarifas/tests.py": {
+    "mtime": 1785874475.8100677,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "tarifas/urls.py": {
+    "mtime": 1785874475.8100677,
+    "ast_hash": "343bc16e5a09d1c81367b98628962b5d",
+    "semantic_hash": ""
+  },
+  "tarifas/views.py": {
+    "mtime": 1785874475.8110704,
+    "ast_hash": "a7f3971db5e2fccdea3d9748d1231a0f",
+    "semantic_hash": ""
+  },
+  "usuarios/__init__.py": {
+    "mtime": 1785874475.8391435,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "usuarios/admin.py": {
+    "mtime": 1785874475.8421514,
+    "ast_hash": "198b7a9f4ef81f8948e084c4664c0f2a",
+    "semantic_hash": ""
+  },
+  "usuarios/apps.py": {
+    "mtime": 1785874475.8421514,
+    "ast_hash": "9a9cc650b88586fb26df43a8ed22eb81",
+    "semantic_hash": ""
+  },
+  "usuarios/migrations/0001_initial.py": {
+    "mtime": 1785874475.8431542,
+    "ast_hash": "26393d8000a5e07fe6d1bb78271b5d99",
+    "semantic_hash": ""
+  },
+  "usuarios/migrations/0002_alter_usuario_usucorreo.py": {
+    "mtime": 1785874475.8441575,
+    "ast_hash": "8c381e4f4c1521468c39c7b0ca4a3a5e",
+    "semantic_hash": ""
+  },
+  "usuarios/migrations/__init__.py": {
+    "mtime": 1785874475.8441575,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "usuarios/mixins.py": {
+    "mtime": 1785874475.846162,
+    "ast_hash": "37cf19fa20bfcf7333cdc0416b02bad6",
+    "semantic_hash": ""
+  },
+  "usuarios/models.py": {
+    "mtime": 1785874475.846162,
+    "ast_hash": "41344d3ca23be89855996fd1e07fa000",
+    "semantic_hash": ""
+  },
+  "usuarios/tests.py": {
+    "mtime": 1785874475.846162,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "usuarios/urls.py": {
+    "mtime": 1785874475.8471653,
+    "ast_hash": "343bc16e5a09d1c81367b98628962b5d",
+    "semantic_hash": ""
+  },
+  "usuarios/validators.py": {
+    "mtime": 1785874475.8471653,
+    "ast_hash": "af259b9162af4cbf3dbbd0f7a0efb16b",
+    "semantic_hash": ""
+  },
+  "usuarios/views.py": {
+    "mtime": 1785874475.8481674,
+    "ast_hash": "2341fe66ce9199a2e5eb1ab7292337e1",
+    "semantic_hash": ""
+  },
+  "vehiculos/__init__.py": {
+    "mtime": 1785874475.8481674,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "vehiculos/admin.py": {
+    "mtime": 1785874475.8501725,
+    "ast_hash": "17db95cc14355a79551a20ceb19ba91d",
+    "semantic_hash": ""
+  },
+  "vehiculos/apps.py": {
+    "mtime": 1785874475.8501725,
+    "ast_hash": "93b1f76e36f123b28087b0260eb156a2",
+    "semantic_hash": ""
+  },
+  "vehiculos/cliente_views.py": {
+    "mtime": 1785874475.8501725,
+    "ast_hash": "5401c2b44d4d4c910536c316968ba751",
+    "semantic_hash": ""
+  },
+  "vehiculos/migrations/0001_initial.py": {
+    "mtime": 1785874475.851175,
+    "ast_hash": "f7f2b10da8f7eb46477907b68c0abbcf",
+    "semantic_hash": ""
+  },
+  "vehiculos/migrations/__init__.py": {
+    "mtime": 1785874475.851175,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "vehiculos/models.py": {
+    "mtime": 1785874475.8521774,
+    "ast_hash": "729d60d37b6d54fd0b7c95cff43a2e21",
+    "semantic_hash": ""
+  },
+  "vehiculos/tests.py": {
+    "mtime": 1785874475.8521774,
+    "ast_hash": "e08f0582500f6562bf0a931ef9503b39",
+    "semantic_hash": ""
+  },
+  "vehiculos/urls.py": {
+    "mtime": 1785874475.8531802,
+    "ast_hash": "343bc16e5a09d1c81367b98628962b5d",
+    "semantic_hash": ""
+  },
+  "vehiculos/validators.py": {
+    "mtime": 1785874475.8531802,
+    "ast_hash": "01e9db5099fcecb6330c7a58f3115a6e",
+    "semantic_hash": ""
+  },
+  "vehiculos/views.py": {
+    "mtime": 1785874475.8531802,
+    "ast_hash": "6d7137c94829b90c810b62d68f0bcdbd",
+    "semantic_hash": ""
+  },
+  ".agents/skills/database-schema-designer/README.md": {
+    "mtime": 1785874475.171726,
+    "ast_hash": "773d88461fdb05cef2c94b53a2aeb018",
+    "semantic_hash": ""
+  },
+  ".agents/skills/database-schema-designer/SKILL.md": {
+    "mtime": 1785874475.171726,
+    "ast_hash": "2c96fa68500f7a1ceb45b69ff2853e42",
+    "semantic_hash": ""
+  },
+  ".agents/skills/database-schema-designer/references/schema-design-checklist.md": {
+    "mtime": 1785874475.173731,
+    "ast_hash": "5e01ce0a5d2ee96136439e4581b30320",
+    "semantic_hash": ""
+  },
+  ".claude/context.md": {
+    "mtime": 1785874475.1936429,
+    "ast_hash": "1863b310f28ed962aa2f833e80ee503c",
+    "semantic_hash": ""
+  },
+  ".claude/database.md": {
+    "mtime": 1785874475.1936429,
+    "ast_hash": "ec8bfc574b25771682db4468657e82e9",
+    "semantic_hash": ""
+  },
+  ".claude/rules.md": {
+    "mtime": 1785874475.1946447,
+    "ast_hash": "bc949ea893a9384070c31f083ccefd26",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-23-56-204Z.yml": {
+    "mtime": 1785874475.2063248,
+    "ast_hash": "8de32b77ec9d59a9ec4b1c85ad799d03",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-24-22-826Z.yml": {
+    "mtime": 1785874475.2083297,
+    "ast_hash": "7c184b0067f318863269ae16697ad84c",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-25-09-169Z.yml": {
+    "mtime": 1785874475.209332,
+    "ast_hash": "339a53435fac7a77126d2a64037963fe",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-25-21-803Z.yml": {
+    "mtime": 1785874475.2113369,
+    "ast_hash": "678ce2f1a56428bc30864f7932be870b",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-25-57-053Z.yml": {
+    "mtime": 1785874475.2133422,
+    "ast_hash": "16e6dbab7b00f9be5d05d76a934d207b",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-10-999Z.yml": {
+    "mtime": 1785874475.214345,
+    "ast_hash": "4d706245d0f02fad043f4813b71b60f3",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-26-240Z.yml": {
+    "mtime": 1785874475.2153475,
+    "ast_hash": "f150033e016af425f13cdc232ccbd8d9",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-35-554Z.yml": {
+    "mtime": 1785874475.2173533,
+    "ast_hash": "eda833d422ef07ea1cbd5f0d7efac0b2",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-49-797Z.yml": {
+    "mtime": 1785874475.2183561,
+    "ast_hash": "da3c67aa500bd9e15e3aba0324e5ea64",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-57-312Z.yml": {
+    "mtime": 1785874475.219359,
+    "ast_hash": "b59b124e04b84f4e21e6fa509ab01e12",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-04-163Z.yml": {
+    "mtime": 1785874475.2213633,
+    "ast_hash": "2dae6066b35b45bf707e65afdfd5647d",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-12-605Z.yml": {
+    "mtime": 1785874475.222366,
+    "ast_hash": "8de32b77ec9d59a9ec4b1c85ad799d03",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-17-260Z.yml": {
+    "mtime": 1785874475.222366,
+    "ast_hash": "7c184b0067f318863269ae16697ad84c",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-34-770Z.yml": {
+    "mtime": 1785874475.2233686,
+    "ast_hash": "d2f967d1b00b9673164b6db84e57e361",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-53-694Z.yml": {
+    "mtime": 1785874475.224194,
+    "ast_hash": "854c368f8d241dcb1074ab65cddda73b",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-58-012Z.yml": {
+    "mtime": 1785874475.224194,
+    "ast_hash": "ca92d1361d6907b8e81679bcd4bbdcbc",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-21-645Z.yml": {
+    "mtime": 1785874475.2271996,
+    "ast_hash": "8de32b77ec9d59a9ec4b1c85ad799d03",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-30-150Z.yml": {
+    "mtime": 1785874475.2281857,
+    "ast_hash": "7c184b0067f318863269ae16697ad84c",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-45-256Z.yml": {
+    "mtime": 1785874475.2286983,
+    "ast_hash": "71db4048c970c7045c0ab5d361995202",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-59-364Z.yml": {
+    "mtime": 1785874475.2296934,
+    "ast_hash": "e5fbdcc5217d522a5aaceb5e175fdaed",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-11-657Z.yml": {
+    "mtime": 1785874475.2306967,
+    "ast_hash": "9b370aa9d00c6a890fc43ad15d8ac69f",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-22-111Z.yml": {
+    "mtime": 1785874475.2316978,
+    "ast_hash": "8de32b77ec9d59a9ec4b1c85ad799d03",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-29-009Z.yml": {
+    "mtime": 1785874475.2316978,
+    "ast_hash": "858fd050daea1988d6a1e98a4a1b8c67",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-38-248Z.yml": {
+    "mtime": 1785874475.2327008,
+    "ast_hash": "39244590f4878547bc2b99bcd9da8099",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-49-250Z.yml": {
+    "mtime": 1785874475.2337036,
+    "ast_hash": "8de32b77ec9d59a9ec4b1c85ad799d03",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-06-12T01-42-21-438Z.yml": {
+    "mtime": 1785874475.2369823,
+    "ast_hash": "5a2ec20f11af8d0f69efb64e583b9c49",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1785874595.0390444,
+    "ast_hash": "cdb39fda96c0957ca5d77b64dce98b86",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/AGENTES_ACTIVOS.md": {
+    "mtime": 1785874475.2393043,
+    "ast_hash": "ee72945a626f403ed0d23a95c94bf19b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/BITACORA_GENERAL.md": {
+    "mtime": 1785874475.2393043,
+    "ast_hash": "64afbb6c63a77f876ae70973efb26d6b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/CATALOGO_DRIVE.md": {
+    "mtime": 1785874475.240525,
+    "ast_hash": "02b7d574ce582673d2523a4510b9dadc",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Docs/Documentacion_Multiparking_COMPLETA_v1.txt": {
+    "mtime": 1785874475.2886481,
+    "ast_hash": "36a7b463b02de703af72090d4efce35b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Docs/Documentacion_Multiparking_COMPLETA_v2.txt": {
+    "mtime": 1785874475.2886481,
+    "ast_hash": "dd77317bb7a2406b41ee60cba0c62619",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/SQL/Triggers.txt": {
+    "mtime": 1785874475.423646,
+    "ast_hash": "91f6fc5f20308d453b9c4e570d39b5cd",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/ESTADO_GENERAL_DOCUMENTACION.md": {
+    "mtime": 1785874475.4246488,
+    "ast_hash": "97428f34959a5888c3bf355d9396832a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/FALTANTES_DOCUMENTACION.md": {
+    "mtime": 1785874475.4256513,
+    "ast_hash": "e21c8797e64ce5d14a3e0cc015ab29f3",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/PLANTILLA_PRINCIPAL.md": {
+    "mtime": 1785874475.445035,
+    "ast_hash": "a0276d6649af8fb3355b8409acb2d279",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/ROADMAP_DOCUMENTACION.md": {
+    "mtime": 1785874475.4460373,
+    "ast_hash": "e5260fcad7401d66541d92e44059c96c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_00_Portada_Resumen/contenido.md": {
+    "mtime": 1785874475.4470408,
+    "ast_hash": "a4cd28ef2329954ab4220c842b83856d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_01_Planteamiento_Problema/contenido.md": {
+    "mtime": 1785874475.4490461,
+    "ast_hash": "006afce4b9d1a2d5c7fae784655eec5b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_02_Objetivos/contenido.md": {
+    "mtime": 1785874475.450454,
+    "ast_hash": "4dc2272892c462dea014db8c1e6252ec",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_03_Matriz_Riesgo/contenido.md": {
+    "mtime": 1785874475.4514534,
+    "ast_hash": "103ba758376acd3f3f372f30a895708a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/contenido.md": {
+    "mtime": 1785874475.4594743,
+    "ast_hash": "6b0c6477e2d58ed8e0e1c1d120a5db85",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_05_Requerimientos/contenido.md": {
+    "mtime": 1785874475.4624822,
+    "ast_hash": "060b38a37941bf8b71de6c5d25f4bdea",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/contenido.md": {
+    "mtime": 1785874475.4910562,
+    "ast_hash": "053f434398f9dbf425486986722a11b1",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/fix.md": {
+    "mtime": 1785874475.492059,
+    "ast_hash": "14b1caba5bf825524738ee33842a6f4f",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/dashboard.html": {
+    "mtime": 1785874475.493062,
+    "ast_hash": "ef1faf5933d44dd685759cf61ca0fa0a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1785874475.6985164,
+    "ast_hash": "a0989ec92ba18befa2d2a3daec786c6d",
+    "semantic_hash": ""
+  },
+  "download.html": {
+    "mtime": 1785874475.713816,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "download.txt": {
+    "mtime": 1785874475.713816,
+    "ast_hash": "1ab893bbb91259d2b61b82a9b2fc1535",
+    "semantic_hash": ""
+  },
+  "presentacion/GUION.md": {
+    "mtime": 1785874475.77999,
+    "ast_hash": "6d5fdadf9849dad72da64a8c15f102cc",
+    "semantic_hash": ""
+  },
+  "presentacion/PRESENTACION.md": {
+    "mtime": 1785874475.77999,
+    "ast_hash": "a745a5359fd159b6d523ee312d92b310",
+    "semantic_hash": ""
+  },
+  "presentacion/presentacion.html": {
+    "mtime": 1785874475.790015,
+    "ast_hash": "5c6e06d5d8b132356b3a869fc9774bb0",
+    "semantic_hash": ""
+  },
+  "requirements copy.txt": {
+    "mtime": 1785874475.790015,
+    "ast_hash": "2fc3304639c90c2be61974fb8dc4d777",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1785874475.790015,
+    "ast_hash": "ed11a46f4d0000993fdfb7eee63c0376",
+    "semantic_hash": ""
+  },
+  "scripts/DATOS_DEMO.md": {
+    "mtime": 1785874475.7980368,
+    "ast_hash": "461ead801f43e96b60b2f0206bae8499",
+    "semantic_hash": ""
+  },
+  "scripts/SOLUCION_GRAFIC A.md": {
+    "mtime": 1785874475.7980368,
+    "ast_hash": "d03db2c1e770e7e568122d98cbca4df3",
+    "semantic_hash": ""
+  },
+  "templates/403.html": {
+    "mtime": 1785874475.8110704,
+    "ast_hash": "6e8d985badf4968b1a90017d0cde129f",
+    "semantic_hash": ""
+  },
+  "templates/404.html": {
+    "mtime": 1785874475.8110704,
+    "ast_hash": "a30448f548630f4ce7dfbe5b83f18880",
+    "semantic_hash": ""
+  },
+  "templates/500.html": {
+    "mtime": 1785874475.8120725,
+    "ast_hash": "3af6978851ada19300bf1ef8bd171370",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/base.html": {
+    "mtime": 1785874475.8120725,
+    "ast_hash": "fa29349e3fb3abbd81a9b29866b31669",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/cupones/form.html": {
+    "mtime": 1785874475.8130753,
+    "ast_hash": "4049bcd3caf925f8d59f5aa32961df80",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/cupones/list.html": {
+    "mtime": 1785874475.8130753,
+    "ast_hash": "914a35d080d002e5ffc9b609e6fe56e3",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/dashboard.html": {
+    "mtime": 1785874475.8140779,
+    "ast_hash": "8db9d0d64b351add7d6f1ef845952399",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/espacios/form.html": {
+    "mtime": 1785874475.8150804,
+    "ast_hash": "37b7f60853b8e05aba3473db0c4411c5",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/espacios/list.html": {
+    "mtime": 1785874475.8150804,
+    "ast_hash": "654b8469e4d00f5c4a3f3b968545249b",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/espacios/range_form.html": {
+    "mtime": 1785874475.8150804,
+    "ast_hash": "7a79ef9423960ba9f9aea80ccfa4b009",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/fidelidad/config.html": {
+    "mtime": 1785874475.8150804,
+    "ast_hash": "fb6d359c26157fb58695da22eb2b66ce",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/inventario/list.html": {
+    "mtime": 1785874475.8160832,
+    "ast_hash": "e94ee5e1c2cae3fae910769b29eb766f",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/novedades/form.html": {
+    "mtime": 1785874475.8170857,
+    "ast_hash": "2a05d6d86459c78eeaddbaed7150825c",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/novedades/list.html": {
+    "mtime": 1785874475.8170857,
+    "ast_hash": "02616bf45dfa1cd9b7ce1032e291c03e",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/pagos_list.html": {
+    "mtime": 1785874475.8180904,
+    "ast_hash": "47918719adeb6a0789761cfb90f5a4e3",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/pisos/form.html": {
+    "mtime": 1785874475.8180904,
+    "ast_hash": "faa1792e594f7b8c89f3e47d25932d08",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/pisos/list.html": {
+    "mtime": 1785874475.8190923,
+    "ast_hash": "5019fd3075470eef573961444b0ab9e6",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/qr/generar.html": {
+    "mtime": 1785874475.8200948,
+    "ast_hash": "b1737de67087ad7075aaec363b5fc2ab",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/reportes.html": {
+    "mtime": 1785874475.8200948,
+    "ast_hash": "78dfe50ea189a0643cd73925c11bfd74",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/reservas/form.html": {
+    "mtime": 1785874475.8210979,
+    "ast_hash": "7a02cf498c83efe25a738c61eb37b545",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/reservas/list.html": {
+    "mtime": 1785874475.8210979,
+    "ast_hash": "2851604dc4ce939335efe8d40ca01a95",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/tarifas/form.html": {
+    "mtime": 1785874475.8220997,
+    "ast_hash": "ee6464fd2fdb24270f21e98de8b82df9",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/tarifas/list.html": {
+    "mtime": 1785874475.8220997,
+    "ast_hash": "ca320bd607d7bc9505c2c34ffe2b3e9e",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/test_email.html": {
+    "mtime": 1785874475.8231018,
+    "ast_hash": "c864f62588a6c63869aed47c9b79dd56",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/tipos_espacio/form.html": {
+    "mtime": 1785874475.8231018,
+    "ast_hash": "f3202fd6af5a0c52f5ed684adc830377",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/tipos_espacio/list.html": {
+    "mtime": 1785874475.8241043,
+    "ast_hash": "4a1b116de1d13783b27516a681e8f082",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/usuarios/form.html": {
+    "mtime": 1785874475.8241043,
+    "ast_hash": "49e0b146c75a384ea962ba0916b528b1",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/usuarios/list.html": {
+    "mtime": 1785874475.8241043,
+    "ast_hash": "71d7e90ed54ac357cdb94478f8dee5ba",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/vehiculos/form.html": {
+    "mtime": 1785874475.8251069,
+    "ast_hash": "ecb95cf72d486be0da9dadf7697b643a",
+    "semantic_hash": ""
+  },
+  "templates/admin_panel/vehiculos/list.html": {
+    "mtime": 1785874475.8251069,
+    "ast_hash": "bd9ecd2dc467fdab5dcd2df189874256",
+    "semantic_hash": ""
+  },
+  "templates/auth/dashboard.html": {
+    "mtime": 1785874475.8261094,
+    "ast_hash": "5bc0d70c0d277deb9fe5f9b40e5a58b8",
+    "semantic_hash": ""
+  },
+  "templates/auth/login.html": {
+    "mtime": 1785874475.8261094,
+    "ast_hash": "26586d29ee3b0fa19d61d9526eaad52d",
+    "semantic_hash": ""
+  },
+  "templates/auth/password_reset_confirm.html": {
+    "mtime": 1785874475.827112,
+    "ast_hash": "32bcdc0c28ae26952d33951c2efa8855",
+    "semantic_hash": ""
+  },
+  "templates/auth/register.html": {
+    "mtime": 1785874475.827112,
+    "ast_hash": "4c03840ad0bfe36277a8c243ca74d8be",
+    "semantic_hash": ""
+  },
+  "templates/base.html": {
+    "mtime": 1785874475.827112,
+    "ast_hash": "8acf9374995f24343fcaa82265ccbdc0",
+    "semantic_hash": ""
+  },
+  "templates/cliente/base.html": {
+    "mtime": 1785874475.827112,
+    "ast_hash": "4d4c2ef4e6e69c148d66c578537233ab",
+    "semantic_hash": ""
+  },
+  "templates/cliente/cuponera.html": {
+    "mtime": 1785874475.828115,
+    "ast_hash": "0516988ea4dd2b3f4b909a09a18a077e",
+    "semantic_hash": ""
+  },
+  "templates/cliente/dashboard.html": {
+    "mtime": 1785874475.828115,
+    "ast_hash": "bc05e31d1dd86f434eee6a2d378c9659",
+    "semantic_hash": ""
+  },
+  "templates/cliente/entrada_exitosa.html": {
+    "mtime": 1785874475.829117,
+    "ast_hash": "9de9996331c26a7c2f7994a9a02fc8a0",
+    "semantic_hash": ""
+  },
+  "templates/cliente/entrada_qr.html": {
+    "mtime": 1785874475.829117,
+    "ast_hash": "1437681ff368477c5c45d63ca3bd4fea",
+    "semantic_hash": ""
+  },
+  "templates/cliente/escanear_qr.html": {
+    "mtime": 1785874475.829117,
+    "ast_hash": "9adf0a863d2f015c15ad8e44cd80e33b",
+    "semantic_hash": ""
+  },
+  "templates/cliente/perfil.html": {
+    "mtime": 1785874475.8301203,
+    "ast_hash": "26ff104a2c90007db66e59191d19cc95",
+    "semantic_hash": ""
+  },
+  "templates/cliente/reserva_form.html": {
+    "mtime": 1785874475.8301203,
+    "ast_hash": "7a0c772b762d47a7a47a1bbde26319bc",
+    "semantic_hash": ""
+  },
+  "templates/cliente/salida_efectivo.html": {
+    "mtime": 1785874475.8311229,
+    "ast_hash": "32a393a9cca05baf62268b42c98dc443",
+    "semantic_hash": ""
+  },
+  "templates/cliente/salida_exitosa.html": {
+    "mtime": 1785874475.8311229,
+    "ast_hash": "61bc3c3395bd159a4596362c4da655d5",
+    "semantic_hash": ""
+  },
+  "templates/cliente/salida_pago.html": {
+    "mtime": 1785874475.832126,
+    "ast_hash": "bc32d8a227a1e598578370fe9178f60c",
+    "semantic_hash": ""
+  },
+  "templates/cliente/vehiculo_form.html": {
+    "mtime": 1785874475.832126,
+    "ast_hash": "4c52c5e4e6016bb41b50414346a59958",
+    "semantic_hash": ""
+  },
+  "templates/emails/base_email.html": {
+    "mtime": 1785874475.833129,
+    "ast_hash": "ac6e8c216b7c349c8f634f09a0de069e",
+    "semantic_hash": ""
+  },
+  "templates/emails/bienvenida.html": {
+    "mtime": 1785874475.834132,
+    "ast_hash": "ab7ecf22a1614115e3bb4d5c202c20fb",
+    "semantic_hash": ""
+  },
+  "templates/emails/bono_stickers.html": {
+    "mtime": 1785874475.834132,
+    "ast_hash": "45f4e24bf7bc26a6eee978ed8e42afea",
+    "semantic_hash": ""
+  },
+  "templates/emails/confirmacion_entrada.html": {
+    "mtime": 1785874475.834132,
+    "ast_hash": "5ab57f05f302016bf5163b9a7fb27373",
+    "semantic_hash": ""
+  },
+  "templates/emails/confirmacion_reserva.html": {
+    "mtime": 1785874475.8351338,
+    "ast_hash": "2e1b57b33289cf668486682e6dcb3b74",
+    "semantic_hash": ""
+  },
+  "templates/emails/novedad.html": {
+    "mtime": 1785874475.8351338,
+    "ast_hash": "44b184238aabd52a9d90cf38991b69d0",
+    "semantic_hash": ""
+  },
+  "templates/emails/recibo_pago.html": {
+    "mtime": 1785874475.8351338,
+    "ast_hash": "cdba0b2377850c86bc58f283da09407f",
+    "semantic_hash": ""
+  },
+  "templates/emails/recordatorio_reserva.html": {
+    "mtime": 1785874475.8361366,
+    "ast_hash": "2303d709d79246cd0097578bf3023d5c",
+    "semantic_hash": ""
+  },
+  "templates/emails/registro_vehiculo.html": {
+    "mtime": 1785874475.8361366,
+    "ast_hash": "9d9969d00782b188d42a53af568a4190",
+    "semantic_hash": ""
+  },
+  "templates/emails/restablecer_clave.html": {
+    "mtime": 1785874475.8361366,
+    "ast_hash": "74ce560e4919ac98c0c77bb4d2c1c17d",
+    "semantic_hash": ""
+  },
+  "templates/emails/test_email.html": {
+    "mtime": 1785874475.8361366,
+    "ast_hash": "1be7a51f54700fd96a88b1cf059a48d3",
+    "semantic_hash": ""
+  },
+  "templates/home.html": {
+    "mtime": 1785874475.837139,
+    "ast_hash": "467e6b366b21e9913ed6699d83667a39",
+    "semantic_hash": ""
+  },
+  "templates/recibo/recibo.html": {
+    "mtime": 1785874475.837139,
+    "ast_hash": "5981256985e8da9a5eb7ad4294003ad5",
+    "semantic_hash": ""
+  },
+  "templates/vigilante/base.html": {
+    "mtime": 1785874475.8381407,
+    "ast_hash": "e3be516e57adc1bc93755d41b961417c",
+    "semantic_hash": ""
+  },
+  "templates/vigilante/dashboard.html": {
+    "mtime": 1785874475.8381407,
+    "ast_hash": "e38342f1d652703e197e50f9238d43eb",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Diagramas/casos_de_uso_V1.pdf": {
+    "mtime": 1785874475.2685955,
+    "ast_hash": "77ce2907a90272ef0883073cb1ed317c",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/Espacios.png": {
+    "mtime": 1785874475.1746037,
+    "ast_hash": "140be22434baf6e0cc31442586ea05c8",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/PanelPrincipal.png": {
+    "mtime": 1785874475.1796055,
+    "ast_hash": "b0c3dcab28e4d8d01977ab930f1a7e51",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/PanelPrincipal2.png": {
+    "mtime": 1785874475.1836157,
+    "ast_hash": "abb715222cc9f95c09dea4cf097c6110",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/Pisos.png": {
+    "mtime": 1785874475.1846192,
+    "ast_hash": "dd1c030c3de72f480be68c31673748eb",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/Reservas.png": {
+    "mtime": 1785874475.1856217,
+    "ast_hash": "80b29d320bab6b75e5e3e15cb0cd3fce",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/Tarifas.png": {
+    "mtime": 1785874475.1866243,
+    "ast_hash": "75e8d13eae2936657adada1282c9d70f",
+    "semantic_hash": ""
+  },
+  ".claude/Admin/Vehiculos.png": {
+    "mtime": 1785874475.1876266,
+    "ast_hash": "635af884e66c326f39be43e27d0e5ff0",
+    "semantic_hash": ""
+  },
+  ".claude/Home.png": {
+    "mtime": 1785874475.1896317,
+    "ast_hash": "e6a7139180919d695fd885bba4a2fc1d",
+    "semantic_hash": ""
+  },
+  ".claude/PopUp Login.png": {
+    "mtime": 1785874475.191637,
+    "ast_hash": "ab0193afa956d9c6782e95827644c9ae",
+    "semantic_hash": ""
+  },
+  ".claude/Popup registro.png": {
+    "mtime": 1785874475.1936429,
+    "ast_hash": "59716117a5a3c22e4e275452e368e31f",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-24-19-797Z.png": {
+    "mtime": 1785874475.207327,
+    "ast_hash": "eb07caf7652908d7b82c8408b66261e2",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-24-25-240Z.png": {
+    "mtime": 1785874475.209332,
+    "ast_hash": "1a2059f9d4eceb400e947d0b2276ff36",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-25-11-127Z.png": {
+    "mtime": 1785874475.2113369,
+    "ast_hash": "819443e09d8be534faa34935e28b7abf",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-25-24-019Z.png": {
+    "mtime": 1785874475.2123396,
+    "ast_hash": "746d02f4df966c30a247831daa64afbc",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-02-612Z.png": {
+    "mtime": 1785874475.214345,
+    "ast_hash": "8af56aceb2c58907b6c026bc7b277632",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-13-605Z.png": {
+    "mtime": 1785874475.2153475,
+    "ast_hash": "0b3ffca6b8ea66e136ece31d3eaf0096",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-29-654Z.png": {
+    "mtime": 1785874475.2163503,
+    "ast_hash": "9af192960994ce248f0023fce188e02d",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-38-363Z.png": {
+    "mtime": 1785874475.2183561,
+    "ast_hash": "1fcaf9c793e083121825032e3268ffe7",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-26-52-519Z.png": {
+    "mtime": 1785874475.219359,
+    "ast_hash": "562b34608c3d8401f1755b0942ee1d2c",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-00-172Z.png": {
+    "mtime": 1785874475.2203608,
+    "ast_hash": "ac3bab827dc93706ce4c651ed46fc806",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-08-325Z.png": {
+    "mtime": 1785874475.2213633,
+    "ast_hash": "a84cb6f07413a9ba7d778043103f4ee8",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-27-38-687Z.png": {
+    "mtime": 1785874475.224194,
+    "ast_hash": "3a3be5c15a7b44ed889f4080185474a6",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-28-42-707Z.png": {
+    "mtime": 1785874475.2251933,
+    "ast_hash": "6db0fc54e141cbc82972c4b520bc5fec",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-02-796Z.png": {
+    "mtime": 1785874475.2261958,
+    "ast_hash": "795e76dfb957303c180f727e9f8377e5",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-15-790Z.png": {
+    "mtime": 1785874475.2271996,
+    "ast_hash": "10e98a58fb9843bb98eff199d0c3ced9",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-29-50-109Z.png": {
+    "mtime": 1785874475.2296934,
+    "ast_hash": "a87164177b1142d4a8af6272263aad19",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-04-690Z.png": {
+    "mtime": 1785874475.2306967,
+    "ast_hash": "d593dbd3cf549c7b9f223fd47af251a9",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-33-385Z.png": {
+    "mtime": 1785874475.2327008,
+    "ast_hash": "4da2faee820fab6c13958e346e55bde0",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-43-691Z.png": {
+    "mtime": 1785874475.2337036,
+    "ast_hash": "84cdb35f4b920f7efe75bdeea0905e59",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-30-54-302Z.png": {
+    "mtime": 1785874475.2357087,
+    "ast_hash": "b5cb4fc71fa73f7181241be87c95140f",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-04-03T21-32-54-801Z.png": {
+    "mtime": 1785874475.2369823,
+    "ast_hash": "b647c4f43e2a85055c452d567e1293d9",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-06-12T01-42-25-120Z.png": {
+    "mtime": 1785874475.237982,
+    "ast_hash": "b73426b4dbc6399ad8fcca8f7fe83f55",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes/Base_datos_final.png": {
+    "mtime": 1785874475.3344066,
+    "ast_hash": "f07dbfc5ecd31a32bf92e7e43e23d841",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes/MER.jpeg": {
+    "mtime": 1785874475.3354065,
+    "ast_hash": "1010968e78d0b2875f9e76cebe385038",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes/MR.png": {
+    "mtime": 1785874475.336409,
+    "ast_hash": "88d0eb8de68f96d06cf51bcac60f27d9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes/MultiParking_MR_Def.png": {
+    "mtime": 1785874475.3374119,
+    "ast_hash": "735718739da4fb2f409e3bfdb1281b5b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes/Multiparking_MR_V2.png": {
+    "mtime": 1785874475.3384147,
+    "ast_hash": "11bf13c8dc7d3bdb9a160b404aa0e148",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/ACTA_REVISION_PROYECTOS_2025__image1.png": {
+    "mtime": 1785874475.3394172,
+    "ast_hash": "083b63426e8f97a545e704322b602e58",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/ACTA_REVISION_PROYECTOS_2025__image2.png": {
+    "mtime": 1785874475.3404202,
+    "ast_hash": "ea1893394af0fd5f72f2b0187407b60b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Base_de_datos__image1.png": {
+    "mtime": 1785874475.3414228,
+    "ast_hash": "d6d81e60db9e5052c0b4c1afe9925e98",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image1.png": {
+    "mtime": 1785874475.3424256,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image2.png": {
+    "mtime": 1785874475.3424256,
+    "ast_hash": "c57858a8091b3980a62dfed4e34a4159",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image3.png": {
+    "mtime": 1785874475.3434284,
+    "ast_hash": "8bc9979c9cb87e5243f7fc7b35447c44",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image4.png": {
+    "mtime": 1785874475.3434284,
+    "ast_hash": "755d9acd972ad8117f2346ef8cca69e0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image5.png": {
+    "mtime": 1785874475.3444302,
+    "ast_hash": "cba3b71e235cde09fa9f708dba87045d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Astrid__image6.png": {
+    "mtime": 1785874475.3444302,
+    "ast_hash": "91a72c203c074db318d226bf922a04ef",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image1.png": {
+    "mtime": 1785874475.345433,
+    "ast_hash": "b59345e523bc105b4b242cfd70dd91f9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image10.png": {
+    "mtime": 1785874475.345433,
+    "ast_hash": "0d99edab2a4442118915b74c0aff928a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image11.png": {
+    "mtime": 1785874475.3474388,
+    "ast_hash": "c5bdf165e74ddf2df6c90494e5ec177e",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image12.png": {
+    "mtime": 1785874475.350446,
+    "ast_hash": "a08c76731872b6ba1a60fc8124205235",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image13.png": {
+    "mtime": 1785874475.350446,
+    "ast_hash": "71f402b5ffec11ed6d17db552d858cbe",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image2.png": {
+    "mtime": 1785874475.351449,
+    "ast_hash": "96de17afeaaf800ce209003660757782",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image3.png": {
+    "mtime": 1785874475.351449,
+    "ast_hash": "ce7b5ab169a5f284c9d42d8eee6487d5",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image4.png": {
+    "mtime": 1785874475.352451,
+    "ast_hash": "3d32c612f42d8ff17c279cc8d9d9bff9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image5.png": {
+    "mtime": 1785874475.3534539,
+    "ast_hash": "eaf3b2be697fd2737fbf91a88f549eaf",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image6.png": {
+    "mtime": 1785874475.354457,
+    "ast_hash": "a6f5a1f0b5cc268b58200dbf163a3772",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image7.png": {
+    "mtime": 1785874475.354457,
+    "ast_hash": "e5739dac588d26e6043aa1c08b85c724",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image8.png": {
+    "mtime": 1785874475.3564618,
+    "ast_hash": "43524a91f0f3e6981273736aaede87b6",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V1__image9.png": {
+    "mtime": 1785874475.3574648,
+    "ast_hash": "5f3de83483f95dda65406f1174db7347",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image1.png": {
+    "mtime": 1785874475.3574648,
+    "ast_hash": "bfbd8ddf9c846e1f985e44f63eaa3e57",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image10.png": {
+    "mtime": 1785874475.3574648,
+    "ast_hash": "544d0c39dd32c6a986f7266cf6023cc5",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image11.jpg": {
+    "mtime": 1785874475.3584673,
+    "ast_hash": "c8b90a8bc1c131c1a178839558d08c4b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image12.png": {
+    "mtime": 1785874475.3584673,
+    "ast_hash": "71f402b5ffec11ed6d17db552d858cbe",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image13.png": {
+    "mtime": 1785874475.3614755,
+    "ast_hash": "a08c76731872b6ba1a60fc8124205235",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image14.png": {
+    "mtime": 1785874475.3614755,
+    "ast_hash": "0d99edab2a4442118915b74c0aff928a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image15.jpg": {
+    "mtime": 1785874475.3624787,
+    "ast_hash": "2c3f1d58b64cf84e41b34cbc5e83a8ac",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image16.png": {
+    "mtime": 1785874475.3634808,
+    "ast_hash": "e220d8ad38e38ef17bb9beca0d818445",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image17.png": {
+    "mtime": 1785874475.3634808,
+    "ast_hash": "52bcbf6726369574a4ee498825bdfd34",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image18.png": {
+    "mtime": 1785874475.3644826,
+    "ast_hash": "ce7b5ab169a5f284c9d42d8eee6487d5",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image19.png": {
+    "mtime": 1785874475.3644826,
+    "ast_hash": "b59345e523bc105b4b242cfd70dd91f9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image2.png": {
+    "mtime": 1785874475.3654852,
+    "ast_hash": "1d0c7473c16baa08861f29911489234d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image20.png": {
+    "mtime": 1785874475.3664882,
+    "ast_hash": "2b095e51bd8d2b1f867de6b7b059a373",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image21.png": {
+    "mtime": 1785874475.3664882,
+    "ast_hash": "4916442c4f02333c71aa01be0bd65e9a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image22.png": {
+    "mtime": 1785874475.3684933,
+    "ast_hash": "eaf3b2be697fd2737fbf91a88f549eaf",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image23.png": {
+    "mtime": 1785874475.3684933,
+    "ast_hash": "1066da8930e53832155d4854ef845306",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image24.png": {
+    "mtime": 1785874475.3701398,
+    "ast_hash": "5f3de83483f95dda65406f1174db7347",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image25.png": {
+    "mtime": 1785874475.3701398,
+    "ast_hash": "a6f5a1f0b5cc268b58200dbf163a3772",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image3.png": {
+    "mtime": 1785874475.3711402,
+    "ast_hash": "933c977a2a796f96d332e04f35508d38",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image4.png": {
+    "mtime": 1785874475.3711402,
+    "ast_hash": "2e958d1150b268760fb464311f6f64b0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image5.png": {
+    "mtime": 1785874475.372143,
+    "ast_hash": "58ad30fd6bc726394e704f8ef14991d5",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image6.png": {
+    "mtime": 1785874475.372143,
+    "ast_hash": "96de17afeaaf800ce209003660757782",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image7.png": {
+    "mtime": 1785874475.3731458,
+    "ast_hash": "43524a91f0f3e6981273736aaede87b6",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image8.png": {
+    "mtime": 1785874475.3741481,
+    "ast_hash": "4886719daa2efe626c1816c4daa70133",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_Final_V2__image9.png": {
+    "mtime": 1785874475.375918,
+    "ast_hash": "c5bdf165e74ddf2df6c90494e5ec177e",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image1.png": {
+    "mtime": 1785874475.375918,
+    "ast_hash": "d4a092fb2856ff028402141827b7df10",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image10.png": {
+    "mtime": 1785874475.3769183,
+    "ast_hash": "91a72c203c074db318d226bf922a04ef",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image11.png": {
+    "mtime": 1785874475.3769183,
+    "ast_hash": "778736f8b294e63c00fa004ad623204b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image2.png": {
+    "mtime": 1785874475.3779204,
+    "ast_hash": "cba3b71e235cde09fa9f708dba87045d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image3.png": {
+    "mtime": 1785874475.3789234,
+    "ast_hash": "d1dfb0b2e430c91ae13ad855398a79c0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image4.png": {
+    "mtime": 1785874475.3799264,
+    "ast_hash": "f80ba8c7e210b0e602c3491d08b60368",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image5.png": {
+    "mtime": 1785874475.3799264,
+    "ast_hash": "db8b3f8a58c19a9b52495568b7f62e27",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image6.png": {
+    "mtime": 1785874475.3809288,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image7.png": {
+    "mtime": 1785874475.3819313,
+    "ast_hash": "c57858a8091b3980a62dfed4e34a4159",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image8.png": {
+    "mtime": 1785874475.3819313,
+    "ast_hash": "8bc9979c9cb87e5243f7fc7b35447c44",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V2__image9.png": {
+    "mtime": 1785874475.382934,
+    "ast_hash": "755d9acd972ad8117f2346ef8cca69e0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image1.png": {
+    "mtime": 1785874475.3839364,
+    "ast_hash": "f80ba8c7e210b0e602c3491d08b60368",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image10.png": {
+    "mtime": 1785874475.3839364,
+    "ast_hash": "8bc9979c9cb87e5243f7fc7b35447c44",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image11.png": {
+    "mtime": 1785874475.384939,
+    "ast_hash": "e22cd824b2116b3b59d7e1d1b9951854",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image2.png": {
+    "mtime": 1785874475.384939,
+    "ast_hash": "c57858a8091b3980a62dfed4e34a4159",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image3.png": {
+    "mtime": 1785874475.386415,
+    "ast_hash": "755d9acd972ad8117f2346ef8cca69e0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image4.png": {
+    "mtime": 1785874475.386415,
+    "ast_hash": "d4a092fb2856ff028402141827b7df10",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image5.png": {
+    "mtime": 1785874475.3874154,
+    "ast_hash": "db8b3f8a58c19a9b52495568b7f62e27",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image6.png": {
+    "mtime": 1785874475.3884175,
+    "ast_hash": "cba3b71e235cde09fa9f708dba87045d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image7.png": {
+    "mtime": 1785874475.3884175,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image8.png": {
+    "mtime": 1785874475.3894205,
+    "ast_hash": "778736f8b294e63c00fa004ad623204b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V3__image9.png": {
+    "mtime": 1785874475.3894205,
+    "ast_hash": "91a72c203c074db318d226bf922a04ef",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image1.png": {
+    "mtime": 1785874475.3914251,
+    "ast_hash": "6b41586cb5e2e6c81459409d7f5f10fe",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image10.png": {
+    "mtime": 1785874475.3924284,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image11.png": {
+    "mtime": 1785874475.3954365,
+    "ast_hash": "812d564b835e7b6d199cde4e5fe166f6",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image2.png": {
+    "mtime": 1785874475.3984766,
+    "ast_hash": "e7f210293ffc9260c83a64442f5810b8",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image3.png": {
+    "mtime": 1785874475.3999815,
+    "ast_hash": "8cd6ef5e03d0043d13f5c58536153a0a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image4.png": {
+    "mtime": 1785874475.4015913,
+    "ast_hash": "e22cd824b2116b3b59d7e1d1b9951854",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image5.png": {
+    "mtime": 1785874475.402591,
+    "ast_hash": "666dbcea8add228b85899e9d1e88ef58",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image6.png": {
+    "mtime": 1785874475.404596,
+    "ast_hash": "c3d1db218be3771318a3bbac3722924d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image7.png": {
+    "mtime": 1785874475.405599,
+    "ast_hash": "37797d63012a6a48754fe6c32a5d8c65",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image8.png": {
+    "mtime": 1785874475.4086068,
+    "ast_hash": "4bf0bdcb5d6d52bfc77d32ce32516b1c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/Documentacion_V4__image9.png": {
+    "mtime": 1785874475.4106123,
+    "ast_hash": "787805540b08cf52acc946a27f51e0fd",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image1.png": {
+    "mtime": 1785874475.4126177,
+    "ast_hash": "a08c76731872b6ba1a60fc8124205235",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image10.png": {
+    "mtime": 1785874475.4136205,
+    "ast_hash": "c8275e9a1f6203a38862e93559657b37",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image11.png": {
+    "mtime": 1785874475.4146233,
+    "ast_hash": "f254a75eae4d4c3608284381efd6e3fb",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image12.png": {
+    "mtime": 1785874475.4166276,
+    "ast_hash": "0967a118fb3e0c60570f27bf94716f4f",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image13.png": {
+    "mtime": 1785874475.4176311,
+    "ast_hash": "96de17afeaaf800ce209003660757782",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image2.png": {
+    "mtime": 1785874475.4176311,
+    "ast_hash": "0cc7ab1cd136ea56b3d4f4c2ca343c84",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image3.png": {
+    "mtime": 1785874475.4186337,
+    "ast_hash": "0d99edab2a4442118915b74c0aff928a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image4.png": {
+    "mtime": 1785874475.4186337,
+    "ast_hash": "71f402b5ffec11ed6d17db552d858cbe",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image5.png": {
+    "mtime": 1785874475.4196358,
+    "ast_hash": "b01f7227c49eefd6e8fc41e96b31d32b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image6.png": {
+    "mtime": 1785874475.4206393,
+    "ast_hash": "8c5c76e0646f5ba7d6c42e1f59a598a5",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image7.png": {
+    "mtime": 1785874475.421641,
+    "ast_hash": "eaf3b2be697fd2737fbf91a88f549eaf",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image8.png": {
+    "mtime": 1785874475.421641,
+    "ast_hash": "5c6a250e5e07e2e8059570d5f640641c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Drive_Descarga/Imagenes_Extraidas/GUIA_APRENDIZ_TRABAJO_FINAL__image9.png": {
+    "mtime": 1785874475.4226434,
+    "ast_hash": "3d32c612f42d8ff17c279cc8d9d9bff9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_01_Planteamiento_Problema/arbol_problema.png": {
+    "mtime": 1785874475.4490461,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig02.png": {
+    "mtime": 1785874475.4524562,
+    "ast_hash": "33889aaf9fb30bedda6fa06e5cbe8def",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig03.png": {
+    "mtime": 1785874475.4524562,
+    "ast_hash": "0339c353b34b06675ae1f4f46b37261c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig04.png": {
+    "mtime": 1785874475.453458,
+    "ast_hash": "56515cea182270391774abd8a8999391",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig05.png": {
+    "mtime": 1785874475.4544606,
+    "ast_hash": "d5434e64a9a79b5741317e2679fe9206",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig06.png": {
+    "mtime": 1785874475.4544606,
+    "ast_hash": "b5f65a90f514d97dae3be7da329d6925",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig07.png": {
+    "mtime": 1785874475.4554634,
+    "ast_hash": "cf62fc9d5ebee43237f42fee4d77fb0c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig08.png": {
+    "mtime": 1785874475.4554634,
+    "ast_hash": "dc6bb058643ca20403930e835aeef2fc",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig09.png": {
+    "mtime": 1785874475.4564667,
+    "ast_hash": "0c5837258baa2ea3ec89018841b3b519",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig10.png": {
+    "mtime": 1785874475.4564667,
+    "ast_hash": "549c43bb681ba53b90434afba88ce777",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig11.png": {
+    "mtime": 1785874475.4574687,
+    "ast_hash": "7143f657e08450358bffb4b876563bc9",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig12.png": {
+    "mtime": 1785874475.4584713,
+    "ast_hash": "188208ad1c14d80c3483b0eae047e42a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_04_Elicitacion_Requisitos/charts/fig13.png": {
+    "mtime": 1785874475.4584713,
+    "ast_hash": "e098a164b5c0975c9eeecdf666f5a6a7",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/ACT_01_ingreso.png": {
+    "mtime": 1785874475.4634852,
+    "ast_hash": "33589f243a0345141857cdccafb005c2",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/ACT_02_salida_pago.png": {
+    "mtime": 1785874475.4634852,
+    "ast_hash": "6b622f1c8a2b2bffaca27f86da8208b2",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/ACT_03_reserva.png": {
+    "mtime": 1785874475.4644873,
+    "ast_hash": "a47bb702c3d7bcb630824abf89b4e865",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/ACT_04_fidelidad.png": {
+    "mtime": 1785874475.4644873,
+    "ast_hash": "1f23b2204c20d15b9bdc7b970e6f4e85",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/CLASE_dominio.png": {
+    "mtime": 1785874475.4654896,
+    "ast_hash": "075e3c15f53b358914561d2a22c805ea",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/CU_03_salida_pagos.png": {
+    "mtime": 1785874475.4664924,
+    "ast_hash": "92436b1f55e9a4b7cbd45fb978e56a89",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/CU_09_parqueos.png": {
+    "mtime": 1785874475.4664924,
+    "ast_hash": "65aa41bed5746629adb2f65558029207",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/CU_11_fidelidad.png": {
+    "mtime": 1785874475.4674952,
+    "ast_hash": "92ef2ad341b44712492df696d54c4b34",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/CU_12_novedades.png": {
+    "mtime": 1785874475.4674952,
+    "ast_hash": "ffa2d21150b516a625149c70944aad18",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_admin_1.jpeg": {
+    "mtime": 1785874475.469001,
+    "ast_hash": "37db531ed03e733b6f1cf1f5aea78d3d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_admin_2.jpeg": {
+    "mtime": 1785874475.469001,
+    "ast_hash": "6ff5c500559e186ef6fd088534eb861b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_guardia.jpeg": {
+    "mtime": 1785874475.4700012,
+    "ast_hash": "ee265bdb407676023c7e577501cef87a",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_home.jpeg": {
+    "mtime": 1785874475.4710038,
+    "ast_hash": "5bfc52356385757835a2076973160813",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_image.png": {
+    "mtime": 1785874475.4710038,
+    "ast_hash": "5d5969e0d834f932c286416bc3c866af",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/MOCK_usuario.jpeg": {
+    "mtime": 1785874475.4720066,
+    "ast_hash": "6a153220dc036a191fbe887118eac7a8",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/SEQ_01_login.png": {
+    "mtime": 1785874475.473009,
+    "ast_hash": "01bc95014d3b5cba1d344e4ee614034c",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/SEQ_02_ingreso_salida.png": {
+    "mtime": 1785874475.4740117,
+    "ast_hash": "5f8970c7357a1acb98deaa5d3e4e5e93",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img1.png": {
+    "mtime": 1785874475.478022,
+    "ast_hash": "d4a092fb2856ff028402141827b7df10",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img10.png": {
+    "mtime": 1785874475.478022,
+    "ast_hash": "91a72c203c074db318d226bf922a04ef",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img11.png": {
+    "mtime": 1785874475.4790246,
+    "ast_hash": "778736f8b294e63c00fa004ad623204b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img2.png": {
+    "mtime": 1785874475.4790246,
+    "ast_hash": "cba3b71e235cde09fa9f708dba87045d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img3.png": {
+    "mtime": 1785874475.4800272,
+    "ast_hash": "d1dfb0b2e430c91ae13ad855398a79c0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img4.png": {
+    "mtime": 1785874475.48103,
+    "ast_hash": "f80ba8c7e210b0e602c3491d08b60368",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img5.png": {
+    "mtime": 1785874475.48103,
+    "ast_hash": "db8b3f8a58c19a9b52495568b7f62e27",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img6.png": {
+    "mtime": 1785874475.4820325,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img7.png": {
+    "mtime": 1785874475.4820325,
+    "ast_hash": "c57858a8091b3980a62dfed4e34a4159",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img8.png": {
+    "mtime": 1785874475.483035,
+    "ast_hash": "8bc9979c9cb87e5243f7fc7b35447c44",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V2_img9.png": {
+    "mtime": 1785874475.484038,
+    "ast_hash": "755d9acd972ad8117f2346ef8cca69e0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img1.png": {
+    "mtime": 1785874475.484038,
+    "ast_hash": "f80ba8c7e210b0e602c3491d08b60368",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img10.png": {
+    "mtime": 1785874475.4850407,
+    "ast_hash": "8bc9979c9cb87e5243f7fc7b35447c44",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img11.png": {
+    "mtime": 1785874475.4850407,
+    "ast_hash": "e22cd824b2116b3b59d7e1d1b9951854",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img2.png": {
+    "mtime": 1785874475.4860444,
+    "ast_hash": "c57858a8091b3980a62dfed4e34a4159",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img3.png": {
+    "mtime": 1785874475.4870458,
+    "ast_hash": "755d9acd972ad8117f2346ef8cca69e0",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img4.png": {
+    "mtime": 1785874475.4870458,
+    "ast_hash": "d4a092fb2856ff028402141827b7df10",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img5.png": {
+    "mtime": 1785874475.4880483,
+    "ast_hash": "db8b3f8a58c19a9b52495568b7f62e27",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img6.png": {
+    "mtime": 1785874475.489051,
+    "ast_hash": "cba3b71e235cde09fa9f708dba87045d",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img7.png": {
+    "mtime": 1785874475.4900537,
+    "ast_hash": "fd459593227311edbf5d725613cecf51",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img8.png": {
+    "mtime": 1785874475.4900537,
+    "ast_hash": "778736f8b294e63c00fa004ad623204b",
+    "semantic_hash": ""
+  },
+  "DOCUMENTACION/Secciones/Seccion_06_Analisis_Especificacion/caso_uso_V3_img9.png": {
+    "mtime": 1785874475.4910562,
+    "ast_hash": "91a72c203c074db318d226bf922a04ef",
+    "semantic_hash": ""
+  },
+  "presentacion/Presentancion.png": {
+    "mtime": 1785874475.7880104,
+    "ast_hash": "99eda023c2543173861236c045aaa902",
+    "semantic_hash": ""
+  },
+  "presentacion/image.png": {
+    "mtime": 1785874475.7890124,
+    "ast_hash": "c0af71e06b8d703c5492909bc604a3dc",
+    "semantic_hash": ""
+  },
+  "static/img/favicon.png": {
+    "mtime": 1785874475.804052,
+    "ast_hash": "c0af71e06b8d703c5492909bc604a3dc",
+    "semantic_hash": ""
+  },
+  "build_docx_despliegue.py": {
+    "mtime": 1785875299.5437126,
+    "ast_hash": "d11668f665505c41ab80750f72188f7b",
+    "semantic_hash": ""
+  }
+}

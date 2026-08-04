@@ -134,7 +134,8 @@
       "Bash(npm info:*)",
       "Bash(cmd /c npx plantuml-mcp-server --help)",
       "Bash(where plantuml-mcp-server:*)",
-      "mcp__plantuml__generate_plantuml_diagram"
+      "mcp__plantuml__generate_plantuml_diagram",
+      "Bash(uv *)"
     ],
     "additionalDirectories": [
       "C:\\tmp",
@@ -147,5 +148,8 @@
   "enabledMcpjsonServers": [
     "playwright",
     "trello"
-  ]
+  ],
+  "enabledPlugins": {
+    "document-skills@anthropic-agent-skills": true
+  }
 }
