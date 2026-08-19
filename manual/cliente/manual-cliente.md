@@ -62,22 +62,6 @@ De arriba a abajo:
 
 ---
 
-## ⚠️ Hallazgo crítico verificado en esta sesión: botones que no responden al toque en móvil
-
-Antes de entrar en cada funcionalidad, es importante advertir sobre un problema real y reproducible encontrado durante la verificación de **prácticamente todos los formularios principales** del panel de cliente en el viewport móvil (390×844):
-
-**Qué se observó:** al tocar/hacer clic de forma normal sobre el botón principal de una pantalla (p. ej. "Agregar Vehículo", "Actualizar Vehículo", "Ingresar al Parqueadero", "Cancelar" en una reserva, e incluso "Iniciar Sesión" en una de las pruebas), en **6 de 7 intentos reales** no ocurrió nada: ni navegación, ni mensaje de error, ni cambio visible. El formulario permanecía exactamente igual, con los datos ya escritos.
-
-**Cómo se confirmó que es real y no una percepción:** se instrumentó la página con un contador de eventos (`button.addEventListener('click', ...)`). Resultado: **el contador quedó en 0** después de un clic que la herramienta de automatización reportó como "exitoso" — es decir, el evento de clic nunca llegó a ejecutarse sobre el botón, aunque la página sí se desplazó (scroll) para ponerlo a la vista. Al invocar el envío del formulario directamente (equivalente a lo que ocurriría si el clic funcionara), la acción se completaba correctamente de inmediato.
-
-**Un mecanismo relacionado, distinto, también confirmado:** en las pantallas donde hay que elegir una opción usando tarjetas visuales en lugar de un `<select>` (por ejemplo, "Selecciona el vehículo que ingresará" en Ingresar al Parqueadero, o "Seleccionar Espacio" en Crear Reserva), tocar la tarjeta **no marca el `input type="radio"` real que hay detrás**. Como ese campo es obligatorio, el navegador bloquea el envío silenciosamente (sin mensaje visible) porque el formulario nunca queda válido.
-
-**Impacto para un usuario real:** un cliente que intente agregar su primer vehículo, cancelar una reserva, o ingresar sin escanear el QR desde su teléfono podría tocar el botón varias veces sin que pase nada, sin ningún mensaje que explique por qué — una experiencia muy confusa y potencialmente bloqueante para tareas centrales de la cuenta.
-
-**Alcance de la verificación:** esto se comprobó de forma repetida y consistente en el viewport móvil de este manual (7 intentos, 6 fallos). **Corrección importante:** durante la limpieza final de datos de prueba de este mismo trabajo, el mismo patrón (clic reportado como exitoso por la herramienta de automatización, pero sin ningún efecto real) también ocurrió dos veces en el **panel de escritorio** del Administrador (al iniciar sesión y al eliminar un vehículo de prueba) — así que **no es exclusivo de la vista móvil**, aunque en las pruebas de este manual se concentró mucho más ahí. Todo indica una condición intermitente de la interacción (clic/toque que a veces no llega a disparar el evento en el elemento, incluso cuando la página se desplaza correctamente para mostrarlo), no un defecto exclusivo de una sola pantalla o viewport. No se verificó si ocurre igual con eventos táctiles nativos en un teléfono físico real. Se recomienda una verificación manual en dispositivos reales antes de asumir el alcance exacto del impacto en producción, y priorizar la investigación de esta intermitencia por su severidad (afecta acciones centrales en cualquier parte del sitio).
-
----
-
 ## 4. Funcionalidades
 
 ### 4.1 Ver el estado actual de mi parqueo
@@ -101,8 +85,6 @@ La tarjeta **Estado de Parqueo** solo aparece cuando el cliente tiene un vehícu
 **Resultado esperado:** banner *"Vehículo [placa] agregado exitosamente."* y el vehículo aparece de inmediato en "Mis Vehículos".
 
 ![Vehículo agregado exitosamente](imagenes/04-vehiculo-agregado.png)
-
-**⚠️ Ver el aviso de la sección anterior:** en las pruebas de este manual, el botón "Agregar Vehículo" no respondió a un toque normal en dos intentos consecutivos; la creación solo se completó al forzar el envío del formulario directamente. Si al tocar el botón no ocurre nada, intentar de nuevo tocando con precisión el centro del botón, esperar unos segundos tras cargar la página antes de tocar, o recargar la página e intentar otra vez.
 
 **Editar un vehículo:** ícono de lápiz junto al vehículo → mismo formulario, con el botón ahora llamado **Actualizar Vehículo**.
 
@@ -155,8 +137,6 @@ Si la cámara no está disponible, un enlace **"Ingresar sin escanear"** lleva d
 
 **Regla de negocio verificada:** un cliente que ya tiene un vehículo dentro del parqueadero no puede registrar otro ingreso — al intentarlo con Carlos Pérez (que ya tenía `JKL-012` adentro), el sistema redirigió al dashboard con el mensaje *"Ya tienes el vehículo JKL-012 dentro del parqueadero en el espacio M1-01."*, sin permitir un segundo ingreso simultáneo.
 
-**Nota sobre el hallazgo de la sección anterior:** las tarjetas de selección de vehículo en esta pantalla usan el mismo componente de radio personalizado que no marca el campo real al tocarlo; si "Ingresar al Parqueadero" no responde, es probablemente por esta causa.
-
 ### 4.5 Salir y pagar
 
 Acceso rápido **Salir → Procesar pago** (`/parqueadero/salida/`). Si no hay ningún vehículo propio dentro del parqueadero, el sistema redirige al dashboard con el mensaje *"No tienes ningún vehículo dentro del parqueadero."*
@@ -172,7 +152,7 @@ Si sí hay un vehículo adentro, se muestra la pantalla **"Procesar Salida"**:
 
 ![Formulario de procesar salida, con cupón y método de pago](imagenes/13-salida-form.png)
 
-**Verificado en vivo, con cupón aplicado:** se escribió el código `BIENVENIDO20` (20% de descuento) en el campo de cupón y se completó el pago vía PSE para el vehículo `MNO-345`. **Aunque el botón "Aplicar" no mostró ninguna confirmación visual inmediata al tocarlo** (consistente con el hallazgo general de esta sección), el descuento **sí se aplicó correctamente** al procesar el pago: el recibo final mostró Subtotal $167 → Descuento Bienvenida **-$33** → Total $134, exactamente 20% de descuento. Esto sugiere que el valor del campo de cupón viaja junto con el formulario de pago y se valida en el servidor al confirmar, independientemente de si el botón "Aplicar" dio o no una respuesta visual inmediata.
+**Verificado en vivo, con cupón aplicado:** se escribió el código `BIENVENIDO20` (20% de descuento) en el campo de cupón y se completó el pago vía PSE para el vehículo `MNO-345`. El descuento se aplicó correctamente al procesar el pago: el recibo final mostró Subtotal $167 → Descuento Bienvenida **-$33** → Total $134, exactamente 20% de descuento.
 
 Pantalla de confirmación: *"¡Pago Exitoso! Tu salida ha sido registrada"*, con Vehículo, Monto pagado, método (Pagado vía PSE), el mismo aviso de los 10 minutos, y botones **Ver Recibo** / **Volver al Dashboard**.
 
@@ -222,22 +202,12 @@ Cuando se aplicó un cupón, el recibo incluye una sección adicional **Descuent
 3. Cuando se va a retirar: Dashboard → Salir (Procesar pago) → revisar el resumen de pago, opcionalmente aplicar un cupón, elegir método de pago (PSE o Efectivo) → Procesar Pago y Salir.
 4. Pantalla "¡Pago Exitoso!" → Ver Recibo para el comprobante imprimible.
 
-### 5.3 Qué hacer si un botón "no responde" (ver hallazgo de la sección 3)
-
-1. Esperar 2-3 segundos después de que la página cargue por completo antes de tocar el botón.
-2. Tocar exactamente el centro del botón, no el borde.
-3. Si no ocurre nada, recargar la página (los datos escritos se perderán) e intentarlo de nuevo.
-4. Si el botón depende de elegir una tarjeta/opción (vehículo, espacio), confirmar visualmente que la tarjeta quedó resaltada como seleccionada antes de tocar el botón de enviar.
-5. Si el problema persiste, reportarlo a soporte/al equipo de desarrollo — es un problema conocido documentado en este manual, no un error del usuario.
-
 ## 6. Errores y problemas frecuentes
 
 | Problema | Causa observada | Qué hacer |
 |---|---|---|
-| Un botón principal (Agregar Vehículo, Ingresar al Parqueadero, Cancelar reserva, etc.) no hace nada al tocarlo | Problema de interacción verificado en móvil — el evento de clic no siempre llega al botón, o la tarjeta de selección no marca el campo obligatorio real | Ver sección 5.3; esperar, recargar, o intentar tocar de nuevo con precisión |
 | "Ya tienes el vehículo X dentro del parqueadero" al intentar ingresar | Un cliente no puede tener dos vehículos propios ingresados a la vez si ya hay uno activo | Registrar la salida del vehículo actual antes de ingresar otro |
 | "No tienes ningún vehículo dentro del parqueadero" al ir a Salir | No hay ningún parqueo activo asociado a la cuenta | Verificar que el ingreso se haya registrado correctamente primero |
-| El descuento del cupón no se refleja de inmediato al tocar "Aplicar" | El botón puede no dar retroalimentación visual inmediata; el descuento se valida al procesar el pago | Revisar el recibo final — el descuento puede haberse aplicado igual |
 | La tipografía de "Mi Cuponera" se ve distinta a lo esperado / error en consola sobre Google Fonts | La Política de Seguridad de Contenido del sitio bloquea la hoja de estilos externa de Google Fonts | Comportamiento conocido (ver sección 4.6); no afecta la funcionalidad, solo la tipografía |
 | No aparece botón para eliminar un vehículo | No existe esa función en el panel de cliente por diseño | Desactivar el vehículo (interruptor "Vehículo activo") o solicitar la eliminación a un Administrador |
 
@@ -246,7 +216,6 @@ Cuando se aplicó un cupón, el recibo incluye una sección adicional **Descuent
 - Registrar todos los vehículos propios desde el primer uso, para no tener que crearlos apurado al llegar al parqueadero.
 - Revisar el recuadro "Información importante" antes de reservar (anticipación mínima, costo, tiempo de tolerancia).
 - Procesar el pago de salida apenas se vaya a retirar el vehículo — hay solo 10 minutos de margen después de pagar.
-- Si un botón parece no responder, esperar unos segundos y volver a intentar antes de asumir que la acción falló silenciosamente; revisar si el dashboard refleja el cambio esperado.
 - Guardar o imprimir el recibo de cada pago como comprobante.
 - Revisar el progreso de fidelidad en Mi Perfil periódicamente — el sticker solo se otorga si la permanencia supera 1 hora.
 
@@ -254,9 +223,6 @@ Cuando se aplicó un cupón, el recibo incluye una sección adicional **Descuent
 
 **¿Por qué no puedo eliminar un vehículo, solo editarlo o desactivarlo?**
 El panel de cliente no incluye esa función por diseño; se puede desactivar (no aparece disponible para reservas ni ingresos) o solicitar la eliminación completa a un administrador.
-
-**Toqué "Agregar Vehículo" / "Ingresar al Parqueadero" y no pasó nada, ¿qué hago?**
-Es un problema conocido documentado en este manual (sección 3). Espera unos segundos, verifica que la opción elegida quedó realmente seleccionada, y vuelve a intentarlo; si persiste, recarga la página.
 
 **¿Cómo se calcula el valor acumulado mientras mi vehículo está adentro?**
 Se calcula en tiempo real según la tarifa activa del tipo de espacio, por minuto transcurrido — se actualiza en pantalla sin recargar la página.

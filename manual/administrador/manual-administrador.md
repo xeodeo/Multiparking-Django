@@ -582,7 +582,6 @@ El envío **falló** con un error `403 Forbidden` de la API de Resend, cuyo mens
 | "Ingresos Mensuales" en Reportes muestra un valor con "M" (millones) que parece demasiado alto | Bug de formato de unidades en el frontend de Reportes (ver 4.12) | Verificar el monto real en la sección Pagos |
 | Al enviar un correo de prueba aparece un error 403 de Resend | La cuenta de Resend está en modo sandbox y solo puede enviar al correo verificado del propietario | Verificar un dominio en resend.com/domains y actualizar el remitente, o usar el destinatario permitido en modo sandbox |
 | Un tipo de espacio, tarifa o cupón con datos asociados no se puede eliminar | Regla de integridad: no se puede romper la relación con espacios/pagos/parqueos existentes | Editar/desactivar en vez de eliminar, o eliminar primero los registros dependientes |
-| Un botón (Guardar, Eliminar, Iniciar Sesión) parece no responder al hacer clic, sin ningún mensaje | Se observó de forma intermitente y reproducible durante este trabajo (más frecuente en el panel de Cliente en móvil, pero también ocurrió dos veces en este panel de escritorio) que un clic no siempre dispara la acción, aunque la página se desplace para mostrar el botón — ver el hallazgo detallado en el Manual del Cliente, sección 3 | Volver a intentar el clic; si persiste, recargar la página. Es un problema conocido de interacción, no un error del usuario |
 
 ## 7. Buenas prácticas
 
