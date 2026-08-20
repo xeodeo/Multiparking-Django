@@ -147,7 +147,8 @@
   },
   "enabledMcpjsonServers": [
     "playwright",
-    "trello"
+    "trello",
+    "playwright2"
   ],
   "enabledPlugins": {
     "document-skills@anthropic-agent-skills": true

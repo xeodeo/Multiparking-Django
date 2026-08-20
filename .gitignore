@@ -5,3 +5,4 @@ __pycache__/
 venv/
 credenciales.txt
 skills-lock.json
+.playwright-mcp/

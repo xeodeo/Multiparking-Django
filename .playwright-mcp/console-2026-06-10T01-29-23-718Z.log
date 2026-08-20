@@ -1,2 +1,0 @@
-[   15867ms] [ERROR] Unsafe attempt to load URL file:///C:/Users/xeodeo/Desktop/Multiparking-Django/DOCUMENTACION/dashboard.html from frame with URL file:///C:/Users/xeodeo/Desktop/Multiparking-Django/DOCUMENTACION/dashboard.html. 'file:' URLs are treated as unique security origins.
- @ file:///C:/Users/xeodeo/Desktop/Multiparking-Django/DOCUMENTACION/dashboard.html:0
